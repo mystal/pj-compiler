@@ -1,0 +1,28 @@
+(*$t+*)
+(*$l+*)
+(* now lets get tricky *)
+123e05
+56ae05
+abc123abc (*what happens here*)
+(*'oh what a mess*)'*)
+(*$l+*) (*followed by garbage*)
+1234abs
+123.32e5a6
+(* how about this *)     2010.0        0.007
+(* put all 'key tokens' together  (<>=...)*) (<>:+<->*/);.,='
+(* try a quoted string *)
+ '(*$l-*)'
+'a'
+'This is a long quoted string'
+'WhAt Do YoU Do WiTh U/l CaSe in a string"'
+(**)
+thisisverylongidentifier
+
+(* The ** above * checks *** to ) see ( how you DO handle U/L case in id *)
+'''' 'x''x'
+'check if all these characters are in your character set'
+!@#$%^&{}[]~`"?\
+
+if you have gotten this far .... very good...
+just one more
+(* THE END.

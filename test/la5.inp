@@ -1,0 +1,14 @@
+(*$l+lets look at some array stuff  *)
+(*$t+and a couple of strings *)
+
+a:array[1..b] of integer;
+
+a[b[c[i+1]]]:=d[e[f[g[56.0]]]];
+
+proccall(a,a[i+3],52);
+
+'This is a good string..'
+
+'This is a string that goes
+across line boundaries...... a no no!'
+did you recover ok to pick up these identifiers '?'

@@ -1,0 +1,40 @@
+(*$l+ make sure that the listing option is turned on*)
+(*$t+ make sure that the token option is turned on*)
+(* this is a test for simple elements and these comments should be ignored *)
+
+(* you should recognize everything in this file correctly..
+   no calls to error routine *)
+
+(* first check some identifier names *)
+
+idend1   allalpha   mixed1234 
+a g1234 fileptr^ fle123^
+
+(* now lets try numbers *)
+12334567 123.986 12 1.4 9
+82.34e01 95.01e+2 123.45e-0004
+153.964e15
+78.93e-10 1234.4321e+55
+
+(*$l-*) (* this is a compiler directive, this line should be printed out *)
+this line should not be printed 
+(*$l+*) (* this turns printing back on *)
+
+(* time for relational operators *)
+     > < = <= >= <>                        
+
+(* next, math operators and assignment *)
++ - := * /
+
+(* misc symbols *)
+   : ( ) ; . ,
+
+(* strings next *)
+(* length 1, a char constant *) 'a'
+(* length 10 and alfa constant *) 'abc123<>10'
+(* length >1 and < 10, a string constant *) '123456789'
+(* length > 10, also a string constant *) 'abcdef123456'
+
+(* note: there are TWO blank lines at the end of this file *)
+
+

@@ -1,0 +1,37 @@
+(*$l+*)
+(*$t-*)
+
+(* Is this !@#$%^*(& a comment
+*)
+
+is your token information turned off .. it should be
+
+(*$t+*)
+(* If so how about this *
+)
+
+(* to stop the above comment depending on how you interpreted it *)
+
+integers upto 32767 but not 327.6e45
+floats upto 10power38 (* ? *) or 10 power 38. 'Are all of these valid reals ?"'
+59.02  59.   .02  59.02e45   59.02e45  59e45  59.e45 59.02eabc
+
+;
+var
+
+for (exp1 ; exp2 ; exp3 ) s ;
+
+stringvar := ''' ;
+
+stringvar1 := '''' ;
+
+stringvar3 := '"' ;
+
+stringvar4 := '' ;
+
+(* Torture the data long enough" *) and it will confess ' *)
+
+PrograM (* input, OUTPUT, everyTHINGelse *)
+
+factor := (someexpression) or somespecialidentifier
+
