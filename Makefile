@@ -4,7 +4,7 @@ SRCDIR := src
 BUILDDIR := build
 
 BIN := lexer
-OBJS := main.o buffer.o lexer.o lexfsm.o str.o token.o
+OBJS := main.o buffer.o lexer.o lexfsm.o str.o token.o directive.o
 
 INCS := 
 LIBS := 

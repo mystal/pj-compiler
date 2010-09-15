@@ -24,6 +24,16 @@ void pushBack(unsigned int i)
     bufferPos -= i;
 }
 
+unsigned int getLineNumber()
+{
+    return line - 1;
+}
+
+unsigned int getBufferPos()
+{
+    return bufferPos - 1;
+}
+
 bool fillBuffer()
 {
     if (fgets(lineBuffer, BUFFER_SIZE-1, stdin) != NULL)

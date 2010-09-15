@@ -18,6 +18,7 @@ typedef struct __transition
 
 /* Actions */
 #define AAB acceptBuild
+#define AAI acceptIntPushBack
 #define AAP acceptPushBack
 #define ABU build
 #define ADI discard
@@ -26,6 +27,7 @@ typedef struct __transition
 #define APD processDirective
 
 void acceptBuild(state, token *, char);
+void acceptIntPushBack(state, token *, char);
 void acceptPushBack(state, token *, char);
 void build(state, token *, char);
 void discard(state, token *, char);
@@ -60,7 +62,7 @@ transition trans_table [state_num][ccls_num] =
 #undef DEF
 #define DEF {BE,AER}
 /* real1 */ {DEF, DEF, {R2,ABU}, DEF, DEF, DEF, DEF,
-             DEF, DEF, DEF, DEF, DEF, DEF, DEF,
+             DEF, DEF, DEF, DEF, {EN,AAI}, DEF, DEF,
              DEF, DEF, DEF, DEF, DEF},
 #undef DEF
 #define DEF {EN,AAP}
@@ -134,12 +136,12 @@ transition trans_table [state_num][ccls_num] =
              DEF, DEF, DEF, DEF, DEF}
 };
 
-char_class lookupClass(char);
+char_class lookupCharClass(char);
 token_kind classify(state s, char c);
 
 state performAction(state s, char c, token *t)
 {
-    char_class ccls = lookupClass(c);
+    char_class ccls = lookupCharClass(c);
     trans_table[s][ccls].action(s, t, c);
     return trans_table[s][ccls].next;
 }
@@ -147,6 +149,18 @@ state performAction(state s, char c, token *t)
 void acceptBuild(state s, token *t, char c)
 {
     stringAppend(&t->lexeme, c);
+    t->kind = classify(s, c);
+}
+
+void acceptIntPushBack(state s, token *t, char c)
+{
+    string str;
+    stringInit(&str);
+    for (unsigned int i = 0; i < t->lexeme.len-1; i++)
+        stringAppend(&str, t->lexeme.buffer[i]);
+    stringFree(&t->lexeme);
+    t->lexeme = str;
+    pushBack(2);
     t->kind = classify(s, c);
 }
 
@@ -169,12 +183,13 @@ void discard(state s, token *t, char c)
 
 void error(state s, token *t, char c)
 {
+    if (c == '\n')
+        fprintf(stderr, "Unexpected symbol \'\\n\'");
+    else
+        fprintf(stderr, "Unexpected symbol \'%c\'", c);
+    fprintf(stderr, " at (%d,%d):\n%s", getLineNumber(), getBufferPos(), lineBuffer);
     tokenClean(t);
     tokenInit(t);
-    if (c == '\n')
-        fprintf(stderr, "Unexpected symbol \'\\n\':\n%s", lineBuffer);
-    else
-        fprintf(stderr, "Unexpected symbol \'%c\':\n%s", c, lineBuffer);
 }
 
 void ignore(state s, token *t, char c)
@@ -183,22 +198,28 @@ void ignore(state s, token *t, char c)
 
 void processDirective(state s, token *t, char c)
 {
-    char d = getChar();
-    char f = getChar();
-    if (d == 'l' || d == 'L')
+    char test, d, f;
+    do
     {
-        if (f == '+')
-            directives[dir_listing] = true;
-        else
-            directives[dir_listing] = false;
-    }
-    else if (d == 't' || d == 'T')
-    {
-        if (f == '+')
-            directives[dir_token_echo] = true;
-        else
-            directives[dir_token_echo] = false;
-    }
+        d = getChar();
+        f = getChar();
+        if (d == 'l' || d == 'L')
+        {
+            if (f == '+')
+                directives[dir_listing] = true;
+            else
+                directives[dir_listing] = false;
+        }
+        else if (d == 't' || d == 'T')
+        {
+            if (f == '+')
+                directives[dir_token_echo] = true;
+            else
+                directives[dir_token_echo] = false;
+        }
+        test = getChar();
+    } while (test == ',');
+    pushBack(1);
 }
 
 token_kind classify(state s, char c)
@@ -223,7 +244,7 @@ token_kind classify(state s, char c)
             case '^': return tok_fileid;
             default: return tok_id;
         }
-    else if (s == state_real0)
+    else if (s == state_real0 || s == state_real1)
         return tok_integer_const;
     else if (s == state_real2 || s == state_real5)
         return tok_real_const;
@@ -259,7 +280,7 @@ token_kind classify(state s, char c)
     return tok_undef;
 }
 
-char_class lookupClass(char c)
+char_class lookupCharClass(char c)
 {
     if (c == 'e' || c == 'E')
         return ccls_e;
