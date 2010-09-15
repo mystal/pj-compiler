@@ -22,6 +22,7 @@ typedef enum __token_kind
     tok_ltequal,
     tok_gtequal,
     tok_nequal,
+    tok_equal,
     tok_dot,
     tok_rdots,
     tok_comma,

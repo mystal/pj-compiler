@@ -22,6 +22,7 @@ char *kindStrings[] =
     "less than or equal\0",
     "greater than or equal\0",
     "not equal\0",
+    "equal\0",
     "dot\0",
     "range dots\0",
     "comma\0",

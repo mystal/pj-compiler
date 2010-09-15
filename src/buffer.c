@@ -6,7 +6,7 @@
 
 #include "directive.h"
 
-unsigned int line = 0;
+unsigned int line = 1;
 unsigned int bufferPos = 0;
 
 bool fillBuffer();
@@ -32,7 +32,7 @@ bool fillBuffer()
             if (!isprint(lineBuffer[i]) && lineBuffer[i] != '\n')
                 lineBuffer[i] = ' ';
         if (directives[dir_listing])
-            fprintf(stdout, "%s", lineBuffer);
+            fprintf(stdout, "%d: %s", line++, lineBuffer);
         bufferPos = 0;
         return true;
     }
