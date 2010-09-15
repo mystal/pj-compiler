@@ -17,10 +17,10 @@ clean:
 	-rm -rf $(BUILDDIR)
 
 $(BUILDDIR)/$(BIN): $(addprefix $(BUILDDIR)/, $(OBJS))
-	$(CC) $(LIBS) -g -o $@ $^
+	$(CC) $(LIBS) -static -g -o $@ $^
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
-	$(CC) $(INCS) -g -c -o $@ $<
+	$(CC) $(INCS) -std=c99 -g -c -o $@ $<
 
 build:
 	mkdir $(BUILDDIR)
