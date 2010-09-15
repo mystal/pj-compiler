@@ -1,6 +1,6 @@
 #pragma once
 
-#include "string.h"
+#include "str.h"
 
 typedef enum __token_kind
 {
@@ -15,8 +15,8 @@ typedef enum __token_kind
     tok_comment,
     tok_lparen,
     tok_rparen,
-    tok_lsquare,
-    tok_rsquare,
+    tok_lbrack,
+    tok_rbrack,
     tok_lthan,
     tok_gthan,
     tok_ltequal,
@@ -32,36 +32,36 @@ typedef enum __token_kind
     tok_minus,
     tok_asterisk,
     tok_slash,
-    tok_key_alfa,
-    tok_key_and,
-    tok_key_array,
-    tok_key_begin,
-    tok_key_boolean,
-    tok_key_char,
-    tok_key_const,
-    tok_key_div,
-    tok_key_do,
-    tok_key_downto,
-    tok_key_else,
-    tok_key_end,
-    tok_key_false,
-    tok_key_for,
-    tok_key_if,
-    tok_key_integer,
-    tok_key_mod,
-    tok_key_not,
-    tok_key_of,
-    tok_key_or,
-    tok_key_procedure,
-    tok_key_program,
-    tok_key_real,
-    tok_key_text,
-    tok_key_then,
-    tok_key_to,
-    tok_key_true,
-    tok_key_var,
-    tok_key_while
-    tok_end
+    tok_kw_alfa,
+    tok_kw_and,
+    tok_kw_array,
+    tok_kw_begin,
+    tok_kw_boolean,
+    tok_kw_char,
+    tok_kw_const,
+    tok_kw_div,
+    tok_kw_do,
+    tok_kw_downto,
+    tok_kw_else,
+    tok_kw_end,
+    tok_kw_false,
+    tok_kw_for,
+    tok_kw_if,
+    tok_kw_integer,
+    tok_kw_mod,
+    tok_kw_not,
+    tok_kw_of,
+    tok_kw_or,
+    tok_kw_procedure,
+    tok_kw_program,
+    tok_kw_real,
+    tok_kw_text,
+    tok_kw_then,
+    tok_kw_to,
+    tok_kw_true,
+    tok_kw_var,
+    tok_kw_while,
+    tok_undef
 } token_kind;
 
 typedef struct __token
@@ -69,3 +69,9 @@ typedef struct __token
     string lexeme;
     token_kind kind;
 } token;
+
+void tokenInit(token *);
+
+void tokenClean(token *);
+
+char * tokenKindString(token_kind);
