@@ -8,6 +8,7 @@
 #include "state.h"
 #include "token.h"
 
+// Function pointer type for actions
 typedef void (*action_func)(state, token *, char);
 
 typedef struct __transition
@@ -16,7 +17,7 @@ typedef struct __transition
     action_func action;
 } transition;
 
-/* Actions */
+// Shortened action names
 #define AAB acceptBuild
 #define AAI acceptIntPushBack
 #define AAP acceptPushBack
@@ -26,6 +27,7 @@ typedef struct __transition
 #define AIG ignore
 #define APD processDirective
 
+/* Actions */
 void acceptBuild(state, token *, char);
 void acceptIntPushBack(state, token *, char);
 void acceptPushBack(state, token *, char);
@@ -35,6 +37,10 @@ void error(state, token *, char);
 void ignore(state, token *, char);
 void processDirective(state, token *, char);
 
+/**
+ * Transition table. Rows represent states, columns represent character
+ * classes. A row's default transition is defined above it.
+ **/
 transition trans_table [state_num][ccls_num] =
 {
           /* ad_fz, e    , 09   , pm   , ast  , eq   , lt    */
@@ -136,6 +142,7 @@ transition trans_table [state_num][ccls_num] =
              DEF, DEF, DEF, DEF, DEF}
 };
 
+/* Helper functions */
 char_class lookupCharClass(char);
 token_kind classify(state s, char c);
 
@@ -146,12 +153,19 @@ state performAction(state s, char c, token *t)
     return trans_table[s][ccls].next;
 }
 
+/**
+ * Appends the given character and accepts the current token.
+ **/
 void acceptBuild(state s, token *t, char c)
 {
     stringAppend(&t->lexeme, c);
     t->kind = classify(s, c);
 }
 
+/**
+ * Strips the last character from the lexeme (a dot), pushes back the current
+ * character (a dot), and accepts the token (an integer constant).
+ **/
 void acceptIntPushBack(state s, token *t, char c)
 {
     string str;
@@ -164,23 +178,36 @@ void acceptIntPushBack(state s, token *t, char c)
     t->kind = classify(s, c);
 }
 
+/**
+ * Pushes back the current character and accepts the token.
+ **/
 void acceptPushBack(state s, token *t, char c)
 {
     pushBack(1);
     t->kind = classify(s, c);
 }
 
+/**
+ * Builds the token by appending the given character.
+ **/
 void build(state s, token *t, char c)
 {
     stringAppend(&t->lexeme, c);
 }
 
+/**
+ * Discards the current token, preparing it to be built anew.
+ **/
 void discard(state s, token *t, char c)
 {
     tokenClean(t);
     tokenInit(t);
 }
 
+/**
+ * Discards the current token, preparing it to be built anew. Also prints
+ * an error message and the line the error occurred on.
+ **/
 void error(state s, token *t, char c)
 {
     if (c == '\n')
@@ -192,10 +219,17 @@ void error(state s, token *t, char c)
     tokenInit(t);
 }
 
+/**
+ * Ignores the given character. Nothing is changed.
+ **/
 void ignore(state s, token *t, char c)
 {
 }
 
+/**
+ * Processes directives, expecting them to be well-formed. The given character
+ * should be a dollar sign.
+ **/
 void processDirective(state s, token *t, char c)
 {
     char test, d, f;
@@ -222,6 +256,10 @@ void processDirective(state s, token *t, char c)
     pushBack(1);
 }
 
+/**
+ * Classifies the type of token given the current state and input. This should
+ * only be called when accepting, therefore tok_undef should never be returned.
+ **/
 token_kind classify(state s, char c)
 {
     if (s == state_begin)
@@ -280,6 +318,9 @@ token_kind classify(state s, char c)
     return tok_undef;
 }
 
+/**
+ * Looks up the character class for the given character.
+ **/
 char_class lookupCharClass(char c)
 {
     if (c == 'e' || c == 'E')

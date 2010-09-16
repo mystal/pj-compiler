@@ -8,4 +8,5 @@ typedef enum __directive
     dir_token_echo
 } directive;
 
+/* Flags for current directives */
 extern bool directives[];

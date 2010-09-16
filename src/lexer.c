@@ -11,12 +11,14 @@
 #include "token.h"
 #include "state.h"
 
+/* Helper functions */
 void classifyLiteral(token *);
 void lookupKeyword(token *);
 bool strneqi(char *, char *, unsigned int);
 
 void lexerInit()
 {
+    // Initialize first character so getChar fills the buffer
     lineBuffer[0] = '\0';
 }
 
@@ -24,6 +26,7 @@ bool getToken(token *t)
 {
     state curState = state_begin;
     char curChar;
+    // Main finite state machine loop
     while (curState != state_end)
     {
         curChar = getChar();
@@ -31,6 +34,7 @@ bool getToken(token *t)
             return false;
         curState = performAction(curState, curChar, t);
     }
+    // Reclassify tokens where needed
     if (t->kind == tok_literal)
         classifyLiteral(t);
     else if (t->kind == tok_id)
@@ -45,6 +49,9 @@ bool getToken(token *t)
     return true;
 }
 
+/**
+ * Reclassifies literals depending on their length.
+ **/
 void classifyLiteral(token *t)
 {
     if (t->lexeme.len == 1)
@@ -55,6 +62,9 @@ void classifyLiteral(token *t)
         t->kind = tok_string_const;
 }
 
+/**
+ * Looks up if the given token is a keyword.
+ **/
 void lookupKeyword(token *t)
 {
     unsigned int n = t->lexeme.len;
@@ -140,6 +150,9 @@ void lookupKeyword(token *t)
     }
 }
 
+/**
+ * Performs a case-insensitive comparison for equality on two strings.
+ **/
 bool strneqi(char *s1, char *s2, unsigned int n)
 {
     for (unsigned int i = 0; i < n; i++)

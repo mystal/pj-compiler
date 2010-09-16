@@ -1,5 +1,6 @@
 #pragma once
 
+// Shortened names for use in transition table
 #define EN state_end
 #define BE state_begin
 #define ID state_id
