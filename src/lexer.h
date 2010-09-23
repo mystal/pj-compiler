@@ -1,11 +1,10 @@
 #pragma once
 
-#include <stdbool.h>
-
 #include "token.h"
 
 /**
- * Gets the next token and places it in the given pointer. Returns
- * true on success and false on failure.
+ * Gets the next token and places it in the given pointer. If an
+ * undefined token is returned, an error has occurred, likely the
+ * end of the file has been reached.
  **/
-bool getToken(token *);
+void lexerGetToken(token *);

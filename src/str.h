@@ -15,4 +15,6 @@ void stringFree(string *);
 
 void stringAppend(string *, char);
 
+void stringRemove(string *, unsigned int);
+
 int stringToCString(string *, char *, unsigned int);

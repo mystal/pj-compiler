@@ -5,10 +5,12 @@ int main()
 {
     token t;
     tokenInit(&t);
-    while (getToken(&t))
+    lexerGetToken(&t);
+    while (t.kind != tok_undef)
     {
         tokenClean(&t);
         tokenInit(&t);
+        lexerGetToken(&t);
     }
     tokenClean(&t);
 }

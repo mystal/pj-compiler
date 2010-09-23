@@ -30,6 +30,11 @@ void stringAppend(string *str, char c)
     str->buffer[str->len++] = c;
 }
 
+void stringRemove(string *str, unsigned int n)
+{
+    str->len -= n;
+}
+
 int stringToCString(string *str, char *cstr, unsigned int n)
 {
     if (n > str->len)

@@ -3,7 +3,6 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 
 #include "buffer.h"
 #include "directive.h"
@@ -16,7 +15,7 @@ void classifyLiteral(token *);
 void lookupKeyword(token *);
 bool strneqi(char *, char *, unsigned int);
 
-bool getToken(token *t)
+void lexerGetToken(token *t)
 {
     state curState = state_begin;
     char curChar;
@@ -25,7 +24,7 @@ bool getToken(token *t)
     {
         curChar = bufferGetChar();
         if (curChar == '\0')
-            return false;
+            return;
         curState = performAction(curState, curChar, t);
     }
     // Reclassify tokens where needed
@@ -40,7 +39,6 @@ bool getToken(token *t)
         fprintf(stdout, "Lexeme: %s\tLength: %d\tKind: %s\n",
                 cstr, t->lexeme.len, tokenKindString(t->kind));
     }
-    return true;
 }
 
 /**

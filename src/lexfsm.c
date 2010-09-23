@@ -168,12 +168,7 @@ void acceptBuild(state s, token *t, char c)
  **/
 void acceptIntPushBack(state s, token *t, char c)
 {
-    string str;
-    stringInit(&str);
-    for (unsigned int i = 0; i < t->lexeme.len-1; i++)
-        stringAppend(&str, t->lexeme.buffer[i]);
-    stringFree(&t->lexeme);
-    t->lexeme = str;
+    stringRemove(&t->lexeme, 1);
     bufferPushBack(2);
     t->kind = classify(s, c);
 }
