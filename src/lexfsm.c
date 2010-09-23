@@ -174,7 +174,7 @@ void acceptIntPushBack(state s, token *t, char c)
         stringAppend(&str, t->lexeme.buffer[i]);
     stringFree(&t->lexeme);
     t->lexeme = str;
-    pushBack(2);
+    bufferPushBack(2);
     t->kind = classify(s, c);
 }
 
@@ -183,7 +183,7 @@ void acceptIntPushBack(state s, token *t, char c)
  **/
 void acceptPushBack(state s, token *t, char c)
 {
-    pushBack(1);
+    bufferPushBack(1);
     t->kind = classify(s, c);
 }
 
@@ -214,7 +214,8 @@ void error(state s, token *t, char c)
         fprintf(stderr, "Unexpected symbol \'\\n\'");
     else
         fprintf(stderr, "Unexpected symbol \'%c\'", c);
-    fprintf(stderr, " at (%d,%d):\n%s", getLineNumber(), getBufferPos(), lineBuffer);
+    fprintf(stderr, " at (%d,%d):\n", bufferLineNumber(), bufferPos());
+    bufferPrint(stderr);
     tokenClean(t);
     tokenInit(t);
 }
@@ -235,8 +236,8 @@ void processDirective(state s, token *t, char c)
     char test, d, f;
     do
     {
-        d = getChar();
-        f = getChar();
+        d = bufferGetChar();
+        f = bufferGetChar();
         if (d == 'l' || d == 'L')
         {
             if (f == '+')
@@ -251,9 +252,9 @@ void processDirective(state s, token *t, char c)
             else
                 directives[dir_token_echo] = false;
         }
-        test = getChar();
+        test = bufferGetChar();
     } while (test == ',');
-    pushBack(1);
+    bufferPushBack(1);
 }
 
 /**

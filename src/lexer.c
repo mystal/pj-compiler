@@ -16,12 +16,6 @@ void classifyLiteral(token *);
 void lookupKeyword(token *);
 bool strneqi(char *, char *, unsigned int);
 
-void lexerInit()
-{
-    // Initialize first character so getChar fills the buffer
-    lineBuffer[0] = '\0';
-}
-
 bool getToken(token *t)
 {
     state curState = state_begin;
@@ -29,7 +23,7 @@ bool getToken(token *t)
     // Main finite state machine loop
     while (curState != state_end)
     {
-        curChar = getChar();
+        curChar = bufferGetChar();
         if (curChar == '\0')
             return false;
         curState = performAction(curState, curChar, t);

@@ -3,7 +3,6 @@
 
 int main()
 {
-    lexerInit();
     token t;
     tokenInit(&t);
     while (getToken(&t))

@@ -6,47 +6,59 @@
 
 #include "directive.h"
 
+// Define size of buffer to hold 100 characters plus \n and \0
+#define BUFFER_SIZE 102
+
+/* Buffer of current line in file */
+char buffer[BUFFER_SIZE] = {'\0'};
+
 unsigned int line = 1;
-unsigned int bufferPos = 0;
+unsigned int pos = 0;
 
 /* Fills the buffer with the next line in the file from stdin. */
 bool fillBuffer();
 
-char getChar()
+char bufferGetChar()
 {
     // If reached end of line then refill buffer
-    if (lineBuffer[bufferPos] == '\0')
+    if (buffer[pos] == '\0')
         if (!fillBuffer())
-            return '\0';
-    return lineBuffer[bufferPos++];
+            return '\0'; //End of file reached
+    return buffer[pos++];
 }
 
-void pushBack(unsigned int i)
+void bufferPushBack(unsigned int i)
 {
-    bufferPos -= i;
+    pos -= i;
 }
 
-unsigned int getLineNumber()
+unsigned int bufferLineNumber()
 {
     return line - 1;
 }
 
-unsigned int getBufferPos()
+unsigned int bufferPos()
 {
-    return bufferPos - 1;
+    return pos - 1;
+}
+
+void bufferPrint(FILE *f)
+{
+    fprintf(f, "%s", buffer);
 }
 
 bool fillBuffer()
 {
-    if (fgets(lineBuffer, BUFFER_SIZE-1, stdin) != NULL)
+    if (fgets(buffer, BUFFER_SIZE-1, stdin) != NULL)
     {
-        for (int i = 0; lineBuffer[i] != '\0'; i++)
+        for (int i = 0; buffer[i] != '\0'; i++)
             // Validate input, change invalid characters to spaces
-            if (!isprint(lineBuffer[i]) && lineBuffer[i] != '\n')
-                lineBuffer[i] = ' ';
+            if (!isprint(buffer[i]) && buffer[i] != '\n')
+                buffer[i] = ' ';
         if (directives[dir_listing])
-            fprintf(stdout, "%d: %s", line++, lineBuffer);
-        bufferPos = 0;
+            fprintf(stdout, "%d: %s", line, buffer);
+        line++;
+        pos = 0;
         return true;
     }
     else
