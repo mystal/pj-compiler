@@ -1,0 +1,21 @@
+(* now lets see how you handle errors *)
+
+can * exprs / go * across
+
++ line * boundary;     (* it should be able to *)
+
+a * ;
+
+ ;   (* null expression - this is an error *)
+
+(a+b*123)or          (* note - this expression continues into *)
+
+(19/*55);            (* this line                             *)
+
+(id1 id2)+37;
+
+op mod * 52;
+
+();
+
+identifier

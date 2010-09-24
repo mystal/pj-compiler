@@ -1,0 +1,55 @@
+options
+min echo table
+
+terminals
++ - * / div mod and or < <= = >= > <> not fileptr
+id ( ) realcon intgrcon alfacon charcon strngcon true false
+[ ]
+
+nonterminals
+start expr primary term factor builtin relop addop multop constant boolcon
+array
+
+productions
+start     -->    expr                          &
+expr      -->    expr    relop   primary       &
+expr      -->    primary                       &
+primary   -->    primary  addop  term          &
+primary   -->    term                          &
+term      -->    term   multop   factor        &
+term      -->    factor                        &
+factor    -->    array                         &
+factor    -->    builtin                       &
+factor    -->    constant                      &
+factor    -->    id                            &
+factor    -->    fileptr                       &
+factor    -->    not     factor                &
+factor    -->    -       factor                &
+factor    -->    +       factor                &
+factor    -->    (   expr   )                  &
+builtin   -->    id   (   expr   )             &
+array     -->    id   [   expr   ]             &
+relop     -->    <                             &
+relop     -->    <=                            &
+relop     -->    =                             &
+relop     -->    >=                            &
+relop     -->    >                             &
+relop     -->    <>                            &
+addop     -->    +                             &
+addop     -->    -                             &
+addop     -->    or                            &
+multop    -->    *                             &
+multop    -->    /                             &
+multop    -->    div                           &
+multop    -->    mod                           &
+multop    -->    and                           &
+constant  -->    realcon                       &
+constant  -->    intgrcon                      &
+constant  -->    boolcon                       &
+constant  -->    alfacon                       &
+constant  -->    charcon                       &
+constant  -->    strngcon                      &
+boolcon   -->    true                          &
+boolcon   -->    false                         &
+
+

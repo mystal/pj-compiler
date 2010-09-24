@@ -1,0 +1,25 @@
+(* some relatively simple ones *)
+
+a + b ;
+
+(a < b) or (c < d);
+
+(this or that) mod (old);
+
+(this or that)mod(old); (* scrunched up *)
+
+(* try this simple one *) 856.034e-034+a*b-(9);
+
+(ord('a')+chr(0))<>('abcdef'=a*3);
+
+a+b*c-d<fun(a+b*c);
+
+true and false;
+
+(fileptr^='a');
+
+a[1];
+
+b[i+6];
+
+c[i*2+5];

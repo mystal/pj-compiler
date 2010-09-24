@@ -1,0 +1,9 @@
+(* try the unary operators and all the relops. *)
+a<b<=c=d<>e>=f>g;
+-----a;
+++-+-+-+b; 
+not not not D;
++ - - c / (e);
+(a+b];
+a[a+b);
+(((1+3)*7)+4;

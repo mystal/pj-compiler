@@ -1,0 +1,46 @@
+(* now lets try some tricky ones *)
+
+func-(a*func*(b-2/func/('literal'div'literal')));
+
+(a+(b-(c/(d*abcdef)+a)-b)/c)   ;
+
+(a+(b-(c/(d*abcdef)+a)-b)/c)and(a+(b-(c/(d*abcdef)+a)-b)/c)   ;
+
+a[i+5*b[i+2]*3];
+
+b[3+c[6*i]*e*j[7*d[3*m]]];
+
+(* check for some special cases *)
+
+(a+b)) (* valid expression (a+b) ==> proccall( (a+b) ) *)
+
+a[3]]  (* valid expression too a[3] ==> a[a[3]] := ------ *)
+
+a[i+5*b[i+2]*3]]  (* as is this a[i+5*b[i+2]*3] *)
+
+123+fun('a')*567 ) (* this is valid too *)
+
+a if (* "a" is the expression, "if" is the non-expr token *)
+
+(* now some likely expressions *)
+
+singlevbl;
+
+'quoted string' ;
+
+'c';
+
+'1234567890';
+
+ord(f^)-ord('a');
+
+abcd >= nill;
+
+'quotes '''''' within a string';
+
+'alfa '''''' "';
+
+a[a[1]];
+
+
+
