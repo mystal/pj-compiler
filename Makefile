@@ -3,30 +3,38 @@ CC := clang
 SRCDIR := src
 BUILDDIR := build
 
-BIN := lexer
-SBIN := lexer-static
-OBJS := main.o buffer.o lexer.o lexfsm.o str.o token.o directive.o
+BINS := $(addprefix $(BUILDDIR)/, lexer expr)
+SBINS := $(addsuffix -static, $(BINS))
+OBJS := $(addprefix $(BUILDDIR)/, buffer.o lexer.o lexfsm.o str.o token.o directive.o stack.o)
 
 INCS := 
 LIBS := 
 
-.PHONY: all clean
+.PHONY: all all-static clean
 
-all: $(BUILDDIR)/$(BIN)
+expr: $(BUILDDIR)/expr
 
-static: $(BUILDDIR)/$(SBIN)
+expr-static: $(BUILDDIR)/expr-static
+
+lexer: $(BUILDDIR)/lexer
+
+lexer-static: $(BUILDDIR)/lexer-static
+
+all: $(BINS)
+
+all-static: $(SBINS)
 
 clean:
 	-rm -rf $(BUILDDIR)
 
-$(BUILDDIR)/$(BIN): $(addprefix $(BUILDDIR)/, $(OBJS))
+$(BINS): %: $(OBJS) %driver.o
 	$(CC) $(LIBS) -g -o $@ $^
 
-$(BUILDDIR)/$(SBIN): $(addprefix $(BUILDDIR)/, $(OBJS))
+$(SBINS): %: $(OBJS) %driver.o
 	$(CC) $(LIBS) -static -g -o $@ $^
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
 	$(CC) $(INCS) -std=c99 -g -c -o $@ $<
 
-build:
+$(BUILDDIR):
 	mkdir $(BUILDDIR)
