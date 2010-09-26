@@ -10,15 +10,9 @@ OBJS := $(addprefix $(BUILDDIR)/, buffer.o lexer.o lexfsm.o str.o token.o direct
 INCS := 
 LIBS := 
 
-.PHONY: all all-static clean
+.PHONY: all all-static expr lexer expr-static lexer-static clean
 
-expr: $(BUILDDIR)/expr
-
-expr-static: $(BUILDDIR)/expr-static
-
-lexer: $(BUILDDIR)/lexer
-
-lexer-static: $(BUILDDIR)/lexer-static
+expr lexer expr-static lexer-static: %: $(BUILDDIR)/%
 
 all: $(BINS)
 
