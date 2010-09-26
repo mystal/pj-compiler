@@ -5,12 +5,13 @@ BUILDDIR := build
 
 BINS := $(addprefix $(BUILDDIR)/, lexer expr)
 SBINS := $(addsuffix -static, $(BINS))
-OBJS := $(addprefix $(BUILDDIR)/, buffer.o lexer.o lexfsm.o str.o token.o directive.o stack.o)
+OBJS := $(addprefix $(BUILDDIR)/, \
+	buffer.o lexer.o lexfsm.o str.o token.o directive.o stack.o exprsymbol.o exprparser.o)
 
 INCS := 
 LIBS := 
 
-.PHONY: all all-static expr lexer expr-static lexer-static clean
+.PHONY: all all-static clean expr lexer expr-static lexer-static
 
 expr lexer expr-static lexer-static: %: $(BUILDDIR)/%
 

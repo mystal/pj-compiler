@@ -1,3 +1,4 @@
+#include "exprsymbol.h"
 #include "lexer.h"
 #include "token.h"
 

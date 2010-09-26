@@ -76,7 +76,7 @@ void tokenClean(token *t)
     stringFree(&t->lexeme);
 }
 
-char * tokenKindString(token_kind k)
+char *tokenKindString(token_kind k)
 {
     return kindStrings[k];
 }
