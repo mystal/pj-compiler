@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 
-struct __stack_node;
 typedef struct __stack_node stack_node;
 
 struct __stack_node
@@ -17,10 +16,12 @@ struct __stack
     unsigned int size;
 };
 
-void stackInit(stack *s)
+stack *stackCreate()
 {
+    stack *s = (stack *) malloc(sizeof(stack));
     s->top = NULL;
     s->size = 0;
+    return s;
 }
 
 void stackPush(stack *s, T *e)
@@ -60,12 +61,12 @@ T *stackPeek(stack *s)
     return s->top->elem;
 }
 
-unsigned int stackGetSize(stack *s)
+unsigned int stackSize(stack *s)
 {
     return s->size;
 }
 
-void stackClean(stack *s)
+void stackDestroy(stack *s)
 {
     stack_node *n = s->top;
     stack_node *temp;
@@ -75,6 +76,6 @@ void stackClean(stack *s)
         n = temp->next;
         free(temp);
     }
-    s->top = NULL;
-    s->size = 0;
+    free(s);
+    s = NULL;
 }

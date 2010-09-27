@@ -247,6 +247,20 @@ void processDirective(state s, token *t, char c)
             else
                 directives[dir_token_echo] = false;
         }
+        else if (d == 'p' || d == 'P')
+        {
+            if (f == '+')
+                directives[dir_print_reduction] = true;
+            else
+                directives[dir_print_reduction] = false;
+        }
+        else if (d == 'f' || d == 'F')
+        {
+            if (f == '+')
+                directives[dir_flushed_echo] = true;
+            else
+                directives[dir_flushed_echo] = false;
+        }
         test = bufferGetChar();
     } while (test == ',');
     bufferPushBack(1);

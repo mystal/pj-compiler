@@ -1,3 +1,5 @@
 #pragma once
 
-void expr();
+#include "token.h"
+
+void expr(token *);

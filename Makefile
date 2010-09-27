@@ -6,7 +6,7 @@ BUILDDIR := build
 BINS := $(addprefix $(BUILDDIR)/, lexer expr)
 SBINS := $(addsuffix -static, $(BINS))
 OBJS := $(addprefix $(BUILDDIR)/, \
-	buffer.o lexer.o lexfsm.o str.o token.o directive.o stack.o exprsymbol.o exprparser.o)
+	buffer.o lexer.o lexfsm.o str.o token.o directive.o stack.o exprsymbol.o exprparser.o exprprods.o)
 
 INCS := 
 LIBS := 

@@ -2,7 +2,7 @@
 
 #include "str.h"
 
-char *kindStrings[] = 
+const char *kindStrings[] = 
 {
     "id",
     "fileid",
@@ -76,7 +76,7 @@ void tokenClean(token *t)
     stringFree(&t->lexeme);
 }
 
-char *tokenKindString(token_kind k)
+const char *tokenKindString(token_kind k)
 {
     return kindStrings[k];
 }

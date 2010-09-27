@@ -75,4 +75,4 @@ void tokenInit(token *);
 
 void tokenClean(token *);
 
-char *tokenKindString(token_kind);
+const char *tokenKindString(token_kind);
