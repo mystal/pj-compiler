@@ -54,6 +54,12 @@ typedef enum __nonterminal
     slr_sprime
 } nonterminal;
 
+typedef union __symbol
+{
+    terminal term;
+    nonterminal nonterm;
+} symbol;
+
 bool isExprToken(token_kind);
 
 terminal lookupTerminal(token_kind);
