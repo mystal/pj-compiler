@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 
+#include "exprsymbol.h"
+
 typedef struct __stack_node stack_node;
 
 struct __stack_node
@@ -15,6 +17,8 @@ struct __stack
     stack_node *top;
     unsigned int size;
 };
+
+void stackPrintHelper(stack_node *, FILE *);
 
 stack *stackCreate()
 {
@@ -66,6 +70,12 @@ unsigned int stackSize(stack *s)
     return s->size;
 }
 
+void stackPrint(stack *s, FILE *f)
+{
+    stackPrintHelper(s->top, f);
+    fprintf(f, "\n");
+}
+
 void stackDestroy(stack *s)
 {
     stack_node *n = s->top;
@@ -78,4 +88,13 @@ void stackDestroy(stack *s)
     }
     free(s);
     s = NULL;
+}
+
+void stackPrintHelper(stack_node *n, FILE *f)
+{
+    if (n != NULL)
+    {
+        stackPrintHelper(n->next, f);
+        fprintf(f, " %s", symbolString(n->elem->sym, n->elem->isTerm));
+    }
 }

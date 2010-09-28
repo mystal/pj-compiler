@@ -7,7 +7,7 @@ typedef enum __directive
     dir_listing,
     dir_token_echo,
     dir_print_reduction,
-    dir_flushed_echo
+    dir_flush_echo
 } directive;
 
 /* Flags for current directives */

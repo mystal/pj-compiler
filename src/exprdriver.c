@@ -7,12 +7,11 @@ int main()
 {
     token t;
     tokenInit(&t);
-    do
+    lexerGetToken(&t);
+    while (t.kind != tok_undef)
     {
-        tokenClean(&t);
-        tokenInit(&t);
-        lexerGetToken(&t);
-        while (t.kind != tok_undef && !isExprToken(t.kind))
+        while (t.kind != tok_undef && (!isExprToken(t.kind)
+               || t.kind == tok_rparen || t.kind == tok_rbrack))
         {
             tokenClean(&t);
             tokenInit(&t);
@@ -20,6 +19,6 @@ int main()
         }
         if (t.kind != tok_undef)
             expr(&t);
-    } while (t.kind != tok_undef);
+    }
     tokenClean(&t);
 }

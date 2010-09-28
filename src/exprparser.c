@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "buffer.h"
+#include "directive.h"
 #include "exprprods.h"
 #include "exprsymbol.h"
 #include "exprtables.h"
@@ -24,13 +26,17 @@ void expr(token *t)
     while (true)
     {
         slr_stack_pair *s = stackPeek(stk);
+        terminal term;
         //Handle special case of expr in position 1 and on top of stack
-        if (!s->isTerm && s->sym.nonterm == slr_expr &&
-            stackSize(stk) == 2 && isExprToken(t->kind))
-            break;
-        //No check for non-expression, will return slr_dollar if needed
-        terminal term = lookupTerminal(t->kind);
+        if (!s->isTerm && (s->sym.nonterm == slr_expr || s->sym.nonterm == slr_start)
+            && stackSize(stk) == 2 && (t->kind == tok_rparen || t->kind == tok_rbrack))
+            term = slr_dollar;
+        else
+            //No check for non-expression, will return slr_dollar if needed
+            term = lookupTerminal(t->kind);
         action_entry entry = actions[s->state][term];
+        /*if (directives[dir_print_reduction])
+            fprintf(stdout, "\tState: %d\n", s->state);*/
         if (entry.act == act_shift)
         {
             //Push term and actions[s->state][term].num onto stack
@@ -40,6 +46,12 @@ void expr(token *t)
             s->sym.term = term;
             s->isTerm = true;
             stackPush(stk, s);
+            if (directives[dir_print_reduction])
+            {
+                char cstr[t->lexeme.len+1];
+                stringToCString(&t->lexeme, cstr, t->lexeme.len+1);
+                fprintf(stdout, "SHIFT: %s '%s' \n", symbolString(s->sym, s->isTerm), cstr);
+            }
             //Grab next input symbol
             tokenClean(t);
             tokenInit(t);
@@ -62,14 +74,42 @@ void expr(token *t)
             s->sym.nonterm = p.lhs;
             s->isTerm = false;
             stackPush(stk, s);
-            fprintf(stdout, "Reduced by %d: %s\n", entry.num, prodString(entry.num));
+            if (directives[dir_print_reduction])
+                fprintf(stdout, "REDUCE[%d]: %s\n", entry.num, prodString(entry.num));
         }
-        else if (entry.act == act_accept)
-            break; //Parsing is done
-        else
+        else if (entry.act == act_accept) //Parsing is done
         {
-            //Error routine
-            fprintf(stderr, "Error!\n");
+            if (directives[dir_flush_echo])
+                fprintf(stdout, "ACCEPT\n");
+            break;
+        }
+        else //Error routine
+        {
+            char cstr[t->lexeme.len+1];
+            stringToCString(&t->lexeme, cstr, t->lexeme.len+1);
+            fprintf(stdout, "Error: Unexpected token '%s' found in expression at (%d,%d):\n",
+                    cstr, bufferLineNumber(), bufferPos()-t->lexeme.len);
+            bufferPrint(stdout);
+            if (directives[dir_flush_echo])
+                fprintf(stdout, "\tFlushed Stack:");
+            stackPrint(stk, stdout);
+            if (directives[dir_flush_echo])
+                fprintf(stdout, "\tFlushed Input:");
+            //Flush input until next nonexpression token
+            while (isExprToken(t->kind))
+            {
+                if (directives[dir_flush_echo])
+                {
+                    char cstr[t->lexeme.len+1];
+                    stringToCString(&t->lexeme, cstr, t->lexeme.len+1);
+                    fprintf(stdout, " %s", cstr);
+                }
+                tokenClean(t);
+                tokenInit(t);
+                lexerGetToken(t);
+            }
+            if (directives[dir_flush_echo])
+                fprintf(stdout, "\n");
             break;
         }
     }
@@ -80,4 +120,5 @@ void expr(token *t)
         free(s);
     }
     stackDestroy(stk);
+    //No push-back, next token ready for driver above to use
 }

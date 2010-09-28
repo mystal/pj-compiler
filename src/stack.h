@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "exprsymbol.h"
 
@@ -24,5 +25,7 @@ T *stackPop(stack *);
 T *stackPeek(stack *);
 
 unsigned int stackSize(stack *);
+
+void stackPrint(stack *, FILE *);
 
 void stackDestroy(stack *);

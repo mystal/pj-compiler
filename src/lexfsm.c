@@ -206,11 +206,11 @@ void discard(state s, token *t, char c)
 void error(state s, token *t, char c)
 {
     if (c == '\n')
-        fprintf(stderr, "Unexpected symbol \'\\n\'");
+        fprintf(stdout, "Unexpected symbol \'\\n\'");
     else
-        fprintf(stderr, "Unexpected symbol \'%c\'", c);
-    fprintf(stderr, " at (%d,%d):\n", bufferLineNumber(), bufferPos());
-    bufferPrint(stderr);
+        fprintf(stdout, "Unexpected symbol \'%c\'", c);
+    fprintf(stdout, " at (%d,%d):\n", bufferLineNumber(), bufferPos());
+    bufferPrint(stdout);
     tokenClean(t);
     tokenInit(t);
 }
@@ -257,9 +257,9 @@ void processDirective(state s, token *t, char c)
         else if (d == 'f' || d == 'F')
         {
             if (f == '+')
-                directives[dir_flushed_echo] = true;
+                directives[dir_flush_echo] = true;
             else
-                directives[dir_flushed_echo] = false;
+                directives[dir_flush_echo] = false;
         }
         test = bufferGetChar();
     } while (test == ',');

@@ -67,6 +67,56 @@ terminal tokToSLR[] =
     slr_dollar, /* tok_undef */
 };
 
+const char *termStrings[29] =
+{
+    "+",
+    "-",
+    "*",
+    "/",
+    "div",
+    "mod",
+    "and",
+    "or",
+    "<",
+    "<=",
+    "=",
+    ">=",
+    ">",
+    "<>",
+    "not",
+    "fileptr",
+    "id",
+    "(",
+    ")",
+    "realcon",
+    "intgrcon",
+    "alfacon",
+    "charcon",
+    "strngcon",
+    "true",
+    "false",
+    "[",
+    "]",
+    "$"
+};
+
+const char *nontermStrings[13] =
+{
+    "start",
+    "expr",
+    "primary",
+    "term",
+    "factor",
+    "builtin",
+    "relop",
+    "addop",
+    "multop",
+    "constant",
+    "boolcon",
+    "array",
+    "s'"
+};
+
 bool isExprToken(token_kind t)
 {
     if (tokToSLR[t] != slr_dollar)
@@ -77,4 +127,9 @@ bool isExprToken(token_kind t)
 terminal lookupTerminal(token_kind t)
 {
     return tokToSLR[t];
+}
+
+const char *symbolString(symbol sym, bool isTerm)
+{
+    return isTerm ? termStrings[sym.term] : nontermStrings[sym.nonterm];
 }

@@ -63,3 +63,5 @@ typedef union __symbol
 bool isExprToken(token_kind);
 
 terminal lookupTerminal(token_kind);
+
+const char *symbolString(symbol, bool);
