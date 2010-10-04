@@ -233,33 +233,16 @@ void processDirective(state s, token *t, char c)
     {
         d = bufferGetChar();
         f = bufferGetChar();
-        if (d == 'l' || d == 'L')
+        for (unsigned int i = 0; i < dir_num; i++)
         {
-            if (f == '+')
-                directives[dir_listing] = true;
-            else
-                directives[dir_listing] = false;
-        }
-        else if (d == 't' || d == 'T')
-        {
-            if (f == '+')
-                directives[dir_token_echo] = true;
-            else
-                directives[dir_token_echo] = false;
-        }
-        else if (d == 'p' || d == 'P')
-        {
-            if (f == '+')
-                directives[dir_print_reduction] = true;
-            else
-                directives[dir_print_reduction] = false;
-        }
-        else if (d == 'f' || d == 'F')
-        {
-            if (f == '+')
-                directives[dir_flush_echo] = true;
-            else
-                directives[dir_flush_echo] = false;
+            if (tolower(d) == dirChars[i])
+            {
+                if (f == '+')
+                    directives[i] = true;
+                else
+                    directives[i] = false;
+                break;
+            }
         }
         test = bufferGetChar();
     } while (test == ',');

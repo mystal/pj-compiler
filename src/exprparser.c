@@ -35,8 +35,6 @@ void expr(token *t)
             //No check for non-expression, will return slr_dollar if needed
             term = lookupTerminal(t->kind);
         action_entry entry = actions[s->state][term];
-        /*if (directives[dir_print_reduction])
-            fprintf(stdout, "\tState: %d\n", s->state);*/
         if (entry.act == act_shift)
         {
             //Push term and actions[s->state][term].num onto stack
@@ -120,5 +118,5 @@ void expr(token *t)
         free(s);
     }
     stackDestroy(stk);
-    //No push-back, next token ready for driver above to use
+    //No push-back, next token ready for caller to use
 }

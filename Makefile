@@ -26,7 +26,7 @@ $(BINS): %: $(OBJS) %driver.o
 	$(CC) $(LIBS) -g -o $@ $^
 
 $(SBINS): %: $(OBJS) %driver.o
-	$(CC) $(LIBS) -static -g -o $@ $^
+	$(CC) $(LIBS) -std=c99 -static -g -o $@ $^
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c | $(BUILDDIR)
 	$(CC) $(INCS) -std=c99 -g -c -o $@ $<
