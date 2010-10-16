@@ -13,6 +13,15 @@
 #include "stack.h"
 #include "token.h"
 
+typedef struct __slr_stack_pair
+{
+    unsigned int state : 8;
+    symbol sym;
+    bool isTerm;
+} slr_stack_pair;
+
+void flushStack(stack *);
+
 void expr(token *t)
 {
     //Initialize stack
@@ -25,7 +34,7 @@ void expr(token *t)
     //Perform SLR algorithm
     while (true)
     {
-        slr_stack_pair *s = stackPeek(stk);
+        slr_stack_pair *s = (slr_stack_pair *) stackPeek(stk);
         terminal term;
         //Handle special case of expr in position 1 and on top of stack
         if (!s->isTerm && (s->sym.nonterm == slr_expr || s->sym.nonterm == slr_start)
@@ -62,13 +71,13 @@ void expr(token *t)
             production p = productions[entry.num];
             for (unsigned int i = 0; i < p.rhsLen; i++)
             {
-                s = stackPop(stk);
+                s = (slr_stack_pair *) stackPop(stk);
                 free(s);
             }
             //Push gotox[top stack state][lhs] state and lhs onto stack
             //Allocate memory for pushed item
             s = (slr_stack_pair *) malloc(sizeof(slr_stack_pair));
-            s->state = gotox[stackPeek(stk)->state][p.lhs];
+            s->state = gotox[((slr_stack_pair *) stackPeek(stk))->state][p.lhs];
             s->sym.nonterm = p.lhs;
             s->isTerm = false;
             stackPush(stk, s);
@@ -89,10 +98,11 @@ void expr(token *t)
                     cstr, bufferLineNumber(), bufferPos()-t->lexeme.len);
             bufferPrint(stdout);
             if (directives[dir_flush_echo])
+            {
                 fprintf(stdout, "\tFlushed Stack:");
-            stackPrint(stk, stdout);
-            if (directives[dir_flush_echo])
-                fprintf(stdout, "\tFlushed Input:");
+                flushStack(stk);
+                fprintf(stdout, "\n\tFlushed Input:");
+            }
             //Flush input until next nonexpression token
             while (isExprToken(t->kind))
             {
@@ -114,9 +124,20 @@ void expr(token *t)
     //Cleanup stack
     while (stackSize(stk) > 1)
     {
-        slr_stack_pair *s = stackPop(stk);
+        slr_stack_pair *s = (slr_stack_pair *) stackPop(stk);
         free(s);
     }
     stackDestroy(stk);
     //No push-back, next token ready for caller to use
+}
+
+void flushStack(stack *stk)
+{
+    if (stackSize(stk) > 1)
+    {
+        slr_stack_pair *s = (slr_stack_pair *) stackPop(stk);
+        flushStack(stk);
+        fprintf(stdout, " %s", symbolString(s->sym, s->isTerm));
+        free(s);
+    }
 }

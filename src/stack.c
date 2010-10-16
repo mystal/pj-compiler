@@ -2,13 +2,11 @@
 
 #include <stdlib.h>
 
-#include "exprsymbol.h"
-
 typedef struct __stack_node stack_node;
 
 struct __stack_node
 {
-    T *elem;
+    void *elem;
     stack_node *next;
 };
 
@@ -18,8 +16,6 @@ struct __stack
     unsigned int size;
 };
 
-void stackPrintHelper(stack_node *, FILE *);
-
 stack *stackCreate()
 {
     stack *s = (stack *) malloc(sizeof(stack));
@@ -28,7 +24,7 @@ stack *stackCreate()
     return s;
 }
 
-void stackPush(stack *s, T *e)
+void stackPush(stack *s, void *e)
 {
     if (s->size == 0)
     {
@@ -46,11 +42,11 @@ void stackPush(stack *s, T *e)
     s->size++;
 }
 
-T *stackPop(stack *s)
+void *stackPop(stack *s)
 {
     if (s->size == 0)
         return NULL;
-    T *e = s->top->elem;
+    void *e = s->top->elem;
     stack_node *temp = s->top;
     s->top = temp->next;
     free(temp);
@@ -58,7 +54,7 @@ T *stackPop(stack *s)
     return e;
 }
 
-T *stackPeek(stack *s)
+void *stackPeek(stack *s)
 {
     if (s->size == 0)
         return NULL;
@@ -68,12 +64,6 @@ T *stackPeek(stack *s)
 unsigned int stackSize(stack *s)
 {
     return s->size;
-}
-
-void stackPrint(stack *s, FILE *f)
-{
-    stackPrintHelper(s->top, f);
-    fprintf(f, "\n");
 }
 
 void stackDestroy(stack *s)
@@ -88,13 +78,4 @@ void stackDestroy(stack *s)
     }
     free(s);
     s = NULL;
-}
-
-void stackPrintHelper(stack_node *n, FILE *f)
-{
-    if (n != NULL)
-    {
-        stackPrintHelper(n->next, f);
-        fprintf(f, " %s", symbolString(n->elem->sym, n->elem->isTerm));
-    }
 }
