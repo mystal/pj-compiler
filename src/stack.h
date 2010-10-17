@@ -2,15 +2,17 @@
 
 #include <stdbool.h>
 
+#define T void
+
 typedef struct __stack stack;
 
 stack *stackCreate();
 
-void stackPush(stack *, void *);
+void stackPush(stack *, T *);
 
-void *stackPop(stack *);
+T *stackPop(stack *);
 
-void *stackPeek(stack *);
+T *stackPeek(stack *);
 
 unsigned int stackSize(stack *);
 

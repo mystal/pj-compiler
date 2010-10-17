@@ -6,7 +6,7 @@ typedef struct __stack_node stack_node;
 
 struct __stack_node
 {
-    void *elem;
+    T *elem;
     stack_node *next;
 };
 
@@ -24,7 +24,7 @@ stack *stackCreate()
     return s;
 }
 
-void stackPush(stack *s, void *e)
+void stackPush(stack *s, T *e)
 {
     if (s->size == 0)
     {
@@ -42,11 +42,11 @@ void stackPush(stack *s, void *e)
     s->size++;
 }
 
-void *stackPop(stack *s)
+T *stackPop(stack *s)
 {
     if (s->size == 0)
         return NULL;
-    void *e = s->top->elem;
+    T *e = s->top->elem;
     stack_node *temp = s->top;
     s->top = temp->next;
     free(temp);
@@ -54,7 +54,7 @@ void *stackPop(stack *s)
     return e;
 }
 
-void *stackPeek(stack *s)
+T *stackPeek(stack *s)
 {
     if (s->size == 0)
         return NULL;
