@@ -60,7 +60,7 @@ typedef union __symbol
     nonterminal nonterm;
 } symbol;
 
-bool isExprToken(token_kind);
+bool isExprToken(token *);
 
 terminal lookupTerminal(token_kind);
 

@@ -10,13 +10,23 @@
 #include "token.h"
 #include "state.h"
 
-/* Helper functions */
+/* The last token read */
+token curToken;
+
+/* Private helper functions */
 void classifyLiteral(token *);
 void lookupKeyword(token *);
 bool strneqi(char *, char *, unsigned int);
 
-void lexerGetToken(token *t)
+void lexerInit()
 {
+    tokenInit(&curToken);
+}
+
+token *lexerGetToken()
+{
+    tokenClean(&curToken);
+    tokenInit(&curToken);
     state curState = state_begin;
     char curChar;
     // Main finite state machine loop
@@ -24,21 +34,27 @@ void lexerGetToken(token *t)
     {
         curChar = bufferGetChar();
         if (curChar == '\0')
-            return;
-        curState = performAction(curState, curChar, t);
+            return &curToken;
+        curState = performAction(curState, curChar, &curToken);
     }
-    // Reclassify tokens where needed
-    if (t->kind == tok_literal)
-        classifyLiteral(t);
-    else if (t->kind == tok_id)
-        lookupKeyword(t);
+    // Reclassify token where needed
+    if (curToken.kind == tok_literal)
+        classifyLiteral(&curToken);
+    else if (curToken.kind == tok_id)
+        lookupKeyword(&curToken);
     if (directives[dir_token_echo])
     {
-        char cstr[t->lexeme.len+1];
-        stringToCString(&t->lexeme, cstr, t->lexeme.len+1);
+        char cstr[curToken.lexeme.len+1];
+        stringToCString(&curToken.lexeme, cstr, curToken.lexeme.len+1);
         fprintf(stdout, "Lexeme: %s\tLength: %d\tKind: %s\n",
-                cstr, t->lexeme.len, tokenKindString(t->kind));
+                cstr, curToken.lexeme.len, tokenKindString(curToken.kind));
     }
+    return &curToken;
+}
+
+void lexerCleanup()
+{
+    tokenClean(&curToken);
 }
 
 /**

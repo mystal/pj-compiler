@@ -3,8 +3,17 @@
 #include "token.h"
 
 /**
- * Gets the next token and places it in the given pointer. If an
- * undefined token is returned, an error has occurred, likely the
- * end of the file has been reached.
+ * Initializes the lexical analyzer.
  **/
-void lexerGetToken(token *);
+void lexerInit(void);
+
+/**
+ * Cleans up the lexical analyzer.
+ **/
+void lexerCleanup(void);
+
+/**
+ * Gets the next token. If an undefined token is returned, an error has
+ * occurred, likely the end of the file has been reached.
+ **/
+token *lexerGetToken(void);

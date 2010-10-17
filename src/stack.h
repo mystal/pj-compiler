@@ -6,7 +6,7 @@
 
 typedef struct __stack stack;
 
-stack *stackCreate();
+stack *stackCreate(void);
 
 void stackPush(stack *, T *);
 

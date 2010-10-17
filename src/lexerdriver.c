@@ -3,14 +3,9 @@
 
 int main()
 {
-    token t;
-    tokenInit(&t);
-    lexerGetToken(&t);
-    while (t.kind != tok_undef)
-    {
-        tokenClean(&t);
-        tokenInit(&t);
-        lexerGetToken(&t);
-    }
-    tokenClean(&t);
+    lexerInit();
+    token *t = lexerGetToken();
+    while (t->kind != tok_undef)
+        t = lexerGetToken();
+    lexerCleanup();
 }

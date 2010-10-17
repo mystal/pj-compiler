@@ -16,7 +16,7 @@ unsigned int line = 1;
 unsigned int pos = 0;
 
 /* Fills the buffer with the next line in the file from stdin. */
-bool fillBuffer();
+bool fillBuffer(void);
 
 char bufferGetChar()
 {

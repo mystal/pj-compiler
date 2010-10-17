@@ -117,9 +117,9 @@ const char *nontermStrings[13] =
     "s'"
 };
 
-bool isExprToken(token_kind t)
+bool isExprToken(token *t)
 {
-    if (tokToSLR[t] != slr_dollar)
+    if (tokToSLR[t->kind] != slr_dollar)
         return true;
     return false;
 }

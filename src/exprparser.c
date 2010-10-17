@@ -60,9 +60,7 @@ void expr(token *t)
                 fprintf(stdout, "SHIFT: %s '%s' \n", symbolString(s->sym, s->isTerm), cstr);
             }
             //Grab next input symbol
-            tokenClean(t);
-            tokenInit(t);
-            lexerGetToken(t);
+            t = lexerGetToken();
         }
         else if (entry.act == act_reduce)
         {
@@ -104,7 +102,7 @@ void expr(token *t)
                 fprintf(stdout, "\n\tFlushed Input:");
             }
             //Flush input until next nonexpression token
-            while (isExprToken(t->kind))
+            while (isExprToken(t))
             {
                 if (directives[dir_flush_echo])
                 {
@@ -112,9 +110,7 @@ void expr(token *t)
                     stringToCString(&t->lexeme, cstr, t->lexeme.len+1);
                     fprintf(stdout, " %s", cstr);
                 }
-                tokenClean(t);
-                tokenInit(t);
-                lexerGetToken(t);
+                t = lexerGetToken();
             }
             if (directives[dir_flush_echo])
                 fprintf(stdout, "\n");

@@ -5,20 +5,15 @@
 
 int main()
 {
-    token t;
-    tokenInit(&t);
-    lexerGetToken(&t);
-    while (t.kind != tok_undef)
+    lexerInit();
+    token *t = lexerGetToken();
+    while (t->kind != tok_undef)
     {
-        while (t.kind != tok_undef && (!isExprToken(t.kind)
-               || t.kind == tok_rparen || t.kind == tok_rbrack))
-        {
-            tokenClean(&t);
-            tokenInit(&t);
-            lexerGetToken(&t);
-        }
-        if (t.kind != tok_undef)
-            expr(&t);
+        while (t->kind != tok_undef && (!isExprToken(t)||
+               t->kind == tok_rparen || t->kind == tok_rbrack))
+            t = lexerGetToken();
+        if (t->kind != tok_undef)
+            expr(t);
     }
-    tokenClean(&t);
+    lexerCleanup();
 }

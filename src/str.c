@@ -1,6 +1,6 @@
 #include "str.h"
 
-#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 void stringInit(string *str)

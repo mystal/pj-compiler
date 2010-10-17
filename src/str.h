@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdlib.h>
+#include <stddef.h>
 
 typedef struct __string
 {
