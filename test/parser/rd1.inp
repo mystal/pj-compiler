@@ -1,0 +1,30 @@
+(*$r+,i+*)
+program teststatments(output);
+
+begin
+if true = 12 then
+   write(output, 12 * 3 + 6 - 8 or 16)
+else
+   write(output, '10 letters');
+while true <> false do begin
+   for i := j to j + k - 12 do
+      l := l + chr(23);
+   begin end;
+   begin begin end end;
+   if x = true then
+      x := 12 > 13
+   end;
+dosomething(parameters, are, here);
+nowletstryaprocedurewithoutparameters;
+for adowntoloop := 1000 downto 1 + x do begin
+   if nestedonelevel then
+      if nestedtwolevels then
+         if nextedthreelevels then
+            while not done do begin
+               end
+         else
+            callprocedure
+      else
+         callprocedure
+   end
+end (* teststatements *).

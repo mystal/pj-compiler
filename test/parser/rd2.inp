@@ -1,0 +1,60 @@
+(*$r+,i+*)
+program testdeclarations(input, output, anotherfile);
+
+const
+   one = 1;
+   two = 2;
+
+var
+   three: integer;
+   four: real;
+   five: alfa;
+
+procedure six;
+
+   const
+      one = '$';
+
+   var
+      two: text;
+
+   procedure nested(a:real; few:real; parameters: real);
+
+      var
+         hello: integer;
+
+      procedure nestedagain;
+
+         begin
+         never := called
+         end (* nestedagain *);
+
+      begin (* nested *)
+      a := few + parameters
+      end (* nested *);
+
+   procedure noparameters;
+
+      begin
+      two := two + 1;
+      identifier := identifier + identifier
+      end (* noparameters *);
+
+   begin (* six *)
+   two := 12;
+   noparameters;
+   nested(1, 2, 3)
+   end; (* six *)
+
+procedure withparameters(one: char; two: alfa);
+
+   const
+      hello = 12;
+
+   begin
+   two := hello
+   end (* withparameters *);
+
+begin (* testdeclarations *)
+message := 'time to go'
+end. (* testdeclarations *)

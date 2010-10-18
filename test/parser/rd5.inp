@@ -1,0 +1,41 @@
+(*$r-,i- see what output looks like with errors and no tracing *)
+program withsomeerrors(input, output, (* missing identifier *));
+
+const
+   missingequal '=';
+   missingvalue = ;
+   missingsemicolon = ';'
+   goodconst = 345.345;
+
+var
+   wrongsymbol; integer;
+
+procedure(* no name *)(parameters(* without types *));
+
+   begin
+   variable := expression;
+   (* missing procedure name *)(here, are, parameters);
+   proccall(a, missing comma);
+   anothercall(an, extra,, comma);
+   if expression then
+      if expression then
+         while expression do
+            for i := 1 to 10 do
+               statement;
+      else
+         noticethesemicolon
+   else
+      proccall;
+   anotherprocedurecall;
+   variable := (expression + within * parens);
+   write(output, 12 + 34)
+   end (* no semicolon here *)
+
+begin (* main program *)
+begin; (* an empty statement *)end;
+for i ;= wrongsymbol downto something do
+   variable := expression;
+for i := missingsymbol (* to *) something do
+   variable := not doneyet
+end (* missing period *)
+(* this is the last line *)

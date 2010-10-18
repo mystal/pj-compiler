@@ -1,0 +1,56 @@
+(*$r+,i+*)
+program testsomemore(input, output, file1, file2);
+
+const
+   one = 1;
+   pi = 3.14159;
+   phrase = 'some words';
+   julyishot = true;
+   lettero = 'o';
+
+var
+   int: integer;
+   float: real;
+   word: alfa;
+   flag: boolean;
+   letter: char;
+   prog: text;
+   mul,ti,ple : real; (* multiple identifiers in one declaration *)
+
+procedure sqrt(input : real; output:integer; tmp : integer);
+
+   var
+      value: real;
+      guess: real;
+      number: integer;
+
+   procedure readnum(notused: integer; output : text);
+       var
+         input : boolean;
+
+      begin
+      number := 0;
+      while (ch >= '0') and (ch <= '9') do begin
+         number := number * base + ord(ch) - ord('0');
+         read(file1, ch)
+         end
+      end (* readnum *);
+
+   begin (* sqrt *)
+   readnum(10);
+   read(file1, ch);
+   value := number;
+   guess := value / 2;
+   while (guess * guess > value + 0.001) and
+    (guess * guess < value - 0.001) do
+      guess := (guess + value / guess) / 2;
+   int := round(guess)
+   end (* sqrt *);
+
+begin (* testsomemore *)
+int := -1;
+while int * int <> int + int + sqr(int) do
+   for letter := 'a' to 'z' do begin
+      sqrt
+      end
+end (* testsomemore *).
