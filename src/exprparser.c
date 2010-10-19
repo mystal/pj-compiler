@@ -22,8 +22,55 @@ typedef struct __slr_stack_pair
 
 void flushStack(stack *);
 
+/**
+ * Simple LR Expression Parser Grammar (BNF)
+ *
+ *  1 start --> expr 
+ *  2 expr --> expr relop primary 
+ *  3 expr --> primary 
+ *  4 primary --> primary addop term 
+ *  5 primary --> term 
+ *  6 term --> term multop factor 
+ *  7 term --> factor 
+ *  8 factor --> array 
+ *  9 factor --> builtin 
+ * 10 factor --> constant 
+ * 11 factor --> id 
+ * 12 factor --> fileptr 
+ * 13 factor --> not factor 
+ * 14 factor --> - factor 
+ * 15 factor --> + factor 
+ * 16 factor --> ( expr ) 
+ * 17 builtin --> id ( expr ) 
+ * 18 array --> id [ expr ] 
+ * 19 relop --> < 
+ * 20 relop --> <= 
+ * 21 relop --> = 
+ * 22 relop --> >= 
+ * 23 relop --> > 
+ * 24 relop --> <> 
+ * 25 addop --> + 
+ * 26 addop --> - 
+ * 27 addop --> or 
+ * 28 multop --> * 
+ * 29 multop --> / 
+ * 30 multop --> div 
+ * 31 multop --> mod 
+ * 32 multop --> and 
+ * 33 constant --> realcon 
+ * 34 constant --> intgrcon 
+ * 35 constant --> boolcon 
+ * 36 constant --> alfacon 
+ * 37 constant --> charcon 
+ * 38 constant --> strngcon 
+ * 39 boolcon --> true 
+ * 40 boolcon --> false 
+ * 41 s' --> start $
+ **/
+
 void expr(token *t)
 {
+    dirTrace("expr", tr_enter);
     //Initialize stack
     stack *stk = stackCreate();
     slr_stack_pair bot;
@@ -54,11 +101,8 @@ void expr(token *t)
             s->isTerm = true;
             stackPush(stk, s);
             if (directives[dir_print_reduction])
-            {
-                char cstr[t->lexeme.len+1];
-                stringToCString(&t->lexeme, cstr, t->lexeme.len+1);
-                fprintf(stdout, "SHIFT: %s '%s' \n", symbolString(s->sym, s->isTerm), cstr);
-            }
+                fprintf(stdout, "SHIFT: %s '%.*s' \n", symbolString(s->sym, s->isTerm),
+                        t->lexeme.len, t->lexeme.buffer);
             //Grab next input symbol
             t = lexerGetToken();
         }
@@ -84,18 +128,17 @@ void expr(token *t)
         }
         else if (entry.act == act_accept) //Parsing is done
         {
-            if (directives[dir_flush_echo])
+            if (directives[dir_expr_flush_echo])
                 fprintf(stdout, "ACCEPT\n");
             break;
         }
         else //Error routine
         {
-            char cstr[t->lexeme.len+1];
-            stringToCString(&t->lexeme, cstr, t->lexeme.len+1);
-            fprintf(stdout, "Error: Unexpected token '%s' found in expression at (%d,%d):\n",
-                    cstr, bufferLineNumber(), bufferPos()-t->lexeme.len);
+            fprintf(stdout, "Error: Unexpected token '%.*s' found in expression at (%d,%d):\n",
+                    t->lexeme.len, t->lexeme.buffer, bufferLineNumber(),
+                    bufferPos()-t->lexeme.len);
             bufferPrint(stdout);
-            if (directives[dir_flush_echo])
+            if (directives[dir_expr_flush_echo])
             {
                 fprintf(stdout, "\tFlushed Stack:");
                 flushStack(stk);
@@ -104,15 +147,11 @@ void expr(token *t)
             //Flush input until next nonexpression token
             while (isExprToken(t))
             {
-                if (directives[dir_flush_echo])
-                {
-                    char cstr[t->lexeme.len+1];
-                    stringToCString(&t->lexeme, cstr, t->lexeme.len+1);
-                    fprintf(stdout, " %s", cstr);
-                }
+                if (directives[dir_expr_flush_echo])
+                    fprintf(stdout, " %.*s", t->lexeme.len, t->lexeme.buffer);
                 t = lexerGetToken();
             }
-            if (directives[dir_flush_echo])
+            if (directives[dir_expr_flush_echo])
                 fprintf(stdout, "\n");
             break;
         }
@@ -125,6 +164,7 @@ void expr(token *t)
     }
     stackDestroy(stk);
     //No push-back, next token ready for caller to use
+    dirTrace("expr", tr_exit);
 }
 
 void flushStack(stack *stk)

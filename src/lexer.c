@@ -23,6 +23,11 @@ void lexerInit()
     tokenInit(&curToken);
 }
 
+void lexerCleanup()
+{
+    tokenClean(&curToken);
+}
+
 token *lexerGetToken()
 {
     tokenClean(&curToken);
@@ -43,18 +48,10 @@ token *lexerGetToken()
     else if (curToken.kind == tok_id)
         lookupKeyword(&curToken);
     if (directives[dir_token_echo])
-    {
-        char cstr[curToken.lexeme.len+1];
-        stringToCString(&curToken.lexeme, cstr, curToken.lexeme.len+1);
-        fprintf(stdout, "Lexeme: %s\tLength: %d\tKind: %s\n",
-                cstr, curToken.lexeme.len, tokenKindString(curToken.kind));
-    }
+        fprintf(stdout, "Lexeme: %.*s\tLength: %d\tKind: %s\n",
+                curToken.lexeme.len, curToken.lexeme.buffer,
+                curToken.lexeme.len, tokenKindString(curToken.kind));
     return &curToken;
-}
-
-void lexerCleanup()
-{
-    tokenClean(&curToken);
 }
 
 /**
