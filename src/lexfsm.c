@@ -18,24 +18,24 @@ typedef struct __transition
 } transition;
 
 // Shortened action names
-#define AAB acceptBuild
-#define AAI acceptIntPushBack
-#define AAP acceptPushBack
-#define ABU build
-#define ADI discard
-#define AER error
-#define AIG ignore
-#define APD processDirective
+#define AAB actAcceptBuild
+#define AAI actAcceptIntPushBack
+#define AAP actAcceptPushBack
+#define ABU actBuild
+#define ADI actDiscard
+#define AER actError
+#define AIG actIgnore
+#define APD actProcessDirective
 
 /* Actions */
-void acceptBuild(state, token *, char);
-void acceptIntPushBack(state, token *, char);
-void acceptPushBack(state, token *, char);
-void build(state, token *, char);
-void discard(state, token *, char);
-void error(state, token *, char);
-void ignore(state, token *, char);
-void processDirective(state, token *, char);
+void actAcceptBuild(state, token *, char);
+void actAcceptIntPushBack(state, token *, char);
+void actAcceptPushBack(state, token *, char);
+void actBuild(state, token *, char);
+void actDiscard(state, token *, char);
+void actError(state, token *, char);
+void actIgnore(state, token *, char);
+void actProcessDirective(state, token *, char);
 
 /**
  * Transition table. Rows represent states, columns represent character
@@ -156,7 +156,7 @@ state performAction(state s, char c, token *t)
 /**
  * Appends the given character and accepts the current token.
  **/
-void acceptBuild(state s, token *t, char c)
+void actAcceptBuild(state s, token *t, char c)
 {
     stringAppend(&t->lexeme, c);
     t->kind = classify(s, c);
@@ -166,7 +166,7 @@ void acceptBuild(state s, token *t, char c)
  * Strips the last character from the lexeme (a dot), pushes back the current
  * character (a dot), and accepts the token (an integer constant).
  **/
-void acceptIntPushBack(state s, token *t, char c)
+void actAcceptIntPushBack(state s, token *t, char c)
 {
     stringRemove(&t->lexeme, 1);
     bufferPushBack(2);
@@ -176,7 +176,7 @@ void acceptIntPushBack(state s, token *t, char c)
 /**
  * Pushes back the current character and accepts the token.
  **/
-void acceptPushBack(state s, token *t, char c)
+void actAcceptPushBack(state s, token *t, char c)
 {
     bufferPushBack(1);
     t->kind = classify(s, c);
@@ -185,7 +185,7 @@ void acceptPushBack(state s, token *t, char c)
 /**
  * Builds the token by appending the given character.
  **/
-void build(state s, token *t, char c)
+void actBuild(state s, token *t, char c)
 {
     stringAppend(&t->lexeme, c);
 }
@@ -193,7 +193,7 @@ void build(state s, token *t, char c)
 /**
  * Discards the current token, preparing it to be built anew.
  **/
-void discard(state s, token *t, char c)
+void actDiscard(state s, token *t, char c)
 {
     tokenClean(t);
     tokenInit(t);
@@ -203,7 +203,7 @@ void discard(state s, token *t, char c)
  * Discards the current token, preparing it to be built anew. Also prints
  * an error message and the line the error occurred on.
  **/
-void error(state s, token *t, char c)
+void actError(state s, token *t, char c)
 {
     if (c == '\n')
         fprintf(stdout, "Unexpected symbol \'\\n\'");
@@ -218,7 +218,7 @@ void error(state s, token *t, char c)
 /**
  * Ignores the given character. Nothing is changed.
  **/
-void ignore(state s, token *t, char c)
+void actIgnore(state s, token *t, char c)
 {
 }
 
@@ -226,7 +226,7 @@ void ignore(state s, token *t, char c)
  * Processes directives, expecting them to be well-formed. The given character
  * should be a dollar sign.
  **/
-void processDirective(state s, token *t, char c)
+void actProcessDirective(state s, token *t, char c)
 {
     char test, d, f;
     do

@@ -39,7 +39,7 @@ unsigned int bufferLineNumber()
 
 unsigned int bufferPos()
 {
-    return pos - 1;
+    return pos;
 }
 
 void bufferPrint(FILE *f)

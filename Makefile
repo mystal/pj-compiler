@@ -8,8 +8,8 @@ SBINS := $(addsuffix -static, $(BINS))
 BIN_FILES := $(addprefix $(BUILDDIR)/, $(BINS))
 SBIN_FILES := $(addprefix $(BUILDDIR)/, $(SBINS))
 OBJS := $(addprefix $(BUILDDIR)/, \
-	buffer.o directive.o error.o exprparser.o exprprods.o exprsymbol.o lexer.o \
-	lexfsm.o rbtree.o rdparser.o stack.o str.o token.o)
+	bst.o buffer.o directive.o error.o exprparser.o exprprods.o exprsymbol.o \
+	lexer.o lexfsm.o rdparser.o stack.o str.o token.o)
 
 INCS := 
 LIBS := 

@@ -134,9 +134,9 @@ void expr(token *t)
         }
         else //Error routine
         {
-            fprintf(stdout, "Error: Unexpected token '%.*s' found in expression at (%d,%d):\n",
-                    t->lexeme.len, t->lexeme.buffer, bufferLineNumber(),
-                    bufferPos()-t->lexeme.len);
+            fprintf(stdout, "(%d, %d): error: unexpected token '%.*s' found in expression\n",
+                    bufferLineNumber(), bufferPos()-t->lexeme.len,
+                    t->lexeme.len, t->lexeme.buffer);
             bufferPrint(stdout);
             if (directives[dir_expr_flush_echo])
             {
