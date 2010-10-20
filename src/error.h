@@ -1,9 +1,17 @@
 #pragma once
 
-typedef enum __error
+#include "token.h"
+
+typedef enum __error_kind
 {
     err_unextoken,
+    err_exp_const,
+    err_exp_stype,
+    err_exp_end,
+    err_exp_dot,
     err_num
-} error;
+} error_kind;
 
-char *errorString(error);
+void error(error_kind, token *);
+
+char *errorString(error_kind);

@@ -1,19 +1,33 @@
 #include "rdparser.h"
 
+#include "bst.h"
 #include "buffer.h"
 #include "directive.h"
 #include "error.h"
 #include "exprparser.h"
 #include "lexer.h"
+//#include "rbtree.h"
 #include "token.h"
+
+#define EXPECT_GOTO(tok, label) \
+    if (t->kind != tok) \
+    { \
+        fprintf(stdout, "(%d, %d): error: %s '%.*s', expected %s\n", \
+                bufferLineNumber(), bufferPos() - t->lexeme.len, \
+                errorString(err_unextoken), t->lexeme.len, \
+                t->lexeme.buffer, tokenKindString(tok)); \
+        bufferPrint(stdout); \
+        errorRecovery(); \
+        goto label; \
+    }
 
 #define EXPECT(tok) \
     if (t->kind != tok) \
     { \
-        fprintf(stdout, "error: %s '%.*s' found at (%d, %d)\n", \
+        fprintf(stdout, "(%d, %d): error: %s '%.*s', expected %s\n", \
+                bufferLineNumber(), bufferPos() - t->lexeme.len, \
                 errorString(err_unextoken), t->lexeme.len, \
-                t->lexeme.buffer, bufferLineNumber(), \
-                bufferPos()-t->lexeme.len); \
+                t->lexeme.buffer, tokenKindString(tok)); \
         bufferPrint(stdout); \
     }
 
@@ -44,173 +58,302 @@
  * constant -> (real|integer|boolean|alfa|char|string)
  **/
 
-void program(token *);
-void block(token *);
-void var_decl(token *);
-void proc(token *);
-void param_list(token *);
-void param(token *);
-void range_decl(token *);
-void stmt_list(token *);
-void stmt(token *);
-void arg_list(token *);
-void stype(token *);
-void constant(token *);
+/* Private helper functions */
+void errorRecovery(void);
+void initStopSet(void);
+
+void program(void);
+void block(void);
+void var_decl(void);
+void proc(void);
+void param_list(void);
+void param(void);
+void range_decl(void);
+void stmt_list(void);
+void stmt(void);
+void arg_list(void);
+void stype(void);
+void constant(void);
+
+/**
+ * Element comparison function required by rbtree.
+ **/
+/*int cmp(void *e1, void *e2)
+{
+}*/
+
+/* Private variables used by parser */
+token *t;
+bst *followSet;
+bst *stopSet;
 
 void parse()
 {
     lexerInit();
-    token *t = lexerGetToken();
-    program(t);
+    followSet = bstCreate();
+    stopSet = bstCreate();
+    //initStopSet();
+    t = lexerGetToken();
+    program();
     lexerCleanup();
+    bstDestroy(followSet);
+    bstDestroy(stopSet);
 }
 
-void program(token *t)
+void errorRecovery()
+{
+    //TODO build up string, then print at end
+    if (directives[dir_rd_flush_echo])
+        fprintf(stdout, "Flushed Tokens:");
+    while (t->kind != tok_undef && !bstContains(stopSet, t->kind))
+    {
+        if (directives[dir_rd_flush_echo])
+            fprintf(stdout, " %.*s", t->lexeme.len, t->lexeme.buffer);
+        t = lexerGetToken();
+    }
+    if (directives[dir_rd_flush_echo])
+        fprintf(stdout, "\n");
+}
+
+void initStopSet()
+{
+    bstInsert(stopSet, tok_kw_alfa);
+    bstInsert(stopSet, tok_kw_and);
+    bstInsert(stopSet, tok_kw_array);
+    bstInsert(stopSet, tok_kw_begin);
+    bstInsert(stopSet, tok_kw_boolean);
+    bstInsert(stopSet, tok_kw_char);
+    bstInsert(stopSet, tok_kw_const);
+    bstInsert(stopSet, tok_kw_div);
+    bstInsert(stopSet, tok_kw_do);
+    bstInsert(stopSet, tok_kw_downto);
+    bstInsert(stopSet, tok_kw_else);
+    bstInsert(stopSet, tok_kw_end);
+    bstInsert(stopSet, tok_kw_false);
+    bstInsert(stopSet, tok_kw_for);
+    bstInsert(stopSet, tok_kw_if);
+    bstInsert(stopSet, tok_kw_integer);
+    bstInsert(stopSet, tok_kw_mod);
+    bstInsert(stopSet, tok_kw_not);
+    bstInsert(stopSet, tok_kw_of);
+    bstInsert(stopSet, tok_kw_or);
+    bstInsert(stopSet, tok_kw_procedure);
+    bstInsert(stopSet, tok_kw_program);
+    bstInsert(stopSet, tok_kw_real);
+    bstInsert(stopSet, tok_kw_text);
+    bstInsert(stopSet, tok_kw_then);
+    bstInsert(stopSet, tok_kw_to);
+    bstInsert(stopSet, tok_kw_true);
+    bstInsert(stopSet, tok_kw_var);
+    bstInsert(stopSet, tok_kw_while);
+}
+
+void program()
 {
     dirTrace("program", tr_enter);
-    EXPECT(tok_kw_program);
+    bstInsert(stopSet, tok_kw_const);
+    bstInsert(stopSet, tok_kw_var);
+    bstInsert(stopSet, tok_kw_procedure);
+    bstInsert(stopSet, tok_kw_begin);
+    EXPECT_GOTO(tok_kw_program, blockStart);
     t = lexerGetToken();
-    EXPECT(tok_id);
+    EXPECT_GOTO(tok_id, blockStart);
     t = lexerGetToken();
-    EXPECT(tok_lparen);
+    EXPECT_GOTO(tok_lparen, blockStart);
     t = lexerGetToken();
-    EXPECT(tok_id);
+    EXPECT_GOTO(tok_id, blockStart);
     t = lexerGetToken();
     while (t->kind == tok_comma)
     {
         t = lexerGetToken();
-        EXPECT(tok_id);
+        EXPECT_GOTO(tok_id, blockStart);
         t = lexerGetToken();
     }
-    EXPECT(tok_rparen);
+    EXPECT_GOTO(tok_rparen, blockStart);
     t = lexerGetToken();
-    EXPECT(tok_semicolon);
+    EXPECT_GOTO(tok_semicolon, blockStart);
     t = lexerGetToken();
-    block(t);
-    EXPECT(tok_dot);
+blockStart:
+    block();
+    if (t->kind != tok_dot)
+        error(err_exp_dot, t);
     dirTrace("program", tr_exit);
 }
 
-void block(token *t)
+void block()
 {
     dirTrace("block", tr_enter);
+    bstInsert(stopSet, tok_kw_const);
+    bstInsert(stopSet, tok_kw_var);
+    bstInsert(stopSet, tok_kw_procedure);
+    bstInsert(stopSet, tok_kw_begin);
     if (t->kind == tok_kw_const)
     {
+        bstRemove(stopSet, tok_kw_const);
         t = lexerGetToken();
-        EXPECT(tok_id);
+        EXPECT_GOTO(tok_id, varStart);
         t = lexerGetToken();
-        EXPECT(tok_equal);
+        EXPECT_GOTO(tok_equal, varStart);
         t = lexerGetToken();
-        constant(t);
-        EXPECT(tok_semicolon);
+        constant();
+        EXPECT_GOTO(tok_semicolon, varStart);
         t = lexerGetToken();
         while (t->kind == tok_id)
         {
             t = lexerGetToken();
-            EXPECT(tok_equal);
+            EXPECT_GOTO(tok_equal, varStart);
             t = lexerGetToken();
-            constant(t);
-            EXPECT(tok_semicolon);
+            constant();
+            EXPECT_GOTO(tok_semicolon, varStart);
             t = lexerGetToken();
         }
     }
+    bstRemove(stopSet, tok_kw_const);
+varStart:
     if (t->kind == tok_kw_var)
     {
+        bstRemove(stopSet, tok_kw_var);
         t = lexerGetToken();
-        var_decl(t);
+        var_decl();
         while (t->kind == tok_id)
-            var_decl(t);
+            var_decl();
     }
+    bstRemove(stopSet, tok_kw_var);
+procStart:
     while (t->kind == tok_kw_procedure)
     {
+        bstRemove(stopSet, tok_kw_procedure);
         t = lexerGetToken();
-        proc(t);
+        proc();
     }
-    EXPECT(tok_kw_begin);
+    bstRemove(stopSet, tok_kw_procedure);
+    bstInsert(stopSet, tok_id);
+    bstInsert(stopSet, tok_fileid);
+    bstInsert(stopSet, tok_kw_if);
+    bstInsert(stopSet, tok_kw_while);
+    bstInsert(stopSet, tok_kw_for);
+    bstInsert(stopSet, tok_kw_begin);
+    EXPECT_GOTO(tok_kw_begin, stmt_listStart);
+stmt_listStart:
+    bstRemove(stopSet, tok_kw_begin);
     t = lexerGetToken();
-    stmt_list(t);
-    EXPECT(tok_kw_end);
+    stmt_list();
+    bstRemove(stopSet, tok_id);
+    bstRemove(stopSet, tok_fileid);
+    bstRemove(stopSet, tok_kw_if);
+    bstRemove(stopSet, tok_kw_while);
+    bstRemove(stopSet, tok_kw_for);
+    bstRemove(stopSet, tok_kw_begin);
+    bstRemove(stopSet, tok_kw_for);
+    bstRemove(stopSet, tok_kw_begin);
+    bstInsert(stopSet, tok_semicolon);
+    bstInsert(stopSet, tok_dot);
+    EXPECT_GOTO(tok_kw_end, blockEnd);
     t = lexerGetToken();
+blockEnd:
+    bstRemove(stopSet, tok_semicolon);
+    bstRemove(stopSet, tok_dot);
     dirTrace("block", tr_exit);
 }
 
-void var_decl(token *t)
+void var_decl()
 {
     dirTrace("var_decl", tr_enter);
-    EXPECT(tok_id);
+    EXPECT_GOTO(tok_id, var_declEnd);
     t = lexerGetToken();
     while (t->kind == tok_comma)
     {
         t = lexerGetToken();
-        EXPECT(tok_id);
+        EXPECT_GOTO(tok_id, var_declEnd);
         t = lexerGetToken();
     }
-    EXPECT(tok_colon);
+    bstInsert(stopSet, tok_id);
+    EXPECT_GOTO(tok_colon, var_declEnd);
     t = lexerGetToken();
     if (t->kind == tok_kw_array)
     {
         t = lexerGetToken();
-        range_decl(t);
-        EXPECT(tok_kw_of);
+        range_decl();
+        EXPECT_GOTO(tok_kw_of, var_declEnd);
         t = lexerGetToken();
     }
-    stype(t);
-    EXPECT(tok_semicolon);
+    stype();
+    EXPECT_GOTO(tok_semicolon, var_declEnd);
     t = lexerGetToken();
+    bstRemove(stopSet, tok_id);
+var_declEnd:
     dirTrace("var_decl", tr_exit);
 }
 
-void proc(token *t)
+void proc()
 {
     dirTrace("proc", tr_enter);
-    EXPECT(tok_id);
+    bstInsert(stopSet, tok_kw_const);
+    bstInsert(stopSet, tok_kw_var);
+    bstInsert(stopSet, tok_kw_procedure);
+    bstInsert(stopSet, tok_lparen);
+    EXPECT_GOTO(tok_id, procParam_listStart);
     t = lexerGetToken();
+procParam_listStart:
     if (t->kind == tok_lparen)
     {
+        bstRemove(stopSet, tok_lparen);
         t = lexerGetToken();
-        param_list(t);
-        EXPECT(tok_rparen);
+        bstInsert(stopSet, tok_rparen);
+        param_list();
+        bstRemove(stopSet, tok_rparen);
+        EXPECT_GOTO(tok_rparen, procParam_listEnd);
         t = lexerGetToken();
     }
-    EXPECT(tok_semicolon);
+    bstRemove(stopSet, tok_lparen);
+procParam_listEnd:
+    EXPECT_GOTO(tok_semicolon, procBlockStart);
     t = lexerGetToken();
-    block(t);
-    EXPECT(tok_semicolon);
+procBlockStart:
+    block();
+    bstRemove(stopSet, tok_kw_const);
+    bstRemove(stopSet, tok_kw_var);
+    bstRemove(stopSet, tok_kw_procedure);
+    EXPECT_GOTO(tok_semicolon, procEnd);
     t = lexerGetToken();
+procEnd:
     dirTrace("proc", tr_exit);
 }
 
-void param_list(token *t)
+void param_list()
 {
     dirTrace("param_list", tr_enter);
-    param(t);
+    param();
     while (t->kind == tok_semicolon)
     {
         t = lexerGetToken();
-        param(t);
+        param();
     }
     dirTrace("param_list", tr_exit);
 }
 
-void param(token *t)
+void param()
 {
     dirTrace("param", tr_enter);
-    EXPECT(tok_id);
+    bstInsert(stopSet, tok_semicolon);
+    EXPECT_GOTO(tok_id, paramEnd);
     t = lexerGetToken();
-    EXPECT(tok_colon);
+    EXPECT_GOTO(tok_colon, paramEnd);
     t = lexerGetToken();
     if (t->kind == tok_kw_array)
     {
         t = lexerGetToken();
-        range_decl(t);
-        EXPECT(tok_kw_of);
+        range_decl();
+        EXPECT_GOTO(tok_kw_of, paramEnd);
         t = lexerGetToken();
     }
-    stype(t);
+    stype();
+paramEnd:
+    bstRemove(stopSet, tok_semicolon);
     dirTrace("param", tr_exit);
 }
 
-void range_decl(token *t)
+void range_decl()
 {
     dirTrace("range_decl", tr_enter);
     EXPECT(tok_lbrack);
@@ -230,19 +373,19 @@ void range_decl(token *t)
     dirTrace("range_decl", tr_exit);
 }
 
-void stmt_list(token *t)
+void stmt_list()
 {
     dirTrace("stmt_list", tr_enter);
-    stmt(t);
+    stmt();
     while (t->kind == tok_semicolon)
     {
         t = lexerGetToken();
-        stmt(t);
+        stmt();
     }
     dirTrace("stmt_list", tr_exit);
 }
 
-void stmt(token *t)
+void stmt()
 {
     dirTrace("stmt", tr_enter);
     if (t->kind == tok_id)
@@ -266,7 +409,7 @@ void stmt(token *t)
         else if (t->kind == tok_lparen)
         {
             t = lexerGetToken();
-            arg_list(t);
+            arg_list();
             EXPECT(tok_rparen);
             t = lexerGetToken();
         }
@@ -285,11 +428,11 @@ void stmt(token *t)
         expr(t);
         EXPECT(tok_kw_then);
         t = lexerGetToken();
-        stmt(t);
+        stmt();
         if (t->kind == tok_kw_else)
         {
             t = lexerGetToken();
-            stmt(t);
+            stmt();
         }
     }
     else if (t->kind == tok_kw_while)
@@ -298,7 +441,7 @@ void stmt(token *t)
         expr(t);
         EXPECT(tok_kw_do);
         t = lexerGetToken();
-        stmt(t);
+        stmt();
     }
     else if (t->kind == tok_kw_for)
     {
@@ -315,26 +458,22 @@ void stmt(token *t)
         expr(t);
         EXPECT(tok_kw_do);
         t = lexerGetToken();
-        stmt(t);
+        stmt();
     }
     else if (t->kind == tok_kw_begin)
     {
         t = lexerGetToken();
         if (t->kind != tok_kw_end)
-        {
-            stmt_list(t);
-            if (t->kind == tok_kw_end)
-                t = lexerGetToken();
-        }
-        else
-            t = lexerGetToken();
+            stmt_list();
+        EXPECT(tok_kw_end);
+        t = lexerGetToken();
     }
     else
         ; //error
     dirTrace("stmt", tr_exit);
 }
 
-void arg_list(token *t)
+void arg_list()
 {
     dirTrace("arg_list", tr_enter);
     expr(t);
@@ -346,7 +485,7 @@ void arg_list(token *t)
     dirTrace("arg_list", tr_exit);
 }
 
-void stype(token *t)
+void stype()
 {
     dirTrace("stype", tr_enter);
     switch (t->kind)
@@ -358,14 +497,15 @@ void stype(token *t)
         case tok_kw_char:
         case tok_kw_text:
             t = lexerGetToken();
+            break;
         default:
-            //error
+            error(err_exp_stype, t);
             break;
     }
     dirTrace("stype", tr_exit);
 }
 
-void constant(token *t)
+void constant()
 {
     dirTrace("constant", tr_enter);
     switch (t->kind)
@@ -378,8 +518,9 @@ void constant(token *t)
         case tok_char_const:
         case tok_string_const:
             t = lexerGetToken();
+            break;
         default:
-            //error
+            error(err_exp_const, t);
             break;
     }
     dirTrace("constant", tr_exit);
