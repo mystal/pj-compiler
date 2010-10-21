@@ -1,5 +1,6 @@
 #include "str.h"
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,7 +18,7 @@ void stringFree(string *str)
     str->bytes_alloc = 0;
 }
 
-void stringAppend(string *str, char c)
+void stringAppendChar(string *str, char c)
 {
     if (str->len == str->bytes_alloc)
     {
@@ -30,18 +31,23 @@ void stringAppend(string *str, char c)
     str->buffer[str->len++] = c;
 }
 
+void stringAppendString(string *str, char *other, unsigned int n)
+{
+    bool resized = (str->len + n) >= str->bytes_alloc;
+    while ((str->len + n) >= str->bytes_alloc)
+        str->bytes_alloc *= 2;
+    if (resized)
+    {
+        char *newBuff = (char *) malloc(sizeof(char)*str->bytes_alloc);
+        strncpy(newBuff, str->buffer, str->len);
+        free(str->buffer);
+        str->buffer = newBuff;
+    }
+    strncpy(str->buffer+str->len, other, n);
+    str->len += n;
+}
+
 void stringRemove(string *str, unsigned int n)
 {
     str->len -= n;
-}
-
-int stringToCString(string *str, char *cstr, unsigned int n)
-{
-    if (n > str->len)
-    {
-        strncpy(cstr, str->buffer, str->len);
-        cstr[str->len] = '\0';
-        return str->len+1;
-    }
-    return -1;
 }

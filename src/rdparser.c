@@ -7,6 +7,7 @@
 #include "exprparser.h"
 #include "lexer.h"
 //#include "rbtree.h"
+#include "str.h"
 #include "token.h"
 
 #define EXPECT_GOTO(tok, label) \
@@ -102,17 +103,23 @@ void parse()
 
 void errorRecovery()
 {
-    //TODO build up string, then print at end
+    string s;
     if (directives[dir_rd_flush_echo])
-        fprintf(stdout, "Flushed Tokens:");
+        stringInit(&s);
     while (t->kind != tok_undef && !bstContains(stopSet, t->kind))
     {
         if (directives[dir_rd_flush_echo])
-            fprintf(stdout, " %.*s", t->lexeme.len, t->lexeme.buffer);
+        {
+            stringAppendChar(&s, ' ');
+            stringAppendString(&s, t->lexeme.buffer, t->lexeme.len);
+        }
         t = lexerGetToken();
     }
     if (directives[dir_rd_flush_echo])
-        fprintf(stdout, "\n");
+    {
+        fprintf(stdout, "\tFlushed Tokens:%.*s\n", s.len, s.buffer);
+        stringFree(&s);
+    }
 }
 
 void initStopSet()

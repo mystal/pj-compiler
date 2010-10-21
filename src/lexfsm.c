@@ -158,7 +158,7 @@ state performAction(state s, char c, token *t)
  **/
 void actAcceptBuild(state s, token *t, char c)
 {
-    stringAppend(&t->lexeme, c);
+    stringAppendChar(&t->lexeme, c);
     t->kind = classify(s, c);
 }
 
@@ -187,7 +187,7 @@ void actAcceptPushBack(state s, token *t, char c)
  **/
 void actBuild(state s, token *t, char c)
 {
-    stringAppend(&t->lexeme, c);
+    stringAppendChar(&t->lexeme, c);
 }
 
 /**

@@ -13,8 +13,8 @@ void stringInit(string *);
 
 void stringFree(string *);
 
-void stringAppend(string *, char);
+void stringAppendChar(string *, char);
+
+void stringAppendString(string *, char *, unsigned int);
 
 void stringRemove(string *, unsigned int);
-
-int stringToCString(string *, char *, unsigned int);

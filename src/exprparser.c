@@ -11,6 +11,7 @@
 #include "exprtables.h"
 #include "lexer.h"
 #include "stack.h"
+#include "str.h"
 #include "token.h"
 
 typedef struct __slr_stack_pair
@@ -134,6 +135,7 @@ void expr(token *t)
         }
         else //Error routine
         {
+            string s;
             fprintf(stdout, "(%d, %d): error: unexpected token '%.*s' found in expression\n",
                     bufferLineNumber(), bufferPos()-t->lexeme.len,
                     t->lexeme.len, t->lexeme.buffer);
@@ -142,17 +144,23 @@ void expr(token *t)
             {
                 fprintf(stdout, "\tFlushed Stack:");
                 flushStack(stk);
-                fprintf(stdout, "\n\tFlushed Input:");
+                stringInit(&s);
             }
             //Flush input until next nonexpression token
             while (isExprToken(t))
             {
                 if (directives[dir_expr_flush_echo])
-                    fprintf(stdout, " %.*s", t->lexeme.len, t->lexeme.buffer);
+                {
+                    stringAppendChar(&s, ' ');
+                    stringAppendString(&s, t->lexeme.buffer, t->lexeme.len);
+                }
                 t = lexerGetToken();
             }
             if (directives[dir_expr_flush_echo])
-                fprintf(stdout, "\n");
+            {
+                fprintf(stdout, "\n\tFlushed Input:%.*s\n", s.len, s.buffer);
+                stringFree(&s);
+            }
             break;
         }
     }
