@@ -205,12 +205,17 @@ void actDiscard(state s, token *t, char c)
  **/
 void actError(state s, token *t, char c)
 {
+    unsigned int pos = bufferPos();
+    fprintf(stdout, "(%d,%d): error: unexpected character ",
+            bufferLineNumber(), pos);
     if (c == '\n')
-        fprintf(stdout, "Unexpected symbol \'\\n\'");
+        fprintf(stdout, "'\\n'\n");
     else
-        fprintf(stdout, "Unexpected symbol \'%c\'", c);
-    fprintf(stdout, " at (%d,%d):\n", bufferLineNumber(), bufferPos());
+        fprintf(stdout, "'%c'\n", c);
     bufferPrint(stdout);
+    for (int i = 1; i < pos; i++)
+        fprintf(stdout, " ");
+    fprintf(stdout, "^\n");
     tokenClean(t);
     tokenInit(t);
 }

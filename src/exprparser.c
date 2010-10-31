@@ -6,6 +6,7 @@
 
 #include "buffer.h"
 #include "directive.h"
+#include "error.h"
 #include "exprprods.h"
 #include "exprsymbol.h"
 #include "exprtables.h"
@@ -136,10 +137,7 @@ void expr(token *t)
         else //Error routine
         {
             string s;
-            fprintf(stdout, "(%d, %d): error: unexpected token '%.*s' found in expression\n",
-                    bufferLineNumber(), bufferPos()-t->lexeme.len,
-                    t->lexeme.len, t->lexeme.buffer);
-            bufferPrint(stdout);
+            error(err_unex_expr, t);
             if (directives[dir_expr_flush_echo])
             {
                 fprintf(stdout, "\tFlushed Stack:");
