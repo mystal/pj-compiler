@@ -7,7 +7,7 @@ typedef struct __bst_node bst_node;
 
 struct __bst_node
 {
-    token_kind elem;
+    T elem;
     bst_node *parent;
     bst_node *left;
     bst_node *right;
@@ -20,11 +20,11 @@ struct __bst
 };
 
 /* bst_node methods */
-bst_node *bst_nodeCreate(token_kind, bst_node *, bst_node *, bst_node *);
+bst_node *bst_nodeCreate(T, bst_node *, bst_node *, bst_node *);
 
 /* Private helper functions */
-bool insertHelper(bst_node *, token_kind);
-bool removeHelper(bst_node *, bst *, token_kind);
+bool insertHelper(bst_node *, T);
+bool removeHelper(bst_node *, bst *, T);
 void clearHelper(bst_node *);
 bst_node *findMin(bst_node *);
 void replaceSelf(bst_node *, bst_node *);
@@ -37,7 +37,7 @@ bst *bstCreate()
     return t;
 }
 
-bool bstInsert(bst *t, token_kind e)
+bool bstInsert(bst *t, T e)
 {
     bool success;
     if(t->size == 0)
@@ -52,7 +52,7 @@ bool bstInsert(bst *t, token_kind e)
     return success;
 }
 
-bool bstRemove(bst *t, token_kind e)
+bool bstRemove(bst *t, T e)
 {
     if (t->size == 0)
         return false;
@@ -62,7 +62,7 @@ bool bstRemove(bst *t, token_kind e)
     return success;
 }
 
-bool bstContains(bst *t, token_kind e)
+bool bstContains(bst *t, T e)
 {
     bst_node *n = t->root;
     while (n != NULL)
@@ -89,7 +89,7 @@ void bstDestroy(bst *t)
     t = NULL;
 }
 
-bst_node *bst_nodeCreate(token_kind e, bst_node *p, bst_node *l, bst_node *r)
+bst_node *bst_nodeCreate(T e, bst_node *p, bst_node *l, bst_node *r)
 {
     bst_node *n = (bst_node *) malloc(sizeof(bst_node));
     n->elem = e;
@@ -99,7 +99,7 @@ bst_node *bst_nodeCreate(token_kind e, bst_node *p, bst_node *l, bst_node *r)
     return n;
 }
 
-bool insertHelper(bst_node *n, token_kind e)
+bool insertHelper(bst_node *n, T e)
 {
     if (e == n->elem)
         return false;
@@ -123,7 +123,7 @@ bool insertHelper(bst_node *n, token_kind e)
     }
 }
 
-bool removeHelper(bst_node *n, bst *t, token_kind e)
+bool removeHelper(bst_node *n, bst *t, T e)
 {
     if (n == NULL)
         return false;

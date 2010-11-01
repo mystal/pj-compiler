@@ -1,0 +1,52 @@
+(*$s+  there should be no errors in this "program"*)
+program ariths(input,output,outpt);
+const
+   x = 10;
+   y = 15;
+   z = 25;
+
+var
+   outpt : text;
+   
+   procedure one(x : integer);
+      var
+         y : real;
+         q : real;
+      
+      procedure two (y : integer);
+         var
+            z : char;
+
+         procedure three ( z : integer);
+            var
+               x : boolean;
+               i : integer;
+     
+            procedure four (x:integer);
+               var
+                  y : alfa;
+
+               procedure five ( y:integer);
+                  begin
+                      writeln(outpt,y)     (* should be 225 *)
+                  end; (* five *)
+
+               begin (* four *)
+                  writeln(outpt,x)   (* should be 2 *)
+               end; (* four *)
+
+            begin (* three *)
+              writeln(outpt,z) (* should be 255 *)
+            end; (* three *)
+
+         begin (* two *)
+            writeln(outpt,y)  (* should be 10 *)
+         end; (* two *)
+
+      begin (* one *)
+         writeln(outpt,q)  (* should be 3.78271e+01 *)
+      end; (* one *)
+
+   begin (* main program *)
+      writeln(outpt,z) (* should be 25 *)
+   end.

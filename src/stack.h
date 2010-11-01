@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdbool.h>
-
 #define T void
 
 typedef struct __stack stack;

@@ -1,0 +1,37 @@
+(*$s+ there should be no errors in this "program"*)
+program expon (input,output,outpt);
+const
+   numterms = 10;   (* number of terms in the series *)
+   x        = 1.0;  (* initial value of x1 *)
+   topx     = 6.0;  (* final value of x1 *)
+var
+   outpt    : text;
+   fact     : integer;
+   i        : integer;
+   power    : real;
+   etothex  : real;
+   x1       : real;
+
+   procedure factcalc(x : integer);
+   var
+      i : integer;
+   begin
+      if x > 0 then begin
+         fact := fact * x
+         end
+      else
+         i := 1
+   end; (* factcalc *)
+
+   procedure powercalc(x: real; i: integer);
+   begin
+      if i > 0 then begin
+         power := power * x
+         end
+      else
+         i := 1 
+   end; (* powercalc *)
+
+begin (* expon *)
+    i:=1
+end.

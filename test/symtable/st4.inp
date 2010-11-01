@@ -1,0 +1,44 @@
+(*$s-  there are errors here*)
+program ariths(input,output,outpt,tst); (* tst not defined in VAR section *)
+const
+   x = 10;
+   y = 15;
+   z = 25;
+
+var
+   outpt : text;
+   input : text; 
+   a     : integer;
+   b     : real; 
+   procedure one(x : integer);
+      var
+         one : real;  (* this is not ok *)
+         q : boolean;
+         q : real;    (* this is not ok *)
+      
+      procedure one (y : integer); (* BAD *)
+         begin
+           a:=1
+         end;
+
+      begin 
+         writeln(outpt,q)  
+      end; 
+
+   procedure two(a:integer);
+      var x:real;
+          a:boolean; (* ERROR *)
+          b:integer;
+          output: real; (* ERROR *)
+      begin
+         b:=1.0
+      end;
+
+   procedure one; (* BAD *)
+   begin
+      a:=x
+   end;
+
+   begin (* main program *)
+      writeln(outpt,z) 
+   end.

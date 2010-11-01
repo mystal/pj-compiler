@@ -19,26 +19,20 @@ struct __stack
 stack *stackCreate()
 {
     stack *s = (stack *) malloc(sizeof(stack));
-    s->top = NULL;
+    stack_node *sentinel = (stack_node *) malloc(sizeof(stack_node));
+    sentinel->elem = NULL;
+    sentinel->next = NULL;
+    s->top = sentinel;
     s->size = 0;
     return s;
 }
 
 void stackPush(stack *s, T *e)
 {
-    if (s->size == 0)
-    {
-        s->top = (stack_node *) malloc(sizeof(stack_node));
-        s->top->elem = e;
-        s->top->next = NULL;
-    }
-    else
-    {
-        stack_node *temp = (stack_node *) malloc(sizeof(stack_node));
-        temp->elem = e;
-        temp->next = s->top;
-        s->top = temp;
-    }
+    stack_node *temp = (stack_node *) malloc(sizeof(stack_node));
+    temp->elem = e;
+    temp->next = s->top;
+    s->top = temp;
     s->size++;
 }
 
@@ -56,8 +50,6 @@ T *stackPop(stack *s)
 
 T *stackPeek(stack *s)
 {
-    if (s->size == 0)
-        return NULL;
     return s->top->elem;
 }
 

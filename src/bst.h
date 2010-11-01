@@ -4,31 +4,31 @@
 
 #include "token.h"
 
-//#define T void
+#define T token_kind
 
 typedef struct __bst bst;
 
 /**
  * Creates and returns a new bst.
  **/
-bst *bstCreate();
+bst *bstCreate(void);
 
 /**
  * Inserts the given item into the tree. Returns true if successful,
  * false otherwise.
  **/
-bool bstInsert(bst *, token_kind);
+bool bstInsert(bst *, T);
 
 /**
  * Removes the given item from the tree. Returns true if successful,
  * false otherwise.
  **/
-bool bstRemove(bst *, token_kind);
+bool bstRemove(bst *, T);
 
 /**
  * Returns true if the given item is in the tree, false otherwise.
  **/
-bool bstContains(bst *, token_kind);
+bool bstContains(bst *, T);
 
 /**
  * Returns the size of the bst.

@@ -9,7 +9,7 @@ BIN_FILES := $(addprefix $(BUILDDIR)/, $(BINS))
 SBIN_FILES := $(addprefix $(BUILDDIR)/, $(SBINS))
 OBJS := $(addprefix $(BUILDDIR)/, \
 	bst.o buffer.o directive.o error.o exprparser.o exprprods.o exprsymbol.o \
-	lexer.o lexfsm.o rdparser.o stack.o str.o token.o)
+	lexer.o lexfsm.o list.o rdparser.o stack.o str.o token.o)
 
 INCS := 
 LIBS := 
