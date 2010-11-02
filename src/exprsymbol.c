@@ -129,7 +129,7 @@ terminal lookupTerminal(token_kind t)
     return tokToSLR[t];
 }
 
-const char *symbolString(symbol sym, bool isTerm)
+const char *exprSymbolString(expr_symbol sym, bool isTerm)
 {
     return isTerm ? termStrings[sym.term] : nontermStrings[sym.nonterm];
 }

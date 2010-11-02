@@ -6,7 +6,7 @@ typedef struct __list_node list_node;
 
 struct __list_node
 {
-    T *elem;
+    LIST_T *elem;
     list_node *next;
     list_node *prev;
 };
@@ -35,7 +35,7 @@ list *listCreate()
     return l;
 }
 
-void listAddFront(list *l, T *elem)
+void listAddFront(list *l, LIST_T *elem)
 {
     list_node *n = (list_node *) malloc(sizeof(list_node));
     n->elem = elem;
@@ -46,7 +46,7 @@ void listAddFront(list *l, T *elem)
     l->size++;
 }
 
-void listAddBack(list *l, T *elem)
+void listAddBack(list *l, LIST_T *elem)
 {
     list_node *n = (list_node *) malloc(sizeof(list_node));
     n->elem = elem;
@@ -57,12 +57,12 @@ void listAddBack(list *l, T *elem)
     l->size++;
 }
 
-T *listRemoveFront(list *l)
+LIST_T *listRemoveFront(list *l)
 {
     if (l->size == 0)
         return NULL;
     list_node *n = l->head->next;
-    T *ret = n->elem;
+    LIST_T *ret = n->elem;
     l->head->next = n->next;
     n->next->prev = l->head;
     free(n);
@@ -70,12 +70,12 @@ T *listRemoveFront(list *l)
     return ret;
 }
 
-T *listRemoveBack(list *l)
+LIST_T *listRemoveBack(list *l)
 {
     if (l->size == 0)
         return NULL;
     list_node *n = l->tail->prev;
-    T *ret = n->elem;
+    LIST_T *ret = n->elem;
     l->tail->prev = n->prev;
     n->prev->next = l->tail;
     free(n);
@@ -83,17 +83,17 @@ T *listRemoveBack(list *l)
     return ret;
 }
 
-T *listGetFront(list *l)
+LIST_T *listGetFront(list *l)
 {
     return l->head->next->elem;
 }
 
-T *listGetBack(list *l)
+LIST_T *listGetBack(list *l)
 {
     return l->tail->prev->elem;
 }
 
-T *listGet(list *l, unsigned int index)
+LIST_T *listGet(list *l, unsigned int index)
 {
     if (index >= l->size)
         return NULL;

@@ -54,14 +54,14 @@ typedef enum __nonterminal
     slr_sprime
 } nonterminal;
 
-typedef union __symbol
+typedef union __expr_symbol
 {
     terminal term;
     nonterminal nonterm;
-} symbol;
+} expr_symbol;
 
 bool isExprToken(token *);
 
 terminal lookupTerminal(token_kind);
 
-const char *symbolString(symbol, bool);
+const char *exprSymbolString(expr_symbol, bool);

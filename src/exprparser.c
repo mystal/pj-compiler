@@ -18,7 +18,7 @@
 typedef struct __slr_stack_pair
 {
     unsigned int state : 8;
-    symbol sym;
+    expr_symbol sym;
     bool isTerm;
 } slr_stack_pair;
 
@@ -103,9 +103,9 @@ void expr(token *t)
             s->isTerm = true;
             stackPush(stk, s);
             if (directives[dir_print_reduction])
-                fprintf(stdout, "SHIFT: %s '%.*s' \n", symbolString(s->sym, s->isTerm),
+                fprintf(stdout, "SHIFT: %s '%.*s' \n", exprSymbolString(s->sym, s->isTerm),
                         t->lexeme.len, t->lexeme.buffer);
-            //Grab next input symbol
+            //Grab next input token
             t = lexerGetToken();
         }
         else if (entry.act == act_reduce)
@@ -179,7 +179,7 @@ void flushStack(stack *stk)
     {
         slr_stack_pair *s = (slr_stack_pair *) stackPop(stk);
         flushStack(stk);
-        fprintf(stdout, " %s", symbolString(s->sym, s->isTerm));
+        fprintf(stdout, " %s", exprSymbolString(s->sym, s->isTerm));
         free(s);
     }
 }

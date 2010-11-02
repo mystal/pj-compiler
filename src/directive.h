@@ -11,6 +11,7 @@ typedef enum __directive
     dir_expr_flush_echo,
     dir_rd_flush_echo,
     dir_tracing,
+    dir_sym_table,
     dir_num
 } directive;
 

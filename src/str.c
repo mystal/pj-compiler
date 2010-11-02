@@ -1,5 +1,6 @@
 #include "str.h"
 
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,5 +50,14 @@ void stringAppendString(string *str, char *other, unsigned int n)
 
 void stringRemove(string *str, unsigned int n)
 {
-    str->len -= n;
+    str->len -= (str->len < n) ? str->len : n;
+}
+
+int stringCompare(string *s1, string *s2)
+{
+    int ret = 0;
+    unsigned int i = 0;
+    while (i < s1->len && i < s2->len)
+        ret += (tolower(s1->buffer[i]) < tolower(s2->buffer[i])) ? -1 : 1;
+    return ret;
 }

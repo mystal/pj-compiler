@@ -1,6 +1,6 @@
 #pragma once
 
-#define T void
+#define LIST_T void
 
 typedef struct __list list;
 
@@ -12,37 +12,37 @@ list *listCreate(void);
 /**
  * Add the given item to the front of the list.
  **/
-void listAddFront(list *, T *);
+void listAddFront(list *, LIST_T *);
 
 /**
  * Add the given item to the back of the list.
  **/
-void listAddBack(list *, T *);
+void listAddBack(list *, LIST_T *);
 
 /**
  * Remove and return the first item of the list. Returns NULL if list is empty.
  **/
-T *listRemoveFront(list *);
+LIST_T *listRemoveFront(list *);
 
 /**
  * Remove and return the last item of the list. Returns NULL if list is empty.
  **/
-T *listRemoveBack(list *);
+LIST_T *listRemoveBack(list *);
 
 /**
  * Get the item at the front of the list. Returns NULL if the list is empty.
  **/
-T *listGetFront(list *);
+LIST_T *listGetFront(list *);
 
 /**
  * Get the item at the back of the list. Returns NULL if the list is empty.
  **/
-T *listGetBack(list *);
+LIST_T *listGetBack(list *);
 
 /**
  * Get the item at the given index. Returns NULL if the index is invalid.
  **/
-T *listGet(list *, unsigned int);
+LIST_T *listGet(list *, unsigned int);
 
 /**
  * Returns the size of the list.
