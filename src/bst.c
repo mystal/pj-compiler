@@ -7,7 +7,7 @@ typedef struct __bst_node bst_node;
 
 struct __bst_node
 {
-    T elem;
+    BST_T *elem;
     bst_node *parent;
     bst_node *left;
     bst_node *right;
@@ -17,27 +17,29 @@ struct __bst
 {
     bst_node *root;
     unsigned int size;
+    cmp_func compareTo;
 };
 
 /* bst_node methods */
-bst_node *bst_nodeCreate(T, bst_node *, bst_node *, bst_node *);
+bst_node *bst_nodeCreate(BST_T *, bst_node *, bst_node *, bst_node *);
 
 /* Private helper functions */
-bool insertHelper(bst_node *, T);
-bool removeHelper(bst_node *, bst *, T);
-void clearHelper(bst_node *);
-bst_node *findMin(bst_node *);
-void replaceSelf(bst_node *, bst_node *);
+bool bstInsertHelper(bst *, bst_node *, BST_T *);
+bool bstRemoveHelper(bst *, bst_node *, BST_T *);
+void bstClearHelper(bst_node *);
+bst_node *bstFindMin(bst_node *);
+void bstReplaceSelf(bst_node *, bst_node *);
 
-bst *bstCreate()
+bst *bstCreate(cmp_func cmp)
 {
     bst *t = (bst *) malloc(sizeof(bst));
     t->root = NULL;
     t->size = 0;
+    t->compareTo = cmp;
     return t;
 }
 
-bool bstInsert(bst *t, T e)
+bool bstInsert(bst *t, BST_T *e)
 {
     bool success;
     if(t->size == 0)
@@ -46,30 +48,30 @@ bool bstInsert(bst *t, T e)
         success = true;
     }
     else
-        success = insertHelper(t->root, e);
+        success = bstInsertHelper(t, t->root, e);
     if (success)
         t->size++;
     return success;
 }
 
-bool bstRemove(bst *t, T e)
+bool bstRemove(bst *t, BST_T *e)
 {
     if (t->size == 0)
         return false;
-    bool success = removeHelper(t->root, t, e);
+    bool success = bstRemoveHelper(t, t->root, e);
     if (success)
         t->size--;
     return success;
 }
 
-bool bstContains(bst *t, T e)
+bool bstContains(bst *t, BST_T *e)
 {
     bst_node *n = t->root;
     while (n != NULL)
     {
-        if (e == n->elem)
+        if (t->compareTo(e, n->elem) == 0)
             return true;
-        else if (e < n->elem)
+        else if (t->compareTo(e, n->elem) < 0)
             n = n->left;
         else
             n = n->right;
@@ -84,12 +86,12 @@ unsigned int bstSize(bst *t)
 
 void bstDestroy(bst *t)
 {
-    clearHelper(t->root);
+    bstClearHelper(t->root);
     free(t);
     t = NULL;
 }
 
-bst_node *bst_nodeCreate(T e, bst_node *p, bst_node *l, bst_node *r)
+bst_node *bst_nodeCreate(BST_T *e, bst_node *p, bst_node *l, bst_node *r)
 {
     bst_node *n = (bst_node *) malloc(sizeof(bst_node));
     n->elem = e;
@@ -99,18 +101,18 @@ bst_node *bst_nodeCreate(T e, bst_node *p, bst_node *l, bst_node *r)
     return n;
 }
 
-bool insertHelper(bst_node *n, T e)
+bool bstInsertHelper(bst *t, bst_node *n, BST_T *e)
 {
-    if (e == n->elem)
+    if (t->compareTo(e, n->elem) == 0)
         return false;
-    if (e < n->elem)
+    if (t->compareTo(e, n->elem) < 0)
     {
         if (n->left == NULL)
         {
             n->left = bst_nodeCreate(e, n, NULL, NULL);
             return true;
         }
-        return insertHelper(n->left, e);
+        return bstInsertHelper(t, n->left, e);
     }
     else
     {
@@ -119,29 +121,29 @@ bool insertHelper(bst_node *n, T e)
             n->right = bst_nodeCreate(e, n, NULL, NULL);
             return true;
         }
-        return insertHelper(n->right, e);
+        return bstInsertHelper(t, n->right, e);
     }
 }
 
-bool removeHelper(bst_node *n, bst *t, T e)
+bool bstRemoveHelper(bst *t, bst_node *n, BST_T *e)
 {
     if (n == NULL)
         return false;
-    if (e < n->elem)
-        return removeHelper(n->left, t, e);
-    if (e > n->elem)
-        return removeHelper(n->right, t, e);
+    if (t->compareTo(e, n->elem) < 0)
+        return bstRemoveHelper(t, n->left, e);
+    if (t->compareTo(e, n->elem) > 0)
+        return bstRemoveHelper(t, n->right, e);
     if (n->left != NULL && n->right != NULL)
     {
-        bst_node *successor = findMin(n->right);
+        bst_node *successor = bstFindMin(n->right);
         n->elem = successor->elem;
-        replaceSelf(successor, successor->right);
+        bstReplaceSelf(successor, successor->right);
         free(successor);
     }
     else if (n->left != NULL)
     {
         if (n->parent != NULL)
-            replaceSelf(n, n->left);
+            bstReplaceSelf(n, n->left);
         else
         {
             t->root = n->left;
@@ -152,7 +154,7 @@ bool removeHelper(bst_node *n, bst *t, T e)
     else if (n->right != NULL)
     {
         if (n->parent != NULL)
-            replaceSelf(n, n->right);
+            bstReplaceSelf(n, n->right);
         else
         {
             t->root = n->right;
@@ -163,7 +165,7 @@ bool removeHelper(bst_node *n, bst *t, T e)
     else
     {
         if (n->parent != NULL)
-            replaceSelf(n, NULL);
+            bstReplaceSelf(n, NULL);
         else
             t->root = NULL;
         free(n);
@@ -171,17 +173,17 @@ bool removeHelper(bst_node *n, bst *t, T e)
     return true;
 }
 
-void clearHelper(bst_node *n)
+void bstClearHelper(bst_node *n)
 {
     if (n != NULL)
     {
-        clearHelper(n->left);
-        clearHelper(n->right);
+        bstClearHelper(n->left);
+        bstClearHelper(n->right);
         free(n);
     }
 }
 
-bst_node *findMin(bst_node *n)
+bst_node *bstFindMin(bst_node *n)
 {
     bst_node *min = n;
     while (min->left != NULL)
@@ -189,7 +191,7 @@ bst_node *findMin(bst_node *n)
     return min;
 }
 
-void replaceSelf(bst_node *n, bst_node *newN)
+void bstReplaceSelf(bst_node *n, bst_node *newN)
 {
     bst_node *p = n->parent;
     if (p->left == n)

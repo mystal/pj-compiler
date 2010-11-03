@@ -4,31 +4,34 @@
 
 #include "token.h"
 
-#define T token_kind
+#define BST_T void
+
+/*  */
+typedef int (*cmp_func)(BST_T *, BST_T *);
 
 typedef struct __bst bst;
 
 /**
  * Creates and returns a new bst.
  **/
-bst *bstCreate(void);
+bst *bstCreate(cmp_func);
 
 /**
  * Inserts the given item into the tree. Returns true if successful,
  * false otherwise.
  **/
-bool bstInsert(bst *, T);
+bool bstInsert(bst *, BST_T *);
 
 /**
  * Removes the given item from the tree. Returns true if successful,
  * false otherwise.
  **/
-bool bstRemove(bst *, T);
+bool bstRemove(bst *, BST_T *);
 
 /**
  * Returns true if the given item is in the tree, false otherwise.
  **/
-bool bstContains(bst *, T);
+bool bstContains(bst *, BST_T *);
 
 /**
  * Returns the size of the bst.
