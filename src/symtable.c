@@ -35,7 +35,7 @@ void symEnterBlock(symtable *st, string *name)
 {
     block *b = (block *) malloc(sizeof(block));
     b->name = name;
-    b->symbols = bstCreate(stringCompareTo);
+    b->symbols = bstCreate(symbolCompareTo);
     listAddBack(st->blockList, b);
 }
 
@@ -77,5 +77,5 @@ int symbolCompareTo(void *v1, void *v2)
 {
     symbol *s1 = (symbol *) v1;
     symbol *s2 = (symbol *) v2;
-    return stringCompareTo(s1->name, s2-name);
+    return symbolCompareTo(s1->name, s2->name);
 }

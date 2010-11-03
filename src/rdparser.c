@@ -14,29 +14,9 @@
 #define EXPECT_GOTO(tok, label) \
     if (t->kind != tok) \
     { \
-        unsigned int pos = bufferPos(); \
-        fprintf(stdout, "(%d, %d): error: %s '%.*s', expected %s\n", \
-                bufferLineNumber(), pos - t->lexeme.len + 1, \
-                errorString(err_unex), t->lexeme.len, \
-                t->lexeme.buffer, tokenKindString(tok)); \
-        bufferPrint(stdout); \
-        for (int i = 0; i < pos - t->lexeme.len; i++) \
-            fprintf(stdout, " "); \
-        for (int i = 0; i < t->lexeme.len; i++) \
-            fprintf(stdout, "^"); \
-        fprintf(stdout, "\n"); \
+        error(err_unex, t, tok); \
         errorRecovery(); \
         goto label; \
-    }
-
-#define EXPECT(tok) \
-    if (t->kind != tok) \
-    { \
-        fprintf(stdout, "(%d, %d): error: %s '%.*s', expected %s\n", \
-                bufferLineNumber(), bufferPos() - t->lexeme.len, \
-                errorString(err_unex), t->lexeme.len, \
-                t->lexeme.buffer, tokenKindString(tok)); \
-        bufferPrint(stdout); \
     }
 
 /**
@@ -180,7 +160,7 @@ blockStart:
     block();
     //TODO exit a block
     if (t->kind != tok_dot)
-        error(err_exp_dot, t);
+        error(err_exp_dot, t, tok_undef);
     dirTrace("program", tr_exit);
 }
 
@@ -368,13 +348,13 @@ void range_decl()
     if (t->kind == tok_integer_const || t->kind == tok_id)
         t = lexerGetToken();
     else
-        error(err_exp_idint, t);
+        error(err_exp_idint, t, tok_undef);
     EXPECT_GOTO(tok_rdots, range_declEnd);
     t = lexerGetToken();
     if (t->kind == tok_integer_const || t->kind == tok_id)
         t = lexerGetToken();
     else
-        error(err_exp_idint, t);
+        error(err_exp_idint, t, tok_undef);
     EXPECT_GOTO(tok_rbrack, range_declEnd);
     t = lexerGetToken();
 range_declEnd:
@@ -432,7 +412,7 @@ void stmt()
         t = lexerGetToken();
     }
     else
-        error(err_badstmt, t);
+        error(err_badstmt, t, tok_undef);
 stmtEnd:
     tokenbstRemove(followSet, tok_semicolon);
     dirTrace("stmt", tr_exit);
@@ -516,7 +496,7 @@ void for_stmt()
     if (t->kind == tok_kw_downto || t->kind == tok_kw_to)
         t = lexerGetToken();
     else
-        error(err_exp_downto, t);
+        error(err_exp_downto, t, tok_undef);
     expr(t);
     EXPECT_GOTO(tok_kw_do, for_stmtEnd);
     t = lexerGetToken();
@@ -551,7 +531,7 @@ void stype()
             t = lexerGetToken();
             break;
         default:
-            error(err_exp_stype, t);
+            error(err_exp_stype, t, tok_undef);
             break;
     }
     dirTrace("stype", tr_exit);
@@ -572,7 +552,7 @@ void constant()
             t = lexerGetToken();
             break;
         default:
-            error(err_exp_const, t);
+            error(err_exp_const, t, tok_undef);
             break;
     }
     dirTrace("constant", tr_exit);

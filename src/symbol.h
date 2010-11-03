@@ -5,46 +5,46 @@
 
 typedef enum __sym_type
 {
-    sym_var,
-    sym_const_var,
-    sym_array,
-    sym_proc,
-    sym_num
+    symt_var,
+    symt_const_var,
+    symt_array,
+    symt_proc,
+    symt_num
 } sym_type;
 
-typedef struct __var
+typedef struct __sym_var
 {
     pjtype type;
     unsigned int loc;
-} var;
+} sym_var;
 
-typedef struct __const_var
+typedef struct __sym_const_var
 {
     pjtype type;
     string *value;
-} const_var;
+} sym_const_var;
 
-typedef struct __array
+typedef struct __sym_array
 {
     pjtype type;
     unsigned int lowBound;
     unsigned int upBound;
     unsigned int loc;
-} array;
+} sym_array;
 
-typedef struct __proc
+typedef struct __sym_proc
 {
     unsigned int numParams;
     pjtype *params;
     unsigned int loc;
-} proc;
+} sym_proc;
 
 typedef union __sym_info
 {
-    var v;
-    const_var c;
-    array a;
-    proc p;
+    sym_var v;
+    sym_const_var c;
+    sym_array a;
+    sym_proc p;
 } sym_info;
 
 typedef struct __symbol

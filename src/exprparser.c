@@ -137,7 +137,7 @@ void expr(token *t)
         else //Error routine
         {
             string s;
-            error(err_unex_expr, t);
+            error(err_unex_expr, t, tok_undef);
             if (directives[dir_expr_flush_echo])
             {
                 fprintf(stdout, "\tFlushed Stack:");

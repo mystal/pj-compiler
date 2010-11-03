@@ -16,6 +16,7 @@ typedef enum __error_kind
     err_num
 } error_kind;
 
-void error(error_kind, token *);
-
-char *errorString(error_kind);
+/**
+ * Prints the given error and the line it was found on.
+ **/
+void error(error_kind, token *, token_kind);

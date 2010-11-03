@@ -18,22 +18,30 @@ char *errorStrings[err_num] =
     "illegal start of statement"
 };
 
-void error(error_kind e, token *t)
+void error(error_kind e, token *t, token_kind tok)
 {
     unsigned int line = bufferLineNumber();
     unsigned int pos = bufferPos();
-    fprintf(stdout, "(%d, %d): error: %s, found '%.*s'\n", line,
-            pos - t->lexeme.len + 1, errorStrings[e], t->lexeme.len,
+    unsigned int lexLen = t->lexeme.len;
+    if (t->kind != tok_char_const && t->kind != tok_alfa_const &&
+        t->kind != tok_string_const)
+        fprintf(stdout, "(%d, %d): error: %s, found \"%.*s\"", line,
+            pos - lexLen + 1, errorStrings[e], t->lexeme.len,
             t->lexeme.buffer);
+    else
+    {
+        lexLen += 2;
+        fprintf(stdout, "(%d, %d): error: %s, found \"'%.*s'\"", line,
+            pos - lexLen + 1, errorStrings[e], t->lexeme.len,
+            t->lexeme.buffer);
+    }
+    if (e == err_unex)
+        fprintf(stdout, ", expected %s", tokenKindString(tok));
+    fprintf(stdout, "\n");
     bufferPrint(stdout);
-    for (int i = 0; i < pos - t->lexeme.len; i++)
+    for (int i = 0; i < pos - lexLen; i++)
         fprintf(stdout, " ");
-    for (int i = 0; i < t->lexeme.len; i++)
+    for (int i = 0; i < lexLen; i++)
         fprintf(stdout, "^");
     fprintf(stdout, "\n");
-}
-
-char *errorString(error_kind e)
-{
-    return errorStrings[e];
 }
