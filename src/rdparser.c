@@ -7,6 +7,8 @@
 #include "exprparser.h"
 #include "lexer.h"
 #include "str.h"
+#include "symbol.h"
+#include "symtable.h"
 #include "token.h"
 
 #define EXPECT_GOTO(tok, label) \
@@ -99,29 +101,26 @@ void arg_list(void);
 void stype(void);
 void constant(void);
 
-/**
- * Element comparison function required by rbtree.
- **/
-/*int cmp(void *e1, void *e2)
-{
-}*/
-
 /* Private variables used by parser */
 token *t;
+symtable *st;
+symbol *sym;
 tokenbst *followSet;
 tokenbst *stopSet;
 
 void parse()
 {
     lexerInit();
+    st = symCreate();
     followSet = tokenbstCreate();
     stopSet = tokenbstCreate();
     initStopSet();
     t = lexerGetToken();
     program();
-    lexerCleanup();
     tokenbstDestroy(followSet);
     tokenbstDestroy(stopSet);
+    symDestroy(st);
+    lexerCleanup();
 }
 
 void errorRecovery()
@@ -177,7 +176,9 @@ void program()
     EXPECT_GOTO(tok_semicolon, blockStart);
     t = lexerGetToken();
 blockStart:
+    //TODO enter a block
     block();
+    //TODO exit a block
     if (t->kind != tok_dot)
         error(err_exp_dot, t);
     dirTrace("program", tr_exit);
@@ -325,7 +326,9 @@ param_listEnd:
     EXPECT_GOTO(tok_semicolon, procBlockStart);
     t = lexerGetToken();
 procBlockStart:
+    //TODO enter a block
     block();
+    //TODO exit a block
     EXPECT_GOTO(tok_semicolon, procEnd);
     t = lexerGetToken();
 procEnd:
