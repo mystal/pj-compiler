@@ -332,9 +332,14 @@ void var_decl(bst *progFiles)
         }
         else if (progFiles != NULL && bstContains(progFiles, symbolGetName(sym)))
         {
+            string *filename;
             if (symbolGetType(sym) == symt_var &&
                 symbolGetPJType(sym) == pj_text)
-                bstRemove(progFiles, symbolGetName(sym));
+            {
+                filename = (string *) bstGet(progFiles, name);
+                bstRemove(progFiles, name);
+                stringDestroy(filename);
+            }
             else
             {
                 //Print error, file must be declared of type text

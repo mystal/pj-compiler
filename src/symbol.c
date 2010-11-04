@@ -32,6 +32,7 @@ typedef struct __sym_proc
     bool *optParams;
     pjtype retType;
     unsigned int loc;
+    bool isBuiltin;
 } sym_proc;
 
 typedef union __sym_info
@@ -67,7 +68,7 @@ void symbolDestroy(symbol *sym)
     {
         stringDestroy(sym->data.c.value);
     }
-    else if (sym->type == symt_proc)
+    else if (sym->type == symt_proc && !sym->data.p.isBuiltin)
     {
         if (sym->data.p.paramTypes != NULL)
             free(sym->data.p.paramTypes);
@@ -97,6 +98,7 @@ void symbolSetType(symbol *sym, sym_type type)
         sym->data.p.paramTypes = NULL;
         sym->data.p.optParams = NULL;
         sym->data.p.retType = pj_undef;
+        sym->data.p.isBuiltin = false;
     }
 }
 
@@ -162,6 +164,11 @@ void symbolProcSetParams(symbol *sym, unsigned int n, pjtype *types, bool *opts)
 void symbolProcSetReturnType(symbol *sym, pjtype pjt)
 {
     sym->data.p.retType = pjt;
+}
+
+void symbolProcSetBuiltin(symbol *sym)
+{
+    sym->data.p.isBuiltin = true;
 }
 
 void symbolPrintVar(symbol *sym)

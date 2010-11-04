@@ -143,6 +143,7 @@ void stDestroy(symtable *st)
     bstDestroy(b->symbols, bstDelSymbol); //Cleanup memory for symbols in bst
     free(b);
     listDestroy(st->blockList);
+    free(st);
     st = NULL;
 }
 

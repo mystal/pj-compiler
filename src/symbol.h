@@ -42,6 +42,8 @@ void symbolProcSetParams(symbol *, unsigned int, pjtype *, bool *);
 
 void symbolProcSetReturnType(symbol *, pjtype);
 
+void symbolProcSetBuiltin(symbol *);
+
 void symbolPrintVar(symbol *);
 
 void symbolPrintConst(symbol *);

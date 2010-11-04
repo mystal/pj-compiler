@@ -114,5 +114,6 @@ symbol *builtinGet(pjbuiltin pjb)
         default:
             break;
     }
+    symbolProcSetBuiltin(sym);
     return sym;
 }
