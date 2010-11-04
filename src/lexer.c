@@ -16,7 +16,6 @@ token curToken;
 /* Private helper functions */
 void classifyLiteral(token *);
 void lookupKeyword(token *);
-bool strneqi(char *, char *, unsigned int);
 
 void lexerInit()
 {
@@ -48,9 +47,12 @@ token *lexerGetToken()
     else if (curToken.kind == tok_id)
         lookupKeyword(&curToken);
     if (directives[dir_token_echo])
+    {
+        unsigned int len = stringGetLength(curToken.lexeme);
+        char *buff = stringGetBuffer(curToken.lexeme);
         fprintf(stdout, "Lexeme: %.*s\tLength: %d\tKind: %s\n",
-                curToken.lexeme.len, curToken.lexeme.buffer,
-                curToken.lexeme.len, tokenKindString(curToken.kind));
+                len, buff, len, tokenKindString(curToken.kind));
+    }
     return &curToken;
 }
 
@@ -59,9 +61,10 @@ token *lexerGetToken()
  **/
 void classifyLiteral(token *t)
 {
-    if (t->lexeme.len == 1)
+    unsigned int len = stringGetLength(t->lexeme);
+    if (len == 1)
         t->kind = tok_char_const;
-    else if (t->lexeme.len == 10)
+    else if (len == 10)
         t->kind = tok_alfa_const;
     else
         t->kind = tok_string_const;
@@ -72,96 +75,85 @@ void classifyLiteral(token *t)
  **/
 void lookupKeyword(token *t)
 {
-    unsigned int n = t->lexeme.len;
-    char *s = t->lexeme.buffer;
+    string *s = t->lexeme;
+    unsigned int n = stringGetLength(s);
     if (n == 2)
     {
-        if (strneqi(s, "do", n))
+        if (stringCompareCharArray(s, "do", n) == 0)
             t->kind = tok_kw_do;
-        else if (strneqi(s, "if", n))
+        else if (stringCompareCharArray(s, "if", n) == 0)
             t->kind = tok_kw_if;
-        else if (strneqi(s, "of", n))
+        else if (stringCompareCharArray(s, "of", n) == 0)
             t->kind = tok_kw_of;
-        else if (strneqi(s, "or", n))
+        else if (stringCompareCharArray(s, "or", n) == 0)
             t->kind = tok_kw_or;
-        else if (strneqi(s, "to", n))
+        else if (stringCompareCharArray(s, "to", n) == 0)
             t->kind = tok_kw_to;
     }
     else if (n == 3)
     {
-        if (strneqi(s, "and", n))
+        if (stringCompareCharArray(s, "and", n) == 0)
             t->kind = tok_kw_and;
-        else if (strneqi(s, "div", n))
+        else if (stringCompareCharArray(s, "div", n) == 0)
             t->kind = tok_kw_div;
-        else if (strneqi(s, "end", n))
+        else if (stringCompareCharArray(s, "end", n) == 0)
             t->kind = tok_kw_end;
-        else if (strneqi(s, "for", n))
+        else if (stringCompareCharArray(s, "for", n) == 0)
             t->kind = tok_kw_for;
-        else if (strneqi(s, "mod", n))
+        else if (stringCompareCharArray(s, "mod", n) == 0)
             t->kind = tok_kw_mod;
-        else if (strneqi(s, "not", n))
+        else if (stringCompareCharArray(s, "not", n) == 0)
             t->kind = tok_kw_not;
-        else if (strneqi(s, "var", n))
+        else if (stringCompareCharArray(s, "var", n) == 0)
             t->kind = tok_kw_var;
     }
     else if (n == 4)
     {
-        if (strneqi(s, "alfa", n))
+        if (stringCompareCharArray(s, "alfa", n) == 0)
             t->kind = tok_kw_alfa;
-        else if (strneqi(s, "char", n))
+        else if (stringCompareCharArray(s, "char", n) == 0)
             t->kind = tok_kw_char;
-        else if (strneqi(s, "else", n))
+        else if (stringCompareCharArray(s, "else", n) == 0)
             t->kind = tok_kw_else;
-        else if (strneqi(s, "real", n))
+        else if (stringCompareCharArray(s, "real", n) == 0)
             t->kind = tok_kw_real;
-        else if (strneqi(s, "text", n))
+        else if (stringCompareCharArray(s, "text", n) == 0)
             t->kind = tok_kw_text;
-        else if (strneqi(s, "then", n))
+        else if (stringCompareCharArray(s, "then", n) == 0)
             t->kind = tok_kw_then;
-        else if (strneqi(s, "true", n))
+        else if (stringCompareCharArray(s, "true", n) == 0)
             t->kind = tok_kw_true;
     }
     else if (n == 5)
     {
-        if (strneqi(s, "array", n))
+        if (stringCompareCharArray(s, "array", n) == 0)
             t->kind = tok_kw_array;
-        else if (strneqi(s, "begin", n))
+        else if (stringCompareCharArray(s, "begin", n) == 0)
             t->kind = tok_kw_begin;
-        else if (strneqi(s, "const", n))
+        else if (stringCompareCharArray(s, "const", n) == 0)
             t->kind = tok_kw_const;
-        else if (strneqi(s, "false", n))
+        else if (stringCompareCharArray(s, "false", n) == 0)
             t->kind = tok_kw_false;
-        else if (strneqi(s, "while", n))
+        else if (stringCompareCharArray(s, "while", n) == 0)
             t->kind = tok_kw_while;
     }
     else if (n == 6)
     {
-        if (strneqi(s, "downto", n))
+        if (stringCompareCharArray(s, "downto", n) == 0)
             t->kind = tok_kw_downto;
     }
     else if (n == 7)
     {
-        if (strneqi(s, "boolean", n))
+        if (stringCompareCharArray(s, "boolean", n) == 0)
             t->kind = tok_kw_boolean;
-        else if (strneqi(s, "integer", n))
+        else if (stringCompareCharArray(s, "integer", n) == 0)
             t->kind = tok_kw_integer;
-        else if (strneqi(s, "program", n))
+        else if (stringCompareCharArray(s, "program", n) == 0)
             t->kind = tok_kw_program;
     }
     else if (n == 9)
     {
-        if (strneqi(s, "procedure", n))
+        if (stringCompareCharArray(s, "procedure", n) == 0)
             t->kind = tok_kw_procedure;
     }
-}
-
-/**
- * Performs a case-insensitive comparison for equality on two strings.
- **/
-bool strneqi(char *s1, char *s2, unsigned int n)
-{
-    for (unsigned int i = 0; i < n; i++)
-        if (tolower(s1[i]) != tolower(s2[i]))
-            return false;
-    return true;
 }

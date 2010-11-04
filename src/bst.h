@@ -6,8 +6,10 @@
 
 #define BST_T void
 
-/*  */
+/* Function pointer types used by bst */
 typedef int (*cmp_func)(BST_T *, BST_T *);
+typedef void (*print_func)(BST_T *);
+typedef void (*del_func)(BST_T *);
 
 typedef struct __bst bst;
 
@@ -34,11 +36,22 @@ bool bstRemove(bst *, BST_T *);
 bool bstContains(bst *, BST_T *);
 
 /**
+ * Returns the given item if it is in the tree, NULL otherwise.
+ **/
+BST_T *bstGet(bst *, BST_T *);
+
+/**
  * Returns the size of the bst.
  **/
 unsigned int bstSize(bst *);
 
 /**
- * Deallocates memory for the bst and sets its pointer to NULL.
+ * Prints the tree using the provided function to print each element.
  **/
-void bstDestroy(bst *);
+void bstPrint(bst *, print_func);
+
+/**
+ * Deallocates memory for the bst and sets its pointer to NULL. If the given
+ * function is not NULL, the stored data's memory is also deallocated using it.
+ **/
+void bstDestroy(bst *, del_func);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include "pjtype.h"
 #include "str.h"
 
@@ -9,47 +11,41 @@ typedef enum __sym_type
     symt_const_var,
     symt_array,
     symt_proc,
-    symt_num
+    symt_undef
 } sym_type;
 
-typedef struct __sym_var
-{
-    pjtype type;
-    unsigned int loc;
-} sym_var;
+typedef struct __symbol symbol;
 
-typedef struct __sym_const_var
-{
-    pjtype type;
-    string *value;
-} sym_const_var;
+symbol *symbolCreate(string *);
 
-typedef struct __sym_array
-{
-    pjtype type;
-    unsigned int lowBound;
-    unsigned int upBound;
-    unsigned int loc;
-} sym_array;
+void symbolDestroy(symbol *);
 
-typedef struct __sym_proc
-{
-    unsigned int numParams;
-    pjtype *params;
-    unsigned int loc;
-} sym_proc;
+string *symbolGetName(symbol *);
 
-typedef union __sym_info
-{
-    sym_var v;
-    sym_const_var c;
-    sym_array a;
-    sym_proc p;
-} sym_info;
+void symbolSetType(symbol *, sym_type);
 
-typedef struct __symbol
-{
-    string *name;
-    sym_type type;
-    sym_info data;
-} symbol;
+sym_type symbolGetType(symbol *);
+
+void symbolSetPJType(symbol *, pjtype);
+
+pjtype symbolGetPJType(symbol *);
+
+void symbolSetLocation(symbol *, unsigned int);
+
+void symbolConstSetValue(symbol *, string *);
+
+string *symbolConstGetValue(symbol *);
+
+void symbolArraySetBounds(symbol *, unsigned int, unsigned int);
+
+void symbolProcSetParams(symbol *, unsigned int, pjtype *, bool *);
+
+void symbolProcSetReturnType(symbol *, pjtype);
+
+void symbolPrintVar(symbol *);
+
+void symbolPrintConst(symbol *);
+
+void symbolPrintArray(symbol *);
+
+void symbolPrintProc(symbol *);

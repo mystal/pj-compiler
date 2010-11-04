@@ -67,13 +67,13 @@ const char *kindStrings[] =
 
 void tokenInit(token *t)
 {
-    stringInit(&t->lexeme);
+    t->lexeme = stringCreate();
     t->kind = tok_undef;
 }
 
 void tokenClean(token *t)
 {
-    stringFree(&t->lexeme);
+    stringDestroy(t->lexeme);
 }
 
 const char *tokenKindString(token_kind k)

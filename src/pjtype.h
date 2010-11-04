@@ -7,5 +7,9 @@ typedef enum __pjtype
     pj_alfa,
     pj_boolean,
     pj_char,
-    pj_num
+    pj_string,
+    pj_text,
+    pj_undef
 } pjtype;
+
+char *pjtypeString(pjtype);

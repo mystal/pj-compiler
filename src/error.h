@@ -13,10 +13,17 @@ typedef enum __error_kind
     err_exp_end,
     err_exp_dot,
     err_badstmt,
+    err_dup_sym,
+    err_undef_sym,
+    err_file_not_text,
+    err_undecl_file,
+    err_range_not_const,
     err_num
 } error_kind;
 
 /**
  * Prints the given error and the line it was found on.
  **/
-void error(error_kind, token *, token_kind);
+void errorParse(error_kind, token *, token_kind);
+
+void errorST(error_kind, string *);

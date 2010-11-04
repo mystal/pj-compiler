@@ -67,7 +67,7 @@ typedef enum __token_kind
 
 typedef struct __token
 {
-    string lexeme;
+    string *lexeme;
     token_kind kind;
 } token;
 

@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "buffer.h"
+#include "str.h"
 #include "token.h"
 
 char *errorStrings[err_num] =
@@ -15,25 +16,29 @@ char *errorStrings[err_num] =
     "expected a type",
     "expected keyword end",
     "expected a period",
-    "illegal start of statement"
+    "illegal start of statement",
+    "duplicate symbol",
+    "undefined symbol",
+    "file must be of type text",
+    "undeclared file(s)",
+    "array range must be an integer constant"
 };
 
-void error(error_kind e, token *t, token_kind tok)
+void errorParse(error_kind e, token *t, token_kind tok)
 {
     unsigned int line = bufferLineNumber();
     unsigned int pos = bufferPos();
-    unsigned int lexLen = t->lexeme.len;
+    unsigned int lexLen = stringGetLength(t->lexeme);
+    char *lexBuffer = stringGetBuffer(t->lexeme);
     if (t->kind != tok_char_const && t->kind != tok_alfa_const &&
         t->kind != tok_string_const)
         fprintf(stdout, "(%d, %d): error: %s, found \"%.*s\"", line,
-            pos - lexLen + 1, errorStrings[e], t->lexeme.len,
-            t->lexeme.buffer);
+            pos - lexLen + 1, errorStrings[e], lexLen, lexBuffer);
     else
     {
-        lexLen += 2;
         fprintf(stdout, "(%d, %d): error: %s, found \"'%.*s'\"", line,
-            pos - lexLen + 1, errorStrings[e], t->lexeme.len,
-            t->lexeme.buffer);
+            pos - lexLen - 1, errorStrings[e], lexLen, lexBuffer);
+        lexLen += 2;
     }
     if (e == err_unex)
         fprintf(stdout, ", expected %s", tokenKindString(tok));
@@ -44,4 +49,21 @@ void error(error_kind e, token *t, token_kind tok)
     for (int i = 0; i < lexLen; i++)
         fprintf(stdout, "^");
     fprintf(stdout, "\n");
+}
+
+void errorST(error_kind e, string *lexeme)
+{
+    if (e == err_dup_sym || e == err_undef_sym || e == err_file_not_text ||
+        e == err_range_not_const)
+    {
+        unsigned int lexLen = stringGetLength(lexeme);
+        char *lexBuffer = stringGetBuffer(lexeme);
+        unsigned int line = bufferLineNumber();
+        unsigned int pos = bufferPos();
+        fprintf(stdout, "(%d, %d): error: %s, \"%.*s\"\n", line,
+            pos - lexLen + 1, errorStrings[e], lexLen, lexBuffer);
+        bufferPrint(stdout);
+    }
+    else if (e == err_undecl_file)
+        fprintf(stdout, "error: %s,", errorStrings[e]);
 }

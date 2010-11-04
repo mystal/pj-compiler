@@ -4,7 +4,7 @@
 
 #include "token.h"
 
-#define BST_T token_kind
+#define TOKBST_T token_kind
 
 typedef struct __tokenbst tokenbst;
 
@@ -17,18 +17,18 @@ tokenbst *tokenbstCreate(void);
  * Inserts the given item into the tree. Returns true if successful,
  * false otherwise.
  **/
-bool tokenbstInsert(tokenbst *, BST_T);
+bool tokenbstInsert(tokenbst *, TOKBST_T);
 
 /**
  * Removes the given item from the tree. Returns true if successful,
  * false otherwise.
  **/
-bool tokenbstRemove(tokenbst *, BST_T);
+bool tokenbstRemove(tokenbst *, TOKBST_T);
 
 /**
  * Returns true if the given item is in the tree, false otherwise.
  **/
-bool tokenbstContains(tokenbst *, BST_T);
+bool tokenbstContains(tokenbst *, TOKBST_T);
 
 /**
  * Returns the size of the tokenbst.

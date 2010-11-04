@@ -11,32 +11,43 @@ typedef struct __symtable symtable;
 /**
  * Create and return a new symtable.
  **/
-symtable *symCreate(void);
+symtable *stCreate(void);
 
 /**
  * Create and enter a new block with the given name.
  **/
-void symEnterBlock(symtable *, string *);
+void stEnterBlock(symtable *, string *);
 
 /**
  * Exit and destroy the top-most block.
  **/
-void symExitBlock(symtable *);
+void stExitBlock(symtable *);
+
+/**
+ * Returns the current block level, with the top-most being 1.
+ **/
+unsigned int stGetLevel(symtable *);
 
 /**
  * Add the given symbol to the current block. Returns true if successful,
  * otherwise returns false, indicating that a symbol with the same name
  * already exists in some block.
  **/
-bool symAddSymbol(symtable *, symbol *);
+bool stAddSymbol(symtable *, symbol *);
 
 /**
  * Checks the symbol table for a symbol with the given name. Returns a pointer
  * to the symbol found if it is in the table, otherwise returns NULL.
  **/
-symbol *symLookup(symtable *, string *);
+symbol *stLookup(symtable *, string *);
+
+/**
+ * Prints up to the given number of blocks in the symbol table, starting from
+ * the top-most block.
+ **/
+void stPrintBlocks(symtable *, unsigned int);
 
 /**
  * Destroys the given symbol table and sets the pointer to NULL.
  **/
-void symDestroy(symtable *);
+void stDestroy(symtable *);

@@ -104,7 +104,7 @@ void expr(token *t)
             stackPush(stk, s);
             if (directives[dir_print_reduction])
                 fprintf(stdout, "SHIFT: %s '%.*s' \n", exprSymbolString(s->sym, s->isTerm),
-                        t->lexeme.len, t->lexeme.buffer);
+                        stringGetLength(t->lexeme), stringGetBuffer(t->lexeme));
             //Grab next input token
             t = lexerGetToken();
         }
@@ -136,28 +136,29 @@ void expr(token *t)
         }
         else //Error routine
         {
-            string s;
-            error(err_unex_expr, t, tok_undef);
+            string *s;
+            errorParse(err_unex_expr, t, tok_undef);
             if (directives[dir_expr_flush_echo])
             {
                 fprintf(stdout, "\tFlushed Stack:");
                 flushStack(stk);
-                stringInit(&s);
+                s = stringCreate();
             }
             //Flush input until next nonexpression token
             while (isExprToken(t))
             {
                 if (directives[dir_expr_flush_echo])
                 {
-                    stringAppendChar(&s, ' ');
-                    stringAppendString(&s, t->lexeme.buffer, t->lexeme.len);
+                    stringAppendChar(s, ' ');
+                    stringAppendString(s, t->lexeme);
                 }
                 t = lexerGetToken();
             }
             if (directives[dir_expr_flush_echo])
             {
-                fprintf(stdout, "\n\tFlushed Input:%.*s\n", s.len, s.buffer);
-                stringFree(&s);
+                fprintf(stdout, "\n\tFlushed Input:%.*s\n", stringGetLength(s),
+                        stringGetBuffer(s));
+                stringDestroy(s);
             }
             break;
         }

@@ -26,9 +26,10 @@ bst_node *bst_nodeCreate(BST_T *, bst_node *, bst_node *, bst_node *);
 /* Private helper functions */
 bool bstInsertHelper(bst *, bst_node *, BST_T *);
 bool bstRemoveHelper(bst *, bst_node *, BST_T *);
-void bstClearHelper(bst_node *);
+void bstClearHelper(bst_node *, del_func);
 bst_node *bstFindMin(bst_node *);
 void bstReplaceSelf(bst_node *, bst_node *);
+void bstPrintHelper(bst_node *, print_func);
 
 bst *bstCreate(cmp_func cmp)
 {
@@ -79,14 +80,34 @@ bool bstContains(bst *t, BST_T *e)
     return false;
 }
 
+BST_T *bstGet(bst *t, BST_T *e)
+{
+    bst_node *n = t->root;
+    while (n != NULL)
+    {
+        if (t->compareTo(e, n->elem) == 0)
+            return n->elem;
+        else if (t->compareTo(e, n->elem) < 0)
+            n = n->left;
+        else
+            n = n->right;
+    }
+    return NULL;
+}
+
 unsigned int bstSize(bst *t)
 {
     return t->size;
 }
 
-void bstDestroy(bst *t)
+void bstPrint(bst *t, print_func pf)
 {
-    bstClearHelper(t->root);
+    bstPrintHelper(t->root, pf);
+}
+
+void bstDestroy(bst *t, del_func del)
+{
+    bstClearHelper(t->root, del);
     free(t);
     t = NULL;
 }
@@ -173,12 +194,14 @@ bool bstRemoveHelper(bst *t, bst_node *n, BST_T *e)
     return true;
 }
 
-void bstClearHelper(bst_node *n)
+void bstClearHelper(bst_node *n, del_func del)
 {
     if (n != NULL)
     {
-        bstClearHelper(n->left);
-        bstClearHelper(n->right);
+        bstClearHelper(n->left, del);
+        bstClearHelper(n->right, del);
+        if (del != NULL)
+            del(n->elem);
         free(n);
     }
 }
@@ -200,4 +223,13 @@ void bstReplaceSelf(bst_node *n, bst_node *newN)
         p->right = newN;
     if (newN != NULL)
         newN->parent = p;
+}
+
+void bstPrintHelper(bst_node *n, print_func pf)
+{
+    if (n == NULL)
+        return;
+    bstPrintHelper(n->left, pf);
+    pf(n->elem);
+    bstPrintHelper(n->right, pf);
 }

@@ -7,7 +7,7 @@ typedef struct __tokenbst_node tokenbst_node;
 
 struct __tokenbst_node
 {
-    BST_T elem;
+    TOKBST_T elem;
     tokenbst_node *parent;
     tokenbst_node *left;
     tokenbst_node *right;
@@ -20,12 +20,12 @@ struct __tokenbst
 };
 
 /* tokenbst_node methods */
-tokenbst_node *tokenbst_nodeCreate(BST_T, tokenbst_node *, tokenbst_node *,
+tokenbst_node *tokenbst_nodeCreate(TOKBST_T, tokenbst_node *, tokenbst_node *,
                                    tokenbst_node *);
 
 /* Private helper functions */
-bool tokenbstInsertHelper(tokenbst_node *, BST_T);
-bool tokenbstRemoveHelper(tokenbst_node *, tokenbst *, BST_T);
+bool tokenbstInsertHelper(tokenbst_node *, TOKBST_T);
+bool tokenbstRemoveHelper(tokenbst_node *, tokenbst *, TOKBST_T);
 void tokenbstClearHelper(tokenbst_node *);
 tokenbst_node *tokenbstFindMin(tokenbst_node *);
 void tokenbstReplaceSelf(tokenbst_node *, tokenbst_node *);
@@ -38,7 +38,7 @@ tokenbst *tokenbstCreate()
     return t;
 }
 
-bool tokenbstInsert(tokenbst *t, BST_T e)
+bool tokenbstInsert(tokenbst *t, TOKBST_T e)
 {
     bool success;
     if(t->size == 0)
@@ -53,7 +53,7 @@ bool tokenbstInsert(tokenbst *t, BST_T e)
     return success;
 }
 
-bool tokenbstRemove(tokenbst *t, BST_T e)
+bool tokenbstRemove(tokenbst *t, TOKBST_T e)
 {
     if (t->size == 0)
         return false;
@@ -63,7 +63,7 @@ bool tokenbstRemove(tokenbst *t, BST_T e)
     return success;
 }
 
-bool tokenbstContains(tokenbst *t, BST_T e)
+bool tokenbstContains(tokenbst *t, TOKBST_T e)
 {
     tokenbst_node *n = t->root;
     while (n != NULL)
@@ -90,7 +90,7 @@ void tokenbstDestroy(tokenbst *t)
     t = NULL;
 }
 
-tokenbst_node *tokenbst_nodeCreate(BST_T e, tokenbst_node *p,
+tokenbst_node *tokenbst_nodeCreate(TOKBST_T e, tokenbst_node *p,
                                    tokenbst_node *l, tokenbst_node *r)
 {
     tokenbst_node *n = (tokenbst_node *) malloc(sizeof(tokenbst_node));
@@ -101,7 +101,7 @@ tokenbst_node *tokenbst_nodeCreate(BST_T e, tokenbst_node *p,
     return n;
 }
 
-bool tokenbstInsertHelper(tokenbst_node *n, BST_T e)
+bool tokenbstInsertHelper(tokenbst_node *n, TOKBST_T e)
 {
     if (e == n->elem)
         return false;
@@ -125,7 +125,7 @@ bool tokenbstInsertHelper(tokenbst_node *n, BST_T e)
     }
 }
 
-bool tokenbstRemoveHelper(tokenbst_node *n, tokenbst *t, BST_T e)
+bool tokenbstRemoveHelper(tokenbst_node *n, tokenbst *t, TOKBST_T e)
 {
     if (n == NULL)
         return false;
