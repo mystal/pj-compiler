@@ -86,6 +86,7 @@ symbol *builtinGet(pjbuiltin pjb)
     string *name = stringCreate();
     stringAppendCharArray(name, builtinNames[pjb], sizeof(builtinNames[pjb]));
     symbol *sym = symbolCreate(name);
+    stringDestroy(name);
     symbolSetType(sym, symt_proc);
     switch (pjb)
     {
@@ -102,7 +103,6 @@ symbol *builtinGet(pjbuiltin pjb)
         case builtin_get:
             symbolProcSetParams(sym, 1, builtinParamTypes[pjb],
                                 builtinOptParams[pjb]);
-            symbolProcSetReturnType(sym, builtinRetTypes[pjb]);
             break;
         case builtin_read:
         case builtin_write:
@@ -110,10 +110,10 @@ symbol *builtinGet(pjbuiltin pjb)
         case builtin_writeln:
             symbolProcSetParams(sym, 2, builtinParamTypes[pjb],
                                 builtinOptParams[pjb]);
-            symbolProcSetReturnType(sym, builtinRetTypes[pjb]);
         default:
             break;
     }
+    symbolProcSetReturnType(sym, builtinRetTypes[pjb]);
     symbolProcSetBuiltin(sym);
     return sym;
 }

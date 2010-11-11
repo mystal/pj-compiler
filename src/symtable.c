@@ -138,7 +138,7 @@ void stDestroy(symtable *st)
 {
     if (listSize(st->blockList) != 1)
         fprintf(stderr, "Symbol table block leak!\n");
-    block *b = (block *) listGetFront(st->blockList);
+    block *b = (block *) listRemoveBack(st->blockList);
     stringDestroy(b->name);
     bstDestroy(b->symbols, bstDelSymbol); //Cleanup memory for symbols in bst
     free(b);

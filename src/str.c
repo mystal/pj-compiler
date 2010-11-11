@@ -37,35 +37,23 @@ void stringAppendChar(string *str, char c)
 
 void stringAppendString(string *str, string *other)
 {
-    unsigned int len1 = str->len;
-    unsigned int len2 = other->len;
-    bool resized = (len1 + len2) >= str->bytes_alloc;
-    while ((len1 + len2) >= str->bytes_alloc)
-        str->bytes_alloc *= 2;
-    if (resized)
-    {
-        char *newBuff = (char *) malloc(sizeof(char)*str->bytes_alloc);
-        strncpy(newBuff, str->buffer, len1);
-        free(str->buffer);
-        str->buffer = newBuff;
-    }
-    strncpy(str->buffer+len1, other->buffer, len2);
-    str->len += len2;
+    stringAppendCharArray(str, other->buffer, other->len);
 }
 
 void stringAppendCharArray(string *str, char *other, unsigned int n)
 {
-    bool resized = (str->len + n) >= str->bytes_alloc;
-    while ((str->len + n) >= str->bytes_alloc)
+    unsigned int len = str->len;
+    bool resized = (len + n) >= str->bytes_alloc;
+    while ((len + n) >= str->bytes_alloc)
         str->bytes_alloc *= 2;
     if (resized)
     {
         char *newBuff = (char *) malloc(sizeof(char)*str->bytes_alloc);
-        strncpy(newBuff, str->buffer, str->len);
+        strncpy(newBuff, str->buffer, len);
         free(str->buffer);
         str->buffer = newBuff;
     }
-    strncpy(str->buffer+str->len, other, n);
+    strncpy(str->buffer+len, other, n);
     str->len += n;
 }
 
