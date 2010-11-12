@@ -1,0 +1,12 @@
+(**************************************************************)
+(*                                                            *)
+(*   this is a simple program with a single assignment.       *)
+(*                                                            *)
+(**************************************************************)
+(*$c+*)
+program trivial(input,output);
+var
+   i : integer;
+begin
+   i := 502
+end. (* trivial *)

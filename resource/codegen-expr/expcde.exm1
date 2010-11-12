@@ -1,0 +1,68 @@
+program x (input, output, fle1, fle2);
+const
+   charcon = 'a';
+   alfacon = '1234567890';
+   intcon = 1;
+   realcon = 1.2;
+var
+   fle1:text;
+   fle2:text;
+   intvbl:integer;
+   realvbl:real;
+   charvbl:char;
+   alfavbl:alfa;
+begin
+   intvbl := intcon;
+
+ ispace :    4 : pushi      :          1     0
+ 
+   intvbl := intvbl;
+
+ ispace :    6 : push       :   10000018     1
+
+   realvbl := realcon;
+
+ ispace :    8 : pushi      :  1.20000e+00     0
+ 
+   realvbl := realvbl;
+
+ ispace :   10 : push       :   10000019     1
+ 
+   charvbl := charcon;
+
+ ispace :   12 : pushi      : a     0
+ 
+   charvbl := charvbl;
+
+ ispace :   14 : push       :   10000020     1
+ 
+   alfavbl := alfacon;
+
+ ispace :   16 : pushi      : 1234567890     0
+ 
+   alfavbl := alfavbl;
+
+ ispace :   18 : push       :   10000021     1
+ 
+   fle1^ := charvbl;
+
+ ispace :   21 : push       :   10000020     1
+ 
+   fle1^ := fle2^;
+
+ ispace :   24 : pushi      : fle2           0
+ ispace :   25 : syscall    :          7     0
+ 
+   realvbl := intvbl + realvbl;
+
+ ispace :   26 : push       :   10000018     1
+ ispace :   27 : push       :   10000019     1
+ ispace :   28 : float      :          1     0
+ ispace :   29 : add        :          1     0
+ 
+   intvbl := ord ('a')
+
+ ispace :   31 : pushi      : a     0
+ ispace :   32 : syscall    :         18     0
+
+end.

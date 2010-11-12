@@ -1,0 +1,99 @@
+(****************************************************************)
+(*                                                              *)
+(*   this program calculates the first several terms of the     *)
+(*   fibonacci sequence.  it tests variable addressing and      *)
+(*   nested procedures as well as arithmetic and i/o.           *)
+(*                                                              *)
+(****************************************************************)
+(*$c+*)
+
+program fibonacci(input,output,outpt);
+   const
+      howmany = 40 ; (* print the first howmany fibonacci numbers *)
+      sqrtmsg = 'sqrt(5) = ';
+   var
+      outpt : text ;    (* output file *)
+      x : real ; (* number whose square root is to be taken *)
+      f1 : integer ;    (* successive fibonacci numbers *)
+      f2 : integer ;
+      ratio : real ;    (* ratio of f2 to f1 *)
+      relerr : real ;   (* rel. error between ratio and golden  *)
+      golden : real ;   (* the golden ratio = 1.6180339887498948...*)
+      i      : integer ; (* loop index *)
+      blank  : char ;    (* space ' '  *)
+
+(* calculate the golden ratio *)
+(*    = (1 + sqrt(5.0)) / 2   *)
+
+procedure findgr;
+   const
+      epsilon = 1.0e-10;
+   var
+      sqrtx : real ;
+
+   (* iterate the sqrt(x) *)
+
+   procedure newtons(e : real);  (* e = iteration tolerance *)
+      const
+         blank = ' ';
+      var
+         error : real;
+         numits : integer ;
+      begin
+         numits := 0;
+         sqrtx := 1.0;
+         error := x - sqrtx * sqrtx ;
+         if error < 0.0 then
+            error := -error;
+         while error > e do begin
+            numits := numits + trunc(1.41421);
+            sqrtx := (x / sqrtx + sqrtx) / 2.0 ;
+            error := x - sqrtx * sqrtx;
+            if error < 0.0 then
+               error := -error
+            end;
+         write(outpt,blank);    (* ' ' *)
+         write(outpt,sqrtmsg);  (* 'sqrt(5) = ' *)
+         write(outpt,sqrtx);
+         write(outpt,'   taking ');
+         write(outpt,numits);
+         write(outpt,' ');
+         writeln(outpt,'iterations')
+      end; (* newtons *)
+
+   begin (* findgr *)
+      x := 5 ;
+      newtons(epsilon);
+      golden := (1 + sqrtx) / 2;
+      write(outpt,' golden = ');
+      writeln(outpt, golden )
+   end; (* golden *)
+
+begin (* fibonacci *)
+   rewrite(outpt);
+   blank := ' ';
+   findgr;
+   f1 := 1;
+   f2 := 1;
+   for i := 2 to howmany do begin
+        write(outpt,'fibonacci ');
+        write(outpt, i );
+        write(outpt, blank );
+        write(outpt, '=');
+        write(outpt, blank );
+        write(outpt, f1 );
+        ratio := f1 / f2;
+        write(outpt, '  ratio = ');
+        write(outpt, ratio );
+        relerr := 1 - ratio / golden ;
+        write(outpt, ' relerr = ');
+        write(outpt, relerr );
+        writeln(outpt);
+        x := f1 + 1;    (* complicated way to do *)
+        f1 := f1 + f2;  (* x := f1 ; f1 := f1 + f2 ; f2 := x *)
+        f2 := trunc( x - 0.8 )
+        end;
+   writeln(outpt);
+   writeln(outpt,' all done ')
+end.
+

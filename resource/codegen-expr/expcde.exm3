@@ -1,0 +1,29 @@
+program x (input, output, fle1);
+var
+   fle1:text;
+   intvbl:integer;
+   realvbl:real;
+   charvbl:char;
+   alfavbl:alfa;
+begin
+   read(fle1,intvbl);
+
+ ispace :    4 : pushi      : fle1           0
+ ispace :    7 : push       :   10000017     1      THIS WILL CHANGE!
+ 
+   read(fle1,realvbl);
+
+ ispace :    8 : pushi      : fle1           0
+ ispace :   11 : push       :   10000018     1      THIS WILL CHANGE!
+ 
+   read(fle1,charvbl);
+
+ ispace :   12 : pushi      : fle1           0
+ ispace :   15 : push       :   10000019     1      THIS WILL CHANGE!
+ 
+   read(fle1,alfavbl)
+
+ ispace :   18 : pushi      : fle1           0
+ ispace :   19 : push       :   10000021     1      THIS WILL CHANGE!
+
+end.

@@ -1,0 +1,312 @@
+(****************************************************************)
+(*                                                              *)
+(*   this program calculates the first several terms of the     *)
+(*   fibonacci sequence.  it tests variable addressing and      *)
+(*   nested procedures as well as arithmetic and i/o.           *)
+(*                                                              *)
+(****************************************************************)
+
+program fibonacci(input,output,outpt);
+
+   const
+      howmany = 40 ; (* print the first howmany fibonacci numbers *)
+      sqrtmsg = 'sqrt(5) = ';
+
+   var
+      outpt : text ;    (* output file *)
+      x : real ; (* number whose square root is to be taken *)
+      f1 : integer ;    (* successive fibonacci numbers *)
+      f2 : integer ;
+      ratio : real ;    (* ratio of f2 to f1 *)
+      relerr : real ;   (* rel. error between ratio and golden  *)
+      golden : real ;   (* the golden ratio = 1.6180339887498948...*)
+      i      : integer ; (* loop index *)
+      blank  : char ;    (* space ' '  *)
+
+(* calculate the golden ratio *)
+(*    = (1 + sqrt(5.0)) / 2   *)
+
+procedure findgr;
+
+   const
+      epsilon = 1.0e-10;
+
+   var
+      sqrtx : real ;
+
+   (* iterate the sqrt(x) *)
+
+   procedure newtons(e : real);  (* e = iteration tolerance *)
+
+      const
+         blank = ' ';
+
+      var
+         error : real;
+         numits : integer ;
+
+      begin
+         numits := 0;
+
+ ispace :   13 : pushi      :          0     0
+ 
+         sqrtx := 1.0;
+
+ ispace :   15 : pushi      :  1.00000E+00     0
+ 
+         error := x - sqrtx * sqrtx ;
+
+ ispace :   17 : push       :  111300003     1
+ ispace :   18 : push       :  111400002     1
+ ispace :   19 : push       :  111400002     1
+ ispace :   20 : mult       :          1     0
+ ispace :   21 : sub        :          1     0
+
+         if error < 0.0 then
+
+ ispace :   23 : push       :   10000019     1
+ ispace :   24 : pushi      :  0.00000E+00     0
+ ispace :   25 : lt         :          0     0
+
+            error := -error;
+
+ ispace :   27 : push       :   10000019     1
+ ispace :   28 : negate     :          1     0
+
+         while error > e do begin
+
+ ispace :   30 : push       :   10000019     1
+ ispace :   31 : push       :   10000018     1
+ ispace :   32 : gt         :          0     0
+ 
+            numits := numits + trunc(1.41421);
+
+ ispace :   34 : push       :   10000020     1
+ ispace :   35 : pushi      :  1.41421E+00     0
+ ispace :   36 : trunc      :          0     0
+ ispace :   37 : add        :          0     0
+
+            sqrtx := (x / sqrtx + sqrtx) / 2.0 ;
+
+ ispace :   39 : push       :  111300003     1
+ ispace :   40 : push       :  111400002     1
+ ispace :   41 : div        :          1     0
+ ispace :   42 : push       :  111400002     1
+ ispace :   43 : add        :          1     0
+ ispace :   44 : pushi      :  2.00000E+00     0
+ ispace :   45 : div        :          1     0
+ 
+            error := x - sqrtx * sqrtx;
+
+ ispace :   47 : push       :  111300003     1
+ ispace :   48 : push       :  111400002     1
+ ispace :   49 : push       :  111400002     1
+ ispace :   50 : mult       :          1     0
+ ispace :   51 : sub        :          1     0
+
+            if error < 0.0 then
+
+ ispace :   53 : push       :   10000019     1
+ ispace :   54 : pushi      :  0.00000E+00     0
+ ispace :   55 : lt         :          0     0
+ 
+               error := -error
+            end;
+
+ ispace :   57 : push       :   10000019     1
+ ispace :   58 : negate     :          1     0
+
+         write(outpt,blank);    (* ' ' *)
+
+ ispace :   61 : pushi      : outpt          0
+ ispace :   63 : pushi      :        0
+ 
+         write(outpt,sqrtmsg);  (* 'sqrt(5) = ' *)
+
+ ispace :   67 : pushi      : outpt          0
+ ispace :   69 : pushi      : sqrt(5) =      0
+
+         write(outpt,sqrtx);
+
+ ispace :  132 : pushi      : outpt          0
+ ispace :  134 : push       :  111400002     1
+
+         write(outpt,'   taking ');
+
+ ispace :  136 : pushi      : outpt          0
+ ispace :  138 : pushi      :    taking      0
+ 
+         write(outpt,numits);
+
+ ispace :  201 : pushi      : outpt          0
+ ispace :  203 : push       :   10000020     1
+
+         write(outpt,' ');
+
+ ispace :  205 : pushi      : outpt          0
+ ispace :  207 : pushi      :       0
+
+         writeln(outpt,'iterations')
+
+ ispace :  211 : pushi      : outpt          0
+ ispace :  213 : pushi      : iterations     0
+
+      end; (* newtons *)
+
+   begin (* findgr *)
+      x := 5 ;
+
+ ispace :  280 : pushi      :          5     0
+ 
+      newtons(epsilon);
+
+ ispace :  283 : pushi      :  1.00000E-10     0
+
+      golden := (1 + sqrtx) / 2;
+
+ ispace :  287 : pushi      :          1     0
+ ispace :  288 : push       :   10000017     1
+ ispace :  289 : float      :          1     0
+ ispace :  290 : add        :          1     0
+ ispace :  291 : pushi      :          2     0
+ ispace :  292 : float      :          0     0
+ ispace :  293 : div        :          1     0
+ 
+      write(outpt,' golden = ');
+
+ ispace :  295 : pushi      : outpt          0
+ ispace :  297 : pushi      :  golden =      0
+
+      writeln(outpt, golden )
+
+ ispace :  360 : pushi      : outpt          0
+ ispace :  362 : push       :  111300008     1
+
+   end; (* golden *)
+begin (* fibonacci *)
+   rewrite(outpt);
+
+ ispace :  368 : pushi      : outpt          0
+
+   blank := ' ';
+
+ ispace :  372 : pushi      :       0
+
+   findgr;
+   f1 := 1;
+
+ ispace :  376 : pushi      :          1     0
+ 
+   f2 := 1;
+
+ ispace :  378 : pushi      :          1     0
+ 
+   for i := 2 to howmany do begin
+
+ ispace :  380 : pushi      :          2     0
+ ispace :  382 : pushi      :         40     0
+
+        write(outpt,'fibonacci ');
+
+ ispace :  387 : pushi      : outpt          0
+ ispace :  389 : pushi      : fibbonacci     0
+ 
+        write(outpt, i );
+
+ ispace :  452 : pushi      : outpt          0
+ ispace :  454 : push       :   10000023     1
+
+        write(outpt, blank );
+
+ ispace :  456 : pushi      : outpt          0
+ ispace :  458 : push       :   10000024     1 
+ 
+        write(outpt, '=');
+
+ ispace :  462 : pushi      : outpt          0
+ ispace :  464 : pushi      : =     0
+ 
+        write(outpt, blank );
+
+ ispace :  468 : pushi      : outpt          0
+ ispace :  470 : push       :   10000024     1
+ 
+        write(outpt, f1 );
+
+ ispace :  474 : pushi      : outpt          0
+ ispace :  476 : push       :   10000018     1
+
+        ratio := f1 / f2;
+
+ ispace :  478 : push       :   10000018     1
+ ispace :  479 : push       :   10000019     1
+ ispace :  480 : float      :          1     0
+ ispace :  481 : float      :          0     0
+ ispace :  482 : div        :          1     0
+ 
+        write(outpt, '  ratio = ');
+
+ ispace :  484 : pushi      : outpt          0
+ ispace :  486 : pushi      :   ratio =      0
+
+        write(outpt, ratio );
+
+ ispace :  549 : pushi      : outpt          0
+ ispace :  551 : push       :   10000020     1
+ 
+        relerr := 1 - ratio / golden ;
+
+ ispace :  553 : pushi      :          1     0
+ ispace :  554 : push       :   10000020     1
+ ispace :  555 : push       :   10000022     1
+ ispace :  556 : div        :          1     0
+ ispace :  557 : float      :          1     0
+ ispace :  558 : sub        :          1     0
+ 
+        write(outpt, ' relerr = ');
+
+ ispace :  560 : pushi      : outpt          0
+ ispace :  562 : pushi      :  relerr =      0
+ 
+        write(outpt, relerr );
+
+ ispace :  625 : pushi      : outpt          0
+ ispace :  627 : push       :   10000021     1
+
+        writeln(outpt);
+
+ ispace :  629 : pushi      : outpt          0
+ 
+        x := f1 + 1;    (* complicated way to do *)
+
+ ispace :  632 : push       :   10000018     1
+ ispace :  633 : pushi      :          1     0
+ ispace :  634 : add        :          0     0
+ 
+        f1 := f1 + f2;  (* x := f1 ; f1 := f1 + f2 ; f2 := x *)
+
+
+ ispace :  637 : push       :   10000018     1
+ ispace :  638 : push       :   10000019     1
+ ispace :  639 : add        :          0     0
+ 
+        f2 := trunc( x - 0.8 )
+
+ ispace :  641 : push       :   10000017     1
+ ispace :  642 : pushi      :  8.00000E-01     0
+ ispace :  643 : sub        :          1     0
+ 
+        end;
+
+ ispace :  644 : trunc      :          0     0
+
+   writeln(outpt);
+
+ ispace :  652 : pushi      : outpt          0
+
+   writeln(outpt,' all done ')
+
+ ispace :  655 : pushi      : outpt          0
+ ispace :  657 : pushi      :  all done      0
+
+end.

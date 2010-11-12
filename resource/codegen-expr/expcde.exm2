@@ -1,0 +1,88 @@
+program x (input, output, fle1);
+const
+   charcon = 'a';
+   alfacon = '1234567890';
+   intcon = 1;
+   realcon = 1.2;
+var
+   fle1:text;
+   intvbl:integer;
+   realvbl:real;
+   charvbl:char;
+   alfavbl:alfa;
+begin
+   write(fle1,123);
+
+ ispace :    4 : pushi      : fle1           0
+ ispace :    6 : pushi      :        123     0
+
+   write(fle1,intcon);
+
+ ispace :    8 : pushi      : fle1           0
+ ispace :   10 : pushi      :          1     0
+ 
+   write(fle1,intvbl);
+
+ ispace :   12 : pushi      : fle1           0
+ ispace :   14 : push       :   10000018     1
+ 
+   write(fle1,1.2);
+
+ ispace :   16 : pushi      : fle1           0
+ ispace :   18 : pushi      :  1.20000e+00     0
+ 
+   write(fle1,realcon);
+
+ ispace :   20 : pushi      : fle1           0
+ ispace :   22 : pushi      :  1.20000e+00     0
+ 
+   write(fle1,realvbl);
+
+ ispace :   24 : pushi      : fle1           0
+ ispace :   26 : push       :   10000019     1
+ 
+   write(fle1,'a');
+
+ ispace :   28 : pushi      : fle1           0
+ ispace :   30 : pushi      : a     0
+ 
+   write(fle1,charcon);
+
+ ispace :   34 : pushi      : fle1           0
+ ispace :   36 : pushi      : a     0
+ 
+   write(fle1,charvbl);
+
+ ispace :   40 : pushi      : fle1           0
+ ispace :   42 : push       :   10000020     1
+ 
+   write(fle1,'1234567890');
+
+ ispace :   46 : pushi      : fle1           0
+ ispace :   48 : pushi      : 1234567890     0
+ 
+   write(fle1,alfacon);
+
+ ispace :  111 : pushi      : fle1           0
+ ispace :  113 : pushi      : 1234567890     0
+ 
+   write(fle1,alfavbl);
+
+ ispace :  176 : pushi      : fle1           0
+ ispace :  178 : push       :   10000021     1
+
+   write(fle1,intcon+realvbl);
+
+ ispace :  241 : pushi      : fle1           0
+ ispace :  243 : pushi      :          1     0
+ ispace :  244 : push       :   10000018     1
+ ispace :  245 : float      :          1     0
+ ispace :  246 : add        :          1     0
+ 
+   write(fle1,ord('a'))
+
+ ispace :  248 : pushi      : fle1           0
+ ispace :  250 : pushi      : a     0
+ ispace :  251 : syscall    :         18     0
+ 
+end.

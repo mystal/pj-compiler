@@ -1,0 +1,20 @@
+(**************************************************************)
+(*                                                            *)
+(*   this is a simple program with a single procedure call.   *)
+(*                                                            *)
+(**************************************************************)
+(*$c+*)
+program simple(input,output);
+var
+   x : integer;
+   y : integer;
+procedure inner(x : integer);
+   begin
+      y := x
+   end; (* inner *)
+begin (* simple *)
+   x := 1;
+   y := 2;
+   inner(5)
+end.
+

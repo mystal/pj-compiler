@@ -1,0 +1,39 @@
+program test7(input,output);
+const
+  i0=5;
+  r0=3.3;
+var
+  i1:integer;
+  i2:integer;
+  r1:real;
+  r2:real;
+  b:boolean;
+  c:char;
+  a:alfa;
+  y:integer;m:integer;d:integer;day:integer;
+begin
+  b:=not (i1<i2) or (i1<=r2) and (r1>i2) and not ((r1>=r2) or false or not 
+        not not true);
+
+  day:=(1461*y) div 4 + (153*m + 2) div 5 + d;
+  
+  i1:= +++++++++++++++++++++++++i1----i2*+-r1/r2/r1*r1+i1-i2-r2;
+  if i1<>i2 then i1:=i2
+  else if r1=r2 then r2:=r1;
+
+  b:=+b;        (*) error (*)
+  b:=true and not false;
+
+  i1:=trunc(3.14)+round(sqr(2.5))*ord(chr(32+17*3 div 2))-ord(output^)
+        + sqr(7) + ord('a');
+
+  i:=b<b;       (*) more errors (*)
+  i:=r1+c;
+  i:=a/r2;
+  i:=c^;
+  r2^:=r1^;
+
+  i1:=i2 mod 5 div 3 mod 7
+end.
+
+   

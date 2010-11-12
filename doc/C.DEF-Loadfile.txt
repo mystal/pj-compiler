@@ -1,0 +1,34 @@
+typedef char alfa[10];
+enum typs { integer, re, ch, alf, bool } ;
+enum spaces { ispace, dspace, regs } ;
+
+struct varval {
+	enum typs typ;
+	union {
+		int intval;
+		float realval;
+		char charval;
+		alfa alfaval;   /* array of 10 characters */
+		char boolval;   /* set to NUMERIC 0 or 1 */
+	} ircab_val;
+};
+
+struct instruction {
+	int opcode;
+	struct varval oper1;
+	int oper2;
+};
+
+struct registr {            /* note: "register" is a reserved word in C */
+	int regnum, regval;
+};
+
+struct loadrec {
+	int loc;
+	enum spaces space;
+	union {
+		struct instruction ivalue;
+		struct varval dvalue;
+		struct registr rvalue;
+	} idr_value;
+};
