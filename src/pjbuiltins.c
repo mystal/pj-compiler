@@ -84,7 +84,7 @@ pjtype builtinRetTypes[builtin_num] =
 symbol *builtinGet(pjbuiltin pjb)
 {
     string *name = stringCreate();
-    stringAppendCharArray(name, builtinNames[pjb], sizeof(builtinNames[pjb]));
+    stringAppendCharArray(name, builtinNames[pjb], sizeof(builtinNames[pjb])-1);
     symbol *sym = symbolCreate(name);
     stringDestroy(name);
     symbolSetType(sym, symt_proc);

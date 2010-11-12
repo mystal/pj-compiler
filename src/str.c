@@ -64,21 +64,18 @@ void stringDrop(string *str, unsigned int n)
 
 int stringCompareString(string *s1, string *s2)
 {
-    return stringCompareCharArray(s1, stringGetBuffer(s2),
-                                  stringGetLength(s2));
+    return stringCompareCharArray(s1, s2->buffer, s2->len);
 }
 
 int stringCompareCharArray(string *s1, char *s2, unsigned int n)
 {
-    unsigned int i = 0;
-    while (i < s1->len && i < n)
+    for (unsigned int i = 0; i < s1->len && i < n; i++)
     {
         int diff = tolower(s1->buffer[i]) - tolower(s2[i]);
         if (diff < 0)
             return -1;
         if (diff > 0)
             return 1;
-        i++;
     }
     if (s1->len < n)
         return -1;

@@ -25,8 +25,8 @@ typedef struct __block
 /* Private helper functions */
 void initBuiltins(symtable *);
 
-/* cmp_func for the bsts in blocks */
-int symbolCompareTo(void *, void *);
+/* cmp_func for symbols */
+int bstCompareSymbol(void *, void *);
 
 /* print_func for symbols */
 void bstPrintSymbol(void *);
@@ -41,8 +41,8 @@ symtable *stCreate()
     //Initialize list with pj builtin procedures
     block *b = (block *) malloc(sizeof(block));
     b->name = stringCreate();
-    stringAppendCharArray(b->name, "block0", sizeof("block0"));
-    b->symbols = bstCreate(symbolCompareTo);
+    stringAppendCharArray(b->name, "block0", 6*sizeof(char));
+    b->symbols = bstCreate(bstCompareSymbol);
     b->nextLoc = 1;
     listAddBack(st->blockList, b);
     initBuiltins(st);
@@ -53,19 +53,19 @@ void stEnterBlock(symtable *st, string *name)
 {
     block *b = (block *) malloc(sizeof(block));
     b->name = name;
-    b->symbols = bstCreate(symbolCompareTo);
+    b->symbols = bstCreate(bstCompareSymbol);
     b->nextLoc = 1;
     listAddBack(st->blockList, b);
     //Add input and output files to new block
     string *str = stringCreate();
-    stringAppendCharArray(str, "input", 5);
+    stringAppendCharArray(str, "input", 5*sizeof(char));
     symbol *sym = symbolCreate(str);
     stringDestroy(str);
     symbolSetType(sym, symt_var);
     symbolSetPJType(sym, pj_text);
     stAddSymbol(st, sym);
     str = stringCreate();
-    stringAppendCharArray(str, "output", 6);
+    stringAppendCharArray(str, "output", 6*sizeof(char));
     sym = symbolCreate(str);
     symbolSetType(sym, symt_var);
     symbolSetPJType(sym, pj_text);
@@ -95,9 +95,8 @@ bool stAddSymbol(symtable *st, symbol *sym)
             return false;
     }
     b = (block *) listGetBack(st->blockList);
-    //Fail if already in block, or sharing name with parent
-    if (bstContains(b->symbols, sym) || (listSize(st->blockList) > 1 &&
-        stringCompareString(b->name, symbolGetName(sym)) == 0))
+    //Fail if already in block
+    if (bstContains(b->symbols, sym))
         return false;
     sym_type type = symbolGetType(sym);
     if (type == symt_var || type == symt_array || type == symt_proc)
@@ -147,17 +146,17 @@ void stDestroy(symtable *st)
     st = NULL;
 }
 
-int symbolCompareTo(void *v1, void *v2)
-{
-    symbol *s1 = (symbol *) v1;
-    symbol *s2 = (symbol *) v2;
-    return stringCompareString(symbolGetName(s1), symbolGetName(s2));
-}
-
 void initBuiltins(symtable *st)
 {
     for (unsigned int i = 0; i < builtin_num; i++)
         stAddSymbol(st, builtinGet(i));
+}
+
+int bstCompareSymbol(void *v1, void *v2)
+{
+    symbol *s1 = (symbol *) v1;
+    symbol *s2 = (symbol *) v2;
+    return stringCompareString(symbolGetName(s1), symbolGetName(s2));
 }
 
 void bstPrintSymbol(void *v)

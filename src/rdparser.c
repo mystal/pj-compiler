@@ -65,18 +65,13 @@ void initStopSet(void);
 void addFilename(bst *, string *);
 int stringToInt(string *);
 
-/* print_func for strings */
-void bstPrintString(void *);
-
-/* del_func for strings */
-void bstDelString(void *);
-
+/* Parsing procedures */
 void program(void);
 void prog_arg_list(bst *);
 void block(bst *);
 void const_decl(void);
 void var_decl(bst *);
-void var_id_list(void);
+void var_id_list(list *);
 void type_decl(sym_type *, unsigned int *, unsigned int *, pjtype *);
 void proc(void);
 void param_list(list *);
@@ -93,13 +88,18 @@ void arg_list(void);
 pjtype stype(void);
 pjtype constant(void);
 
-/* cmp_func for bst */
-int stringCompareTo(void *, void *);
+/* cmp_func for strings */
+int bstCompareString(void *, void *);
+
+/* print_func for strings */
+void bstPrintString(void *);
+
+/* del_func for strings */
+void bstDelString(void *);
 
 /* Private variables used by parser */
 token *t;
 symtable *st;
-list *ids;
 tokenbst *followSet;
 tokenbst *stopSet;
 
@@ -109,7 +109,6 @@ void parse()
     st = stCreate();
     if (directives[dir_sym_table])
         stPrintBlocks(st, 1);
-    ids = listCreate();
     followSet = tokenbstCreate();
     stopSet = tokenbstCreate();
     initStopSet();
@@ -117,7 +116,6 @@ void parse()
     program();
     tokenbstDestroy(followSet);
     tokenbstDestroy(stopSet);
-    listDestroy(ids);
     stDestroy(st);
     lexerCleanup();
 }
@@ -184,7 +182,7 @@ void program()
     t = lexerGetToken();
     EXPECT_GOTO(tok_lparen, blockStart);
     t = lexerGetToken();
-    progFiles = bstCreate(stringCompareTo);
+    progFiles = bstCreate(bstCompareString);
     prog_arg_list(progFiles);
     EXPECT_GOTO(tok_rparen, blockStart);
     t = lexerGetToken();
@@ -301,13 +299,14 @@ const_declEnd:
 
 void var_decl(bst *progFiles)
 {
+    list *ids = listCreate();
     symbol *sym;
     sym_type symt;
     pjtype pjt;
     unsigned int low, up;
     dirTrace("var_decl", tr_enter);
     tokenbstInsert(followSet, tok_id);
-    var_id_list();
+    var_id_list(ids);
     type_decl(&symt, &low, &up, &pjt);
     while (listSize(ids) != 0)
     {
@@ -351,10 +350,11 @@ void var_decl(bst *progFiles)
     t = lexerGetToken();
 var_declEnd:
     tokenbstRemove(followSet, tok_id);
+    listDestroy(ids);
     dirTrace("var_decl", tr_exit);
 }
 
-void var_id_list()
+void var_id_list(list *ids)
 {
     symbol *sym;
     dirTrace("var_id_list", tr_enter);
@@ -782,18 +782,18 @@ pjtype constant()
     return pjt;
 }
 
-int stringCompareTo(void *v1, void *v2)
-{
-    string *s1 = (string *) v1;
-    string *s2 = (string *) v2;
-    return stringCompareString(s1, s2);
-}
-
 int stringToInt(string *str)
 {
     int ret;
     sscanf(stringGetBuffer(str), "%d", &ret);
     return ret;
+}
+
+int bstCompareString(void *v1, void *v2)
+{
+    string *s1 = (string *) v1;
+    string *s2 = (string *) v2;
+    return stringCompareString(s1, s2);
 }
 
 void bstPrintString(void *v)
