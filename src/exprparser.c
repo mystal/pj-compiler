@@ -102,7 +102,7 @@ void expr(token *t)
             s->sym.term = term;
             s->isTerm = true;
             stackPush(stk, s);
-            if (directives[dir_print_reduction])
+            if (dirGet(dir_print_reduction))
                 fprintf(stdout, "SHIFT: %s '%.*s' \n", exprSymbolString(s->sym, s->isTerm),
                         stringGetLength(t->lexeme), stringGetBuffer(t->lexeme));
             //Grab next input token
@@ -125,12 +125,12 @@ void expr(token *t)
             s->sym.nonterm = p.lhs;
             s->isTerm = false;
             stackPush(stk, s);
-            if (directives[dir_print_reduction])
+            if (dirGet(dir_print_reduction))
                 fprintf(stdout, "REDUCE[%d]: %s\n", entry.num, prodString(entry.num));
         }
         else if (entry.act == act_accept) //Parsing is done
         {
-            if (directives[dir_expr_flush_echo])
+            if (dirGet(dir_expr_flush_echo))
                 fprintf(stdout, "ACCEPT\n");
             break;
         }
@@ -138,7 +138,7 @@ void expr(token *t)
         {
             string *s;
             errorParse(err_unex_expr, t, tok_undef);
-            if (directives[dir_expr_flush_echo])
+            if (dirGet(dir_expr_flush_echo))
             {
                 fprintf(stdout, "\tFlushed Stack:");
                 flushStack(stk);
@@ -147,14 +147,14 @@ void expr(token *t)
             //Flush input until next nonexpression token
             while (isExprToken(t))
             {
-                if (directives[dir_expr_flush_echo])
+                if (dirGet(dir_expr_flush_echo))
                 {
                     stringAppendChar(s, ' ');
                     stringAppendString(s, t->lexeme);
                 }
                 t = lexerGetToken();
             }
-            if (directives[dir_expr_flush_echo])
+            if (dirGet(dir_expr_flush_echo))
             {
                 fprintf(stdout, "\n\tFlushed Input:%.*s\n", stringGetLength(s),
                         stringGetBuffer(s));

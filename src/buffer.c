@@ -55,7 +55,7 @@ bool fillBuffer()
             // Validate input, change invalid characters to spaces
             if (!isprint(buffer[i]) && buffer[i] != '\n')
                 buffer[i] = ' ';
-        if (directives[dir_listing])
+        if (dirGet(dir_listing))
             fprintf(stdout, "%d: %s", line, buffer);
         line++;
         pos = 0;

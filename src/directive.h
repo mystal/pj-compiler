@@ -12,14 +12,9 @@ typedef enum __directive
     dir_rd_flush_echo,
     dir_tracing,
     dir_sym_table,
+    dir_echo_code,
     dir_num
 } directive;
-
-/* Flags for current directives */
-extern bool directives[];
-
-/* Characters of directives */
-extern const char dirChars[];
 
 /* Enumeration for specifying entrance or exit of parser productions */
 typedef enum __trace_status
@@ -27,6 +22,22 @@ typedef enum __trace_status
     tr_enter,
     tr_exit
 } trace_status;
+
+/**
+ * Sets the value of the directive represented by the first char. If the
+ * second char is '+', sets to true, else sets to false.
+ **/
+void dirSet(char, char);
+
+/**
+ * Gets the current value of the given directive.
+ **/
+bool dirGet(directive);
+
+/**
+ * Gets the char representation of the given directive.
+ **/
+char dirChar(directive);
 
 /**
  * If dir_tracing is turned on,

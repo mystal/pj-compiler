@@ -8,7 +8,7 @@
 #include "state.h"
 #include "token.h"
 
-// Function pointer type for actions
+/* Function pointer type for actions */
 typedef void (*action_func)(state, token *, char);
 
 typedef struct __transition
@@ -17,15 +17,9 @@ typedef struct __transition
     action_func action;
 } transition;
 
-// Shortened action names
-#define AAB actAcceptBuild
-#define AAI actAcceptIntPushBack
-#define AAP actAcceptPushBack
-#define ABU actBuild
-#define ADI actDiscard
-#define AER actError
-#define AIG actIgnore
-#define APD actProcessDirective
+/* Helper functions */
+char_class lookupCharClass(char);
+token_kind classify(state s, char c);
 
 /* Actions */
 void actAcceptBuild(state, token *, char);
@@ -36,6 +30,16 @@ void actDiscard(state, token *, char);
 void actError(state, token *, char);
 void actIgnore(state, token *, char);
 void actProcessDirective(state, token *, char);
+
+/* Shortened action names */
+#define AAB actAcceptBuild
+#define AAI actAcceptIntPushBack
+#define AAP actAcceptPushBack
+#define ABU actBuild
+#define ADI actDiscard
+#define AER actError
+#define AIG actIgnore
+#define APD actProcessDirective
 
 /**
  * Transition table. Rows represent states, columns represent character
@@ -142,10 +146,6 @@ transition trans_table [state_num][ccls_num] =
              DEF, DEF, DEF, DEF, DEF}
 };
 
-/* Helper functions */
-char_class lookupCharClass(char);
-token_kind classify(state s, char c);
-
 state performAction(state s, char c, token *t)
 {
     char_class ccls = lookupCharClass(c);
@@ -233,22 +233,10 @@ void actIgnore(state s, token *t, char c)
  **/
 void actProcessDirective(state s, token *t, char c)
 {
-    char test, d, f;
+    char test;
     do
     {
-        d = bufferGetChar();
-        f = bufferGetChar();
-        for (unsigned int i = 0; i < dir_num; i++)
-        {
-            if (tolower(d) == dirChars[i])
-            {
-                if (f == '+')
-                    directives[i] = true;
-                else
-                    directives[i] = false;
-                break;
-            }
-        }
+        dirSet(bufferGetChar(), bufferGetChar());
         test = bufferGetChar();
     } while (test == ',');
     bufferPushBack(1);

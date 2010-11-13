@@ -107,7 +107,7 @@ void parse()
 {
     lexerInit();
     st = stCreate();
-    if (directives[dir_sym_table])
+    if (dirGet(dir_sym_table))
         stPrintBlocks(st, 1);
     followSet = tokenbstCreate();
     stopSet = tokenbstCreate();
@@ -123,19 +123,19 @@ void parse()
 void errorRecovery()
 {
     string *s;
-    if (directives[dir_rd_flush_echo])
+    if (dirGet(dir_rd_flush_echo))
         s = stringCreate();
     while (t->kind != tok_undef && !tokenbstContains(followSet, t->kind)
            && !tokenbstContains(stopSet, t->kind))
     {
-        if (directives[dir_rd_flush_echo])
+        if (dirGet(dir_rd_flush_echo))
         {
             stringAppendChar(s, ' ');
             stringAppendString(s, t->lexeme);
         }
         t = lexerGetToken();
     }
-    if (directives[dir_rd_flush_echo])
+    if (dirGet(dir_rd_flush_echo))
     {
         fprintf(stdout, "\tFlushed Tokens:%.*s\n", stringGetLength(s),
                 stringGetBuffer(s));
@@ -245,7 +245,7 @@ void block(bst *progFiles)
             fprintf(stdout, "\n");
         }
     }
-    if (directives[dir_sym_table])
+    if (dirGet(dir_sym_table))
         stPrintBlocks(st, 2);
     while (t->kind == tok_kw_procedure)
     {
@@ -263,7 +263,7 @@ stmt_listStart:
     EXPECT_GOTO(tok_kw_end, blockEnd);
     t = lexerGetToken();
 blockEnd:
-    if (directives[dir_sym_table])
+    if (dirGet(dir_sym_table))
         stPrintBlocks(st, 2);
     tokenbstRemove(followSet, tok_dot);
     tokenbstRemove(followSet, tok_semicolon);

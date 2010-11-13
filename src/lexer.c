@@ -46,7 +46,7 @@ token *lexerGetToken()
         classifyLiteral(&curToken);
     else if (curToken.kind == tok_id)
         lookupKeyword(&curToken);
-    if (directives[dir_token_echo])
+    if (dirGet(dir_token_echo))
     {
         unsigned int len = stringGetLength(curToken.lexeme);
         char *buff = stringGetBuffer(curToken.lexeme);
