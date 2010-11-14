@@ -1,7 +1,5 @@
 #pragma once
 
-#include "symbol.h"
-
 typedef enum __pjbuiltin
 {
     builtin_chr,
@@ -19,7 +17,9 @@ typedef enum __pjbuiltin
     builtin_write,
     builtin_readln,
     builtin_writeln,
+    builtin_input_var,
+    builtin_output_var,
     builtin_num
 } pjbuiltin;
 
-symbol *builtinGet(pjbuiltin);
+char *builtinGetString(pjbuiltin);

@@ -21,7 +21,8 @@ char *errorStrings[err_num] =
     "undefined symbol",
     "file must be of type text",
     "undeclared file(s)",
-    "array range must be an integer constant"
+    "array range must be an integer constant",
+    "builtin cannot be redefined"
 };
 
 void errorParse(error_kind e, token *t, token_kind tok)

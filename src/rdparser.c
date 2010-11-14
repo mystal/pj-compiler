@@ -39,7 +39,8 @@
  * proc -> id ['(' param_list ')'] ';' block ';'
  * param_list -> param {';' param}
  * param -> id type_decl
- * range_decl -> '[' (int|id) '..' (int|id) ']'
+ * range_decl -> '[' range_const '..' range_const ']'
+ * range_const -> (int|id)
  * stmt_list -> stmt {';' stmt}
  * stmt -> id id_stmt
  *      -> fileptr fileptr_stmt
@@ -77,6 +78,7 @@ void proc(void);
 void param_list(list *);
 void param(list *);
 void range_decl(unsigned int *, unsigned int *);
+void range_const(unsigned int *);
 void stmt_list(void);
 void stmt(void);
 void id_stmt(void);
@@ -86,7 +88,7 @@ void while_stmt(void);
 void for_stmt(void);
 void arg_list(void);
 pjtype stype(void);
-pjtype constant(void);
+void constant(symbol *);
 
 /* cmp_func for strings */
 int bstCompareString(void *, void *);
@@ -161,8 +163,8 @@ void initStopSet()
 
 void addFilename(bst *t, string *str)
 {
-    if (stringCompareCharArray(str, "input", 5) != 0 &&
-        stringCompareCharArray(str, "output", 6) != 0)
+    if (stringCompareCharArray(str, "input", 5*sizeof(char)) != 0 &&
+        stringCompareCharArray(str, "output", 6*sizeof(char)) != 0)
     {
         string *filename = stringCreate();
         stringAppendString(filename, str);
@@ -277,13 +279,15 @@ void const_decl()
     tokenbstInsert(followSet, tok_id);
     EXPECT_GOTO(tok_id, const_declSemi);
     sym = symbolCreate(t->lexeme);
-    symbolSetType(sym, symt_const_var);
     t = lexerGetToken();
     EXPECT_GOTO(tok_equal, const_declSemi);
     t = lexerGetToken();
-    symbolConstSetValue(sym, t->lexeme);
-    symbolSetPJType(sym, constant());
-    if (!stAddSymbol(st, sym))
+    constant(sym);
+    if (symbolGetType(sym) == symt_undef)
+    {
+        symbolDestroy(sym);
+    }
+    else if (!stAddSymbol(st, sym))
     {
         //Print error, free symbol memory
         errorST(err_dup_sym, symbolGetName(sym));
@@ -312,28 +316,29 @@ void var_decl(bst *progFiles)
     {
         string *name;
         sym = (symbol *) listRemoveFront(ids); //Pull first symbol from list
-        symbolSetType(sym, symt);
-        symbolSetPJType(sym, pjt);
-        if (symt == symt_array) //Set bounds if needed
-            symbolArraySetBounds(sym, low, up);
+        //TODO Check for pjtype error?
+        if (symt == symt_var)
+            symbolSetVar(sym, pjt);
+        else if (symt == symt_array)
+            symbolSetArray(sym, pjt, low, up);
         name = symbolGetName(sym);
         if (progFiles != NULL && (stringCompareCharArray(name, "input", 5) == 0
             || stringCompareCharArray(name, "output", 6) == 0))
         {
+            //TODO check that they are of correct types?
             //Ignore input and output when in program block
             symbolDestroy(sym);
         }
         else if (!stAddSymbol(st, sym))
         {
             //Print error, free symbol memory
-            errorST(err_dup_sym, symbolGetName(sym));
+            errorST(err_dup_sym, name);
             symbolDestroy(sym);
         }
-        else if (progFiles != NULL && bstContains(progFiles, symbolGetName(sym)))
+        else if (progFiles != NULL && bstContains(progFiles, name))
         {
             string *filename;
-            if (symbolGetType(sym) == symt_var &&
-                symbolGetPJType(sym) == pj_text)
+            if (symt == symt_var && pjt == pj_text)
             {
                 filename = (string *) bstGet(progFiles, name);
                 bstRemove(progFiles, name);
@@ -342,7 +347,7 @@ void var_decl(bst *progFiles)
             else
             {
                 //Print error, file must be declared of type text
-                errorST(err_file_not_text, symbolGetName(sym));
+                errorST(err_file_not_text, name);
             }
         }
     }
@@ -403,6 +408,8 @@ type_declEnd:
 void proc()
 {
     string *procName;
+    unsigned int numParams = 0;
+    pjtype *paramTypes = NULL;
     symbol *sym;
     list *params = listCreate();
     dirTrace("proc", tr_enter);
@@ -411,30 +418,28 @@ void proc()
     procName = stringCreate(); //Get procedure name
     stringAppendString(procName, t->lexeme);
     sym = symbolCreate(procName); //Create new symbol for procedure
-    symbolSetType(sym, symt_proc);
     t = lexerGetToken();
 param_listStart:
     tokenbstRemove(followSet, tok_lparen);
     if (t->kind == tok_lparen)
     {
-        unsigned int numParams;
-        pjtype *paramTypes;
-        bool *optParams;
         t = lexerGetToken();
         param_list(params); //Process parameters
-        //Add params to procedure
+        //Store params for procedure
         numParams = listSize(params);
         paramTypes = (pjtype *) malloc(sizeof(pjtype)*numParams);
-        optParams = (bool *) malloc(sizeof(bool)*numParams);
         for (unsigned int i = 0; i < numParams; i++)
         {
-            paramTypes[i] = symbolGetPJType((symbol *) listGet(params, i));
-            optParams[i] = false;
+            symbol *curParam = (symbol *) listGet(params, i);
+            if (symbolGetType(curParam) == symt_var)
+                paramTypes[i] = symVarGetType(curParam);
+            else
+                paramTypes[i] = symArrayGetType(curParam);
         }
-        symbolProcSetParams(sym, numParams, paramTypes, optParams);
         EXPECT_GOTO(tok_rparen, param_listEnd);
         t = lexerGetToken();
     }
+    symbolSetProc(sym, numParams, paramTypes);
     if (!stAddSymbol(st, sym)) //Try to add procedure symbol
     {
         //Print error, free memory
@@ -492,10 +497,10 @@ void param(list *params)
     sym = symbolCreate(t->lexeme); //Create new symbol for parameter
     t = lexerGetToken();
     type_decl(&symt, &low, &up, &pjt);
-    symbolSetType(sym, symt);
-    if (symt == symt_array)
-        symbolArraySetBounds(sym, low, up);
-    symbolSetPJType(sym, pjt);
+    if (symt == symt_var)
+        symbolSetVar(sym, pjt);
+    else if (symt == symt_array)
+        symbolSetArray(sym, pjt, low, up);
     listAddBack(params, sym);
 paramEnd:
     tokenbstRemove(followSet, tok_semicolon);
@@ -504,56 +509,43 @@ paramEnd:
 
 void range_decl(unsigned int *low, unsigned int *up)
 {
-    symbol *sym;
     dirTrace("range_decl", tr_enter);
     tokenbstInsert(followSet, tok_kw_of);
     EXPECT_GOTO(tok_lbrack, range_declEnd);
     t = lexerGetToken();
-    if (t->kind == tok_id)
-    {
-        //Lookup symbol
-        sym = stLookup(st, t->lexeme);
-        if (sym == NULL)
-            errorST(err_undef_sym, t->lexeme);
-        else if (!(symbolGetType(sym) == symt_const_var && 
-                   symbolGetPJType(sym) == pj_integer))
-            errorST(err_range_not_const, t->lexeme);
-        *low = stringToInt(symbolConstGetValue(sym));
-        t = lexerGetToken();
-    }
-    else if (t->kind == tok_integer_const)
-    {
-        *low = stringToInt(t->lexeme);
-        t = lexerGetToken();
-    }
-    else
-        errorParse(err_exp_idint, t, tok_undef);
+    range_const(low);
     EXPECT_GOTO(tok_rdots, range_declEnd);
     t = lexerGetToken();
-    if (t->kind == tok_id)
-    {
-        //Lookup symbol
-        sym = stLookup(st, t->lexeme);
-        if (sym == NULL)
-            errorST(err_undef_sym, t->lexeme);
-        else if (!(symbolGetType(sym) == symt_const_var && 
-                   symbolGetPJType(sym) == pj_integer))
-            errorST(err_range_not_const, t->lexeme);
-        *up = stringToInt(symbolConstGetValue(sym));
-        t = lexerGetToken();
-    }
-    else if (t->kind == tok_integer_const)
-    {
-        *up = stringToInt(t->lexeme);
-        t = lexerGetToken();
-    }
-    else
-        errorParse(err_exp_idint, t, tok_undef);
+    range_const(up);
     EXPECT_GOTO(tok_rbrack, range_declEnd);
     t = lexerGetToken();
 range_declEnd:
     tokenbstRemove(followSet, tok_kw_of);
     dirTrace("range_decl", tr_exit);
+}
+
+void range_const(unsigned int *bound)
+{
+    symbol *sym;
+    if (t->kind == tok_id)
+    {
+        //Lookup symbol
+        sym = stLookup(st, t->lexeme);
+        if (sym == NULL)
+            errorST(err_undef_sym, t->lexeme);
+        else if (!(symbolGetType(sym) == symt_const_var && 
+                   symConstVarGetType(sym) == pj_integer))
+            errorST(err_range_not_const, t->lexeme);
+        else
+            *bound = stringToInt(symConstGetValue(sym));
+    }
+    else if (t->kind == tok_integer_const)
+    {
+        *bound = stringToInt(t->lexeme);
+    }
+    else
+        errorParse(err_exp_idint, t, tok_undef);
+    t = lexerGetToken();
 }
 
 void stmt_list()
@@ -746,7 +738,7 @@ pjtype stype()
     return pjt;
 }
 
-pjtype constant()
+void constant(symbol *sym)
 {
     pjtype pjt = pj_undef;
     dirTrace("constant", tr_enter);
@@ -775,17 +767,21 @@ pjtype constant()
             break;
     }
     if (pjt != pj_undef)
+    {
+        symbolSetConstVar(sym, pjt, t->lexeme);
         t = lexerGetToken();
+    }
     else
         errorParse(err_exp_const, t, tok_undef);
     dirTrace("constant", tr_exit);
-    return pjt;
 }
 
 int stringToInt(string *str)
 {
     int ret;
-    sscanf(stringGetBuffer(str), "%d", &ret);
+    stringAppendChar(str, '\0');
+    ret = atoi(stringGetBuffer(str));
+    stringDrop(str, 1);
     return ret;
 }
 
@@ -799,7 +795,7 @@ int bstCompareString(void *v1, void *v2)
 void bstPrintString(void *v)
 {
     string *str = (string *) v;
-    fprintf(stdout, " %.*s", stringGetLength(str), stringGetBuffer(str));
+    fprintf(stdout, " \"%.*s\"", stringGetLength(str), stringGetBuffer(str));
 }
 
 void bstDelString(void *v)

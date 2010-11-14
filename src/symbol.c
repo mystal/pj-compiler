@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "pjbuiltins.h"
+#include "pjtype.h"
 #include "str.h"
 
 typedef struct __sym_var
@@ -29,11 +31,13 @@ typedef struct __sym_proc
 {
     unsigned int numParams;
     pjtype *paramTypes;
-    bool *optParams;
-    pjtype retType;
     unsigned int loc;
-    bool isBuiltin;
 } sym_proc;
+
+typedef struct __sym_builtin
+{
+    pjbuiltin pjb;
+} sym_builtin;
 
 typedef union __sym_data
 {
@@ -41,6 +45,7 @@ typedef union __sym_data
     sym_const_var c;
     sym_array a;
     sym_proc p;
+    sym_builtin b;
 } sym_data;
 
 struct __symbol
@@ -55,7 +60,7 @@ void printVar(string *, sym_var);
 void printConst(string *, sym_const_var);
 void printArray(string *, sym_array);
 void printProc(string *, sym_proc);
-//void printBuiltin(string *, sym_builtin);
+void printBuiltin(string *, sym_builtin);
 
 symbol *symbolCreate(string *str)
 {
@@ -72,16 +77,48 @@ void symbolDestroy(symbol *sym)
     {
         stringDestroy(sym->data.c.value);
     }
-    else if (sym->type == symt_proc && !sym->data.p.isBuiltin)
+    else if (sym->type == symt_proc && sym->data.p.numParams != 0)
     {
-        if (sym->data.p.paramTypes != NULL)
-            free(sym->data.p.paramTypes);
-        if (sym->data.p.optParams != NULL)
-            free(sym->data.p.optParams);
+        free(sym->data.p.paramTypes);
     }
     stringDestroy(sym->name);
     free(sym);
     sym = NULL;
+}
+
+void symbolSetVar(symbol *sym, pjtype pjt)
+{
+    sym->type = symt_var;
+    sym->data.v.type = pjt;
+}
+
+void symbolSetConstVar(symbol *sym, pjtype pjt, string *val)
+{
+    sym->type = symt_const_var;
+    sym->data.c.type = pjt;
+    sym->data.c.value = stringCreate();
+    stringAppendString(sym->data.c.value, val);
+}
+
+void symbolSetArray(symbol *sym, pjtype pjt, unsigned int low, unsigned int up)
+{
+    sym->type = symt_array;
+    sym->data.a.type = pjt;
+    sym->data.a.lowBound = low;
+    sym->data.a.upBound = up;
+}
+
+void symbolSetProc(symbol *sym, unsigned int n, pjtype *types)
+{
+    sym->type = symt_proc;
+    sym->data.p.numParams = n;
+    sym->data.p.paramTypes = types;
+}
+
+void symbolSetBuiltin(symbol *sym, pjbuiltin pjb)
+{
+    sym->type = symt_builtin;
+    sym->data.b.pjb = pjb;
 }
 
 string *symbolGetName(symbol *sym)
@@ -89,90 +126,9 @@ string *symbolGetName(symbol *sym)
     return sym->name;
 }
 
-void symbolSetType(symbol *sym, sym_type type)
-{
-    sym->type = type;
-    if (type == symt_const_var)
-    {
-        sym->data.c.value = stringCreate();
-    }
-    else if (symt_proc)
-    {
-        sym->data.p.numParams = 0;
-        sym->data.p.paramTypes = NULL;
-        sym->data.p.optParams = NULL;
-        sym->data.p.retType = pj_undef;
-        sym->data.p.isBuiltin = false;
-    }
-}
-
 sym_type symbolGetType(symbol *sym)
 {
     return sym->type;
-}
-
-void symbolSetPJType(symbol *sym, pjtype pjt)
-{
-    if (sym->type == symt_var)
-        sym->data.v.type = pjt;
-    else if (sym->type == symt_const_var)
-        sym->data.c.type = pjt;
-    else if (sym->type == symt_array)
-        sym->data.a.type = pjt;
-}
-
-pjtype symbolGetPJType(symbol *sym)
-{
-    if (sym->type == symt_var)
-        return sym->data.v.type;
-    if (sym->type == symt_const_var)
-        return sym->data.c.type;
-    if (sym->type == symt_array)
-        return sym->data.a.type;
-    return pj_undef;
-}
-
-void symbolSetLocation(symbol *sym, unsigned int loc)
-{
-    if (sym->type == symt_var)
-        sym->data.v.loc = loc;
-    else if (sym->type == symt_array)
-        sym->data.a.loc = loc;
-    else if (sym->type == symt_proc)
-        sym->data.p.loc = loc;
-}
-
-void symbolConstSetValue(symbol *sym, string *str)
-{
-    stringAppendString(sym->data.c.value, str);
-}
-
-string *symbolConstGetValue(symbol *sym)
-{
-    return sym->data.c.value;
-}
-
-void symbolArraySetBounds(symbol *sym, unsigned int low, unsigned int up)
-{
-    sym->data.a.lowBound = low;
-    sym->data.a.upBound = up;
-}
-
-void symbolProcSetParams(symbol *sym, unsigned int n, pjtype *types, bool *opts)
-{
-    sym->data.p.numParams = n;
-    sym->data.p.paramTypes = types;
-    sym->data.p.optParams = opts;
-}
-
-void symbolProcSetReturnType(symbol *sym, pjtype pjt)
-{
-    sym->data.p.retType = pjt;
-}
-
-void symbolProcSetBuiltin(symbol *sym)
-{
-    sym->data.p.isBuiltin = true;
 }
 
 void symbolPrint(symbol *sym)
@@ -192,11 +148,46 @@ void symbolPrint(symbol *sym)
             printProc(sym->name, sym->data.p);
             break;
         case symt_builtin:
-            //printBuiltin(sym->name, sym->data.b);
+            printBuiltin(sym->name, sym->data.b);
             break;
         default:
             break;
     }
+}
+
+pjtype symVarGetType(symbol *sym)
+{
+    return sym->data.v.type;
+}
+
+pjtype symConstVarGetType(symbol *sym)
+{
+    return sym->data.c.type;
+}
+
+pjtype symArrayGetType(symbol *sym)
+{
+    return sym->data.a.type;
+}
+
+string *symConstGetValue(symbol *sym)
+{
+    return sym->data.c.value;
+}
+
+void symVarSetLocation(symbol *sym, unsigned int loc)
+{
+    sym->data.v.loc = loc;
+}
+
+void symArraySetLocation(symbol *sym, unsigned int loc)
+{
+    sym->data.a.loc = loc;
+}
+
+void symProcSetLocation(symbol *sym, unsigned int loc)
+{
+    sym->data.p.loc = loc;
 }
 
 void printVar(string *name, sym_var var)
@@ -231,10 +222,11 @@ void printProc(string *name, sym_proc proc)
             fprintf(stdout, "%s, ", pjtypeString(proc.paramTypes[i]));
         fprintf(stdout, "%s", pjtypeString(proc.paramTypes[proc.numParams-1]));
     }
-    fprintf(stdout, "), Return Type: %s, Location: %d)\n",
-            pjtypeString(proc.retType), proc.loc);
+    fprintf(stdout, "), Location: %d)\n", proc.loc);
 }
 
-/*void printBuiltin(string *name, sym_builtin builtin)
+void printBuiltin(string *name, sym_builtin builtin)
 {
-}*/
+    fprintf(stdout, "\tBuiltin(Name: %.*s)\n", stringGetLength(name),
+            stringGetBuffer(name));
+}

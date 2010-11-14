@@ -18,6 +18,7 @@ typedef enum __error_kind
     err_file_not_text,
     err_undecl_file,
     err_range_not_const,
+    err_redef_builtin,
     err_num
 } error_kind;
 

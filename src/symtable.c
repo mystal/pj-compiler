@@ -3,11 +3,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "bst.h"
-#include "pjbuiltins.h"
 #include "directive.h"
 #include "list.h"
+#include "pjbuiltins.h"
 #include "str.h"
 
 struct __symtable
@@ -22,9 +23,6 @@ typedef struct __block
     unsigned int nextLoc;
 } block;
 
-/* Private helper functions */
-void initBuiltins(symtable *);
-
 /* cmp_func for symbols */
 int bstCompareSymbol(void *, void *);
 
@@ -38,14 +36,24 @@ symtable *stCreate()
 {
     symtable *st = (symtable *) malloc(sizeof(symtable));
     st->blockList = listCreate();
-    //Initialize list with pj builtin procedures
+    //Add block0
     block *b = (block *) malloc(sizeof(block));
     b->name = stringCreate();
     stringAppendCharArray(b->name, "block0", 6*sizeof(char));
     b->symbols = bstCreate(bstCompareSymbol);
     b->nextLoc = 1;
     listAddBack(st->blockList, b);
-    initBuiltins(st);
+    //Initialize block0 with PJ's builtin procedures and input/output files
+    for (unsigned int i = 0; i < builtin_num; i++)
+    {
+        char *builtinName = builtinGetString(i);
+        string *name = stringCreate();
+        stringAppendCharArray(name, builtinName, strlen(builtinName));
+        symbol *sym = symbolCreate(name);
+        stringDestroy(name);
+        symbolSetBuiltin(sym, i);
+        stAddSymbol(st, sym);
+    }
     return st;
 }
 
@@ -56,21 +64,6 @@ void stEnterBlock(symtable *st, string *name)
     b->symbols = bstCreate(bstCompareSymbol);
     b->nextLoc = 1;
     listAddBack(st->blockList, b);
-    //Add input and output files to new block
-    string *str = stringCreate();
-    stringAppendCharArray(str, "input", 5*sizeof(char));
-    symbol *sym = symbolCreate(str);
-    stringDestroy(str);
-    symbolSetType(sym, symt_var);
-    symbolSetPJType(sym, pj_text);
-    stAddSymbol(st, sym);
-    str = stringCreate();
-    stringAppendCharArray(str, "output", 6*sizeof(char));
-    sym = symbolCreate(str);
-    symbolSetType(sym, symt_var);
-    symbolSetPJType(sym, pj_text);
-    stringDestroy(str);
-    stAddSymbol(st, sym);
 }
 
 void stExitBlock(symtable *st)
@@ -99,8 +92,20 @@ bool stAddSymbol(symtable *st, symbol *sym)
     if (bstContains(b->symbols, sym))
         return false;
     sym_type type = symbolGetType(sym);
-    if (type == symt_var || type == symt_array || type == symt_proc)
-        symbolSetLocation(sym, b->nextLoc++);
+    switch (type)
+    {
+        case symt_var:
+            symVarSetLocation(sym, b->nextLoc++);
+            break;
+        case symt_array:
+            symArraySetLocation(sym, b->nextLoc++);
+            break;
+        case symt_proc:
+            symProcSetLocation(sym, b->nextLoc++);
+            break;
+        default:
+            break;
+    }
     bstInsert(b->symbols, sym);
     return true;
 }
@@ -109,10 +114,11 @@ symbol *stLookup(symtable *st, string *name)
 {
     symbol *ret;
     //TODO: create iterator for lists?
-    for (unsigned int i = 0; i < listSize(st->blockList); i++)
+    for (unsigned int i = listSize(st->blockList)-1; i >= 0; i--)
     {
         symbol *test = symbolCreate(name);
         ret = (symbol *) bstGet(((block *) listGet(st->blockList, i))->symbols, test);
+        symbolDestroy(test);
         if (ret != NULL)
             return ret;
     }
@@ -144,12 +150,6 @@ void stDestroy(symtable *st)
     listDestroy(st->blockList);
     free(st);
     st = NULL;
-}
-
-void initBuiltins(symtable *st)
-{
-    for (unsigned int i = 0; i < builtin_num; i++)
-        stAddSymbol(st, builtinGet(i));
 }
 
 int bstCompareSymbol(void *v1, void *v2)
