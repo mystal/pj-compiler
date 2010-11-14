@@ -22,6 +22,7 @@ typedef struct __slr_stack_pair
     bool isTerm;
 } slr_stack_pair;
 
+/* Private helper function */
 void flushStack(stack *);
 
 /**

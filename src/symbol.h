@@ -11,6 +11,7 @@ typedef enum __sym_type
     symt_const_var,
     symt_array,
     symt_proc,
+    symt_builtin,
     symt_undef
 } sym_type;
 
@@ -44,10 +45,4 @@ void symbolProcSetReturnType(symbol *, pjtype);
 
 void symbolProcSetBuiltin(symbol *);
 
-void symbolPrintVar(symbol *);
-
-void symbolPrintConst(symbol *);
-
-void symbolPrintArray(symbol *);
-
-void symbolPrintProc(symbol *);
+void symbolPrint(symbol *);

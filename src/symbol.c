@@ -35,23 +35,27 @@ typedef struct __sym_proc
     bool isBuiltin;
 } sym_proc;
 
-typedef union __sym_info
+typedef union __sym_data
 {
     sym_var v;
     sym_const_var c;
     sym_array a;
     sym_proc p;
-} sym_info;
+} sym_data;
 
 struct __symbol
 {
     string *name;
     sym_type type;
-    sym_info data;
+    sym_data data;
 };
 
 /* Private helper functions */
-void printParams(sym_proc);
+void printVar(string *, sym_var);
+void printConst(string *, sym_const_var);
+void printArray(string *, sym_array);
+void printProc(string *, sym_proc);
+//void printBuiltin(string *, sym_builtin);
 
 symbol *symbolCreate(string *str)
 {
@@ -171,47 +175,66 @@ void symbolProcSetBuiltin(symbol *sym)
     sym->data.p.isBuiltin = true;
 }
 
-void symbolPrintVar(symbol *sym)
+void symbolPrint(symbol *sym)
 {
-    sym_var var = sym->data.v;
+    switch (sym->type)
+    {
+        case symt_var:
+            printVar(sym->name, sym->data.v);
+            break;
+        case symt_const_var:
+            printConst(sym->name, sym->data.c);
+            break;
+        case symt_array:
+            printArray(sym->name, sym->data.a);
+            break;
+        case symt_proc:
+            printProc(sym->name, sym->data.p);
+            break;
+        case symt_builtin:
+            //printBuiltin(sym->name, sym->data.b);
+            break;
+        default:
+            break;
+    }
+}
+
+void printVar(string *name, sym_var var)
+{
     fprintf(stdout, "\tVar(Name: %.*s, Type: %s, Location: %d)\n",
-            stringGetLength(sym->name), stringGetBuffer(sym->name),
+            stringGetLength(name), stringGetBuffer(name),
             pjtypeString(var.type), var.loc);
 }
 
-void symbolPrintConst(symbol *sym)
+void printConst(string *name, sym_const_var const_var)
 {
-    sym_const_var const_var = sym->data.c;
     fprintf(stdout, "\tConst(Name: %.*s, Type: %s, Value: %.*s)\n",
-            stringGetLength(sym->name), stringGetBuffer(sym->name),
+            stringGetLength(name), stringGetBuffer(name),
             pjtypeString(const_var.type), stringGetLength(const_var.value),
             stringGetBuffer(const_var.value));
 }
 
-void symbolPrintArray(symbol *sym)
+void printArray(string *name, sym_array arr)
 {
-    sym_array arr = sym->data.a;
     fprintf(stdout, "\tArray(Name: %.*s, Type: %s, Bounds: [%d, %d], Location: %d)\n",
-            stringGetLength(sym->name), stringGetBuffer(sym->name),
+            stringGetLength(name), stringGetBuffer(name),
             pjtypeString(arr.type), arr.lowBound, arr.upBound, arr.loc);
 }
 
-void symbolPrintProc(symbol *sym)
+void printProc(string *name, sym_proc proc)
 {
-    sym_proc proc = sym->data.p;
-    fprintf(stdout, "\tProc(Name: %.*s, Params: (", stringGetLength(sym->name),
-            stringGetBuffer(sym->name));
-    printParams(proc);
-    fprintf(stdout, "), Return Type: %s, Location: %d)\n",
-            pjtypeString(proc.retType), proc.loc);
-}
-
-void printParams(sym_proc proc)
-{
+    fprintf(stdout, "\tProc(Name: %.*s, Params: (", stringGetLength(name),
+            stringGetBuffer(name));
     if (proc.numParams > 0)
     {
         for (unsigned int i = 0; i < proc.numParams-1; i++)
             fprintf(stdout, "%s, ", pjtypeString(proc.paramTypes[i]));
         fprintf(stdout, "%s", pjtypeString(proc.paramTypes[proc.numParams-1]));
     }
+    fprintf(stdout, "), Return Type: %s, Location: %d)\n",
+            pjtypeString(proc.retType), proc.loc);
 }
+
+/*void printBuiltin(string *name, sym_builtin builtin)
+{
+}*/

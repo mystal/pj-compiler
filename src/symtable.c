@@ -162,23 +162,7 @@ int bstCompareSymbol(void *v1, void *v2)
 void bstPrintSymbol(void *v)
 {
     symbol *sym = (symbol *) v;
-    switch (symbolGetType(sym))
-    {
-        case symt_var:
-            symbolPrintVar(sym);
-            break;
-        case symt_const_var:
-            symbolPrintConst(sym);
-            break;
-        case symt_array:
-            symbolPrintArray(sym);
-            break;
-        case symt_proc:
-            symbolPrintProc(sym);
-            break;
-        default:
-            break;
-    }
+    symbolPrint(sym);
 }
 
 void bstDelSymbol(void *v)
