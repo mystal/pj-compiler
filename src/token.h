@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include "str.h"
 
 typedef enum __token_kind

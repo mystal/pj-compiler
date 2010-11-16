@@ -4,7 +4,7 @@
 
 #include "token.h"
 
-terminal tokToSLR[] =
+terminal tokToSLR[tok_undef+1] =
 {
     slr_id, /* tok_id */
     slr_fileptr, /* tok_fileid */

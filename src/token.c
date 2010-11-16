@@ -1,5 +1,7 @@
 #include "token.h"
 
+#include <stdbool.h>
+
 #include "str.h"
 
 const char *kindStrings[] = 

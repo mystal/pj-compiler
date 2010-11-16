@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "pjbuiltins.h"
-#include "pjtype.h"
+#include "pjlang.h"
 #include "str.h"
 
 typedef struct __sym_var

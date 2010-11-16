@@ -8,8 +8,9 @@
 #include "bst.h"
 #include "directive.h"
 #include "list.h"
-#include "pjbuiltins.h"
+#include "pjlang.h"
 #include "str.h"
+#include "symbol.h"
 
 struct __symtable
 {
@@ -46,7 +47,7 @@ symtable *stCreate()
     //Initialize block0 with PJ's builtin procedures and input/output files
     for (unsigned int i = 0; i < builtin_num; i++)
     {
-        char *builtinName = builtinGetString(i);
+        char *builtinName = pjbuiltinString(i);
         string *name = stringCreate();
         stringAppendCharArray(name, builtinName, strlen(builtinName));
         symbol *sym = symbolCreate(name);

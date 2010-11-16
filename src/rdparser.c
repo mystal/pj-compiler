@@ -4,6 +4,7 @@
 
 #include "bst.h"
 #include "buffer.h"
+#include "codegen.h"
 #include "directive.h"
 #include "error.h"
 #include "exprparser.h"
@@ -108,6 +109,7 @@ tokenbst *stopSet;
 void parse()
 {
     lexerInit();
+    codegenInit();
     st = stCreate();
     if (dirGet(dir_sym_table))
         stPrintBlocks(st, 1);
@@ -120,6 +122,7 @@ void parse()
     tokenbstDestroy(stopSet);
     stDestroy(st);
     lexerCleanup();
+    codegenCleanup();
 }
 
 void errorRecovery()
@@ -610,17 +613,17 @@ void id_stmt()
     if (t->kind == tok_colonequal)
     {
         t = lexerGetToken();
-        expr(t);
+        expr(t, st);
     }
     else if (t->kind == tok_lbrack)
     {
         t = lexerGetToken();
-        expr(t);
+        expr(t, st);
         EXPECT_GOTO(tok_rbrack, id_stmtEnd);
         t = lexerGetToken();
         EXPECT_GOTO(tok_colonequal, id_stmtEnd);
         t = lexerGetToken();
-        expr(t);
+        expr(t, st);
     }
     else if (t->kind == tok_lparen)
     {
@@ -639,7 +642,7 @@ void fileptr_stmt()
     dirTrace("fileptr_stmt", tr_enter);
     EXPECT_GOTO(tok_colonequal, fileptr_stmtEnd);
     t = lexerGetToken();
-    expr(t);
+    expr(t, st);
 fileptr_stmtEnd:
     dirTrace("fileptr_stmt", tr_exit);
 }
@@ -647,7 +650,7 @@ fileptr_stmtEnd:
 void if_stmt()
 {
     dirTrace("if_stmt", tr_enter);
-    expr(t);
+    expr(t, st);
     EXPECT_GOTO(tok_kw_then, if_stmtEnd);
     t = lexerGetToken();
     stmt();
@@ -663,7 +666,7 @@ if_stmtEnd:
 void while_stmt()
 {
     dirTrace("while_stmt", tr_enter);
-    expr(t);
+    expr(t, st);
     EXPECT_GOTO(tok_kw_do, while_stmtEnd);
     t = lexerGetToken();
     stmt();
@@ -678,12 +681,12 @@ void for_stmt()
     t = lexerGetToken();
     EXPECT_GOTO(tok_colonequal, for_stmtEnd);
     t = lexerGetToken();
-    expr(t);
+    expr(t, st);
     if (t->kind == tok_kw_downto || t->kind == tok_kw_to)
         t = lexerGetToken();
     else
         errorParse(err_exp_downto, t, tok_undef);
-    expr(t);
+    expr(t, st);
     EXPECT_GOTO(tok_kw_do, for_stmtEnd);
     t = lexerGetToken();
     stmt();
@@ -694,11 +697,11 @@ for_stmtEnd:
 void arg_list()
 {
     dirTrace("arg_list", tr_enter);
-    expr(t);
+    expr(t, st);
     while (t->kind == tok_comma)
     {
         t = lexerGetToken();
-        expr(t);
+        expr(t, st);
     }
     dirTrace("arg_list", tr_exit);
 }
@@ -740,32 +743,8 @@ pjtype stype()
 
 void constant(symbol *sym)
 {
-    pjtype pjt = pj_undef;
     dirTrace("constant", tr_enter);
-    switch (t->kind)
-    {
-        case tok_real_const:
-            pjt = pj_real;
-            break;
-        case tok_integer_const:
-            pjt = pj_integer;
-            break;
-        case tok_kw_true:
-        case tok_kw_false:
-            pjt = pj_boolean;
-            break;
-        case tok_alfa_const:
-            pjt = pj_alfa;
-            break;
-        case tok_char_const:
-            pjt = pj_char;
-            break;
-        case tok_string_const:
-            pjt = pj_string;
-            break;
-        default:
-            break;
-    }
+    pjtype pjt = isConstant(t->kind);
     if (pjt != pj_undef)
     {
         symbolSetConstVar(sym, pjt, t->lexeme);

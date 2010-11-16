@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "buffer.h"
+#include "codegen.h"
 #include "str.h"
 #include "token.h"
 

@@ -2,7 +2,7 @@
 
 #include <stdbool.h>
 
-#include "pjtype.h"
+#include "pjlang.h"
 #include "str.h"
 #include "symbol.h"
 

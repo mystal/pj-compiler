@@ -2,8 +2,7 @@
 
 #include <stdbool.h>
 
-#include "pjbuiltins.h"
-#include "pjtype.h"
+#include "pjlang.h"
 #include "str.h"
 
 typedef enum __sym_type

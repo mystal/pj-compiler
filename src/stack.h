@@ -10,6 +10,11 @@ typedef struct __stack stack;
 stack *stackCreate(void);
 
 /**
+ * Deallocates memory for the stack and sets its pointer to NULL.
+ **/
+void stackDestroy(stack *);
+
+/**
  * Push the given item onto the top of the stack.
  **/
 void stackPush(stack *, T *);
@@ -29,7 +34,4 @@ T *stackPeek(stack *);
  **/
 unsigned int stackSize(stack *);
 
-/**
- * Deallocates memory for the stack and sets its pointer to NULL.
- **/
-void stackDestroy(stack *);
+//TODO create print function

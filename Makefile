@@ -10,9 +10,9 @@ OLD_BINS := expr lexer
 OLD_SBINS := $(addsuffix -static, $(OLD_BINS))
 BIN_FILES := $(addprefix $(BUILDDIR)/, $(OLD_BINS))
 SBIN_FILES := $(addprefix $(BUILDDIR)/, $(OLD_SBINS))
-OBJS := bst.o buffer.o directive.o error.o exprparser.o exprprods.o \
-	exprsymbol.o lexer.o lexfsm.o list.o pjbuiltins.o pjtype.o rdparser.o \
-	stack.o str.o symbol.o symtable.o token.o tokenbst.o
+OBJS := bst.o buffer.o codegen.o directive.o error.o exprparser.o exprprods.o \
+	exprsymbol.o lexer.o lexfsm.o list.o pjlang.o rdparser.o stack.o str.o \
+	symbol.o symtable.o token.o tokenbst.o typecheck.o
 
 INCS := 
 LIBS := 

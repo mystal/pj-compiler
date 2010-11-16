@@ -1,5 +1,6 @@
 #pragma once
 
+#include "symtable.h"
 #include "token.h"
 
 /**
@@ -7,4 +8,4 @@
  * the expression. Returns with the next non-expression token in the given
  * pointer.
  **/
-void expr(token *);
+void expr(token *, symtable *);

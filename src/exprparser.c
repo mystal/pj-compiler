@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "buffer.h"
+#include "codegen.h"
 #include "directive.h"
 #include "error.h"
 #include "exprprods.h"
@@ -13,16 +14,38 @@
 #include "lexer.h"
 #include "stack.h"
 #include "str.h"
+#include "symtable.h"
 #include "token.h"
 
-typedef struct __slr_stack_pair
+typedef enum __sem_kind
+{
+    sem_symbol,
+    sem_operator,
+    sem_constant,
+    sem_type,
+    sem_none
+} sem_kind;
+
+typedef union __slr_semantics
+{
+    symbol *sym;
+    pjop op;
+    string *constVal;
+    pjtype type;
+} slr_semantics;
+
+typedef struct __slr_stack_entry
 {
     unsigned int state : 8;
-    expr_symbol sym;
+    expr_symbol exp;
     bool isTerm;
-} slr_stack_pair;
+    sem_kind semType;
+    slr_semantics sem;
+} slr_stack_entry;
 
 /* Private helper function */
+void initSLREntry(slr_stack_entry *, unsigned int, expr_symbol, bool);
+void addSLRSemantics(slr_stack_entry *, token *, symtable *);
 void flushStack(stack *);
 
 /**
@@ -71,24 +94,22 @@ void flushStack(stack *);
  * 41 s' --> start $
  **/
 
-void expr(token *t)
+void expr(token *t, symtable *st)
 {
+    stack *slrStk = stackCreate();
+    slr_stack_entry bot;
     dirTrace("expr", tr_enter);
     //Initialize stack
-    stack *stk = stackCreate();
-    slr_stack_pair bot;
-    bot.state = 0;
-    bot.sym.nonterm = slr_start;
-    bot.isTerm = false;
-    stackPush(stk, &bot);
+    initSLREntry(&bot, 0, (expr_symbol) (nonterminal) slr_start, false);
+    stackPush(slrStk, &bot);
     //Perform SLR algorithm
     while (true)
     {
-        slr_stack_pair *s = (slr_stack_pair *) stackPeek(stk);
+        slr_stack_entry *s = (slr_stack_entry *) stackPeek(slrStk);
         terminal term;
         //Handle special case of expr in position 1 and on top of stack
-        if (!s->isTerm && (s->sym.nonterm == slr_expr || s->sym.nonterm == slr_start)
-            && stackSize(stk) == 2 && (t->kind == tok_rparen || t->kind == tok_rbrack))
+        if (!s->isTerm && (s->exp.nonterm == slr_expr || s->exp.nonterm == slr_start)
+            && stackSize(slrStk) == 2 && (t->kind == tok_rparen || t->kind == tok_rbrack))
             term = slr_dollar;
         else
             //No check for non-expression, will return slr_dollar if needed
@@ -98,13 +119,12 @@ void expr(token *t)
         {
             //Push term and actions[s->state][term].num onto stack
             //Allocate memory for pushed item
-            s = (slr_stack_pair *) malloc(sizeof(slr_stack_pair));
-            s->state = entry.num;
-            s->sym.term = term;
-            s->isTerm = true;
-            stackPush(stk, s);
+            s = (slr_stack_entry *) malloc(sizeof(slr_stack_entry));
+            initSLREntry(s, entry.num, (expr_symbol) term, true);
+            addSLRSemantics(s, t, st);
+            stackPush(slrStk, s);
             if (dirGet(dir_print_reduction))
-                fprintf(stdout, "SHIFT: %s '%.*s' \n", exprSymbolString(s->sym, s->isTerm),
+                fprintf(stdout, "SHIFT: %s '%.*s' \n", exprSymbolString(s->exp, s->isTerm),
                         stringGetLength(t->lexeme), stringGetBuffer(t->lexeme));
             //Grab next input token
             t = lexerGetToken();
@@ -116,16 +136,17 @@ void expr(token *t)
             production p = productions[entry.num];
             for (unsigned int i = 0; i < p.rhsLen; i++)
             {
-                s = (slr_stack_pair *) stackPop(stk);
+                s = (slr_stack_entry *) stackPop(slrStk);
                 free(s);
             }
+            //TODO generate code and push type(?)
+            //codegenExpr(p);
             //Push gotox[top stack state][lhs] state and lhs onto stack
             //Allocate memory for pushed item
-            s = (slr_stack_pair *) malloc(sizeof(slr_stack_pair));
-            s->state = gotox[((slr_stack_pair *) stackPeek(stk))->state][p.lhs];
-            s->sym.nonterm = p.lhs;
-            s->isTerm = false;
-            stackPush(stk, s);
+            s = (slr_stack_entry *) malloc(sizeof(slr_stack_entry));
+            initSLREntry(s, gotox[((slr_stack_entry *) stackPeek(slrStk))->state][p.lhs],
+                        (expr_symbol) p.lhs, false);
+            stackPush(slrStk, s);
             if (dirGet(dir_print_reduction))
                 fprintf(stdout, "REDUCE[%d]: %s\n", entry.num, prodString(entry.num));
         }
@@ -142,7 +163,7 @@ void expr(token *t)
             if (dirGet(dir_expr_flush_echo))
             {
                 fprintf(stdout, "\tFlushed Stack:");
-                flushStack(stk);
+                flushStack(slrStk);
                 s = stringCreate();
             }
             //Flush input until next nonexpression token
@@ -165,23 +186,67 @@ void expr(token *t)
         }
     }
     //Cleanup stack
-    while (stackSize(stk) > 1)
+    while (stackSize(slrStk) > 1)
     {
-        slr_stack_pair *s = (slr_stack_pair *) stackPop(stk);
+        slr_stack_entry *s = (slr_stack_entry *) stackPop(slrStk);
         free(s);
     }
-    stackDestroy(stk);
+    stackDestroy(slrStk);
     //No push-back, next token ready for caller to use
     dirTrace("expr", tr_exit);
+}
+
+void initSLREntry(slr_stack_entry *s, unsigned int state, expr_symbol exp, bool isTerm)
+{
+    s->state = state;
+    s->exp = exp;
+    s->isTerm = isTerm;
+    s->semType = sem_none;
+}
+
+void addSLRSemantics(slr_stack_entry *s, token *t, symtable *st)
+{
+    token_kind tk = t->kind;
+    if (tk == tok_id || tk == tok_fileid)
+    {
+        symbol *sym = stLookup(st, t->lexeme);
+        if (sym != NULL)
+        {
+            s->semType = sem_symbol;
+            s->sem.sym = sym;
+        }
+        else
+        {
+            errorST(err_undef_sym, t->lexeme);
+        }
+    }
+    else if (ispjop(tk))
+    {
+        //TODO add operator to semantics
+        s->semType = sem_operator;
+        s->sem.op = pjopLookup(tk);
+    }
+    else
+    {
+        pjtype pjt = isConstant(tk);
+        if (isConstant(tk))
+        {
+            //Get constant value and store in semantics
+            string *value = stringCreate();
+            stringAppendString(value, t->lexeme);
+            s->semType = sem_constant;
+            s->sem.constVal = value;
+        }
+    }
 }
 
 void flushStack(stack *stk)
 {
     if (stackSize(stk) > 1)
     {
-        slr_stack_pair *s = (slr_stack_pair *) stackPop(stk);
+        slr_stack_entry *s = (slr_stack_entry *) stackPop(stk);
         flushStack(stk);
-        fprintf(stdout, " %s", exprSymbolString(s->sym, s->isTerm));
+        fprintf(stdout, " %s", exprSymbolString(s->exp, s->isTerm));
         free(s);
     }
 }

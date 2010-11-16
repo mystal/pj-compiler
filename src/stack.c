@@ -27,6 +27,20 @@ stack *stackCreate()
     return s;
 }
 
+void stackDestroy(stack *s)
+{
+    stack_node *n = s->top;
+    stack_node *temp;
+    while (n != NULL)
+    {
+        temp = n;
+        n = temp->next;
+        free(temp);
+    }
+    free(s);
+    s = NULL;
+}
+
 void stackPush(stack *s, T *e)
 {
     stack_node *temp = (stack_node *) malloc(sizeof(stack_node));
@@ -56,18 +70,4 @@ T *stackPeek(stack *s)
 unsigned int stackSize(stack *s)
 {
     return s->size;
-}
-
-void stackDestroy(stack *s)
-{
-    stack_node *n = s->top;
-    stack_node *temp;
-    while (n != NULL)
-    {
-        temp = n;
-        n = temp->next;
-        free(temp);
-    }
-    free(s);
-    s = NULL;
 }
