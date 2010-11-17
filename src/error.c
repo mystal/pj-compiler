@@ -23,11 +23,14 @@ char *errorStrings[err_num] =
     "file must be of type text",
     "undeclared file(s)",
     "array range must be an integer constant",
-    "builtin cannot be redefined"
+    "builtin cannot be redefined",
+    "unsupported operand type",
+    "invalid file buffer"
 };
 
 void errorParse(error_kind e, token *t, token_kind tok)
 {
+    codegenReportError();
     unsigned int line = bufferLineNumber();
     unsigned int pos = bufferPos();
     unsigned int lexLen = stringGetLength(t->lexeme);
@@ -55,6 +58,7 @@ void errorParse(error_kind e, token *t, token_kind tok)
 
 void errorST(error_kind e, string *lexeme)
 {
+    codegenReportError();
     if (e == err_dup_sym || e == err_undef_sym || e == err_file_not_text ||
         e == err_range_not_const)
     {
@@ -68,4 +72,11 @@ void errorST(error_kind e, string *lexeme)
     }
     else if (e == err_undecl_file)
         fprintf(stdout, "error: %s,", errorStrings[e]);
+}
+
+void errorType(error_kind e)
+{
+    codegenReportError();
+    fprintf(stdout, "error: %s\n", errorStrings[e]);
+    bufferPrint(stdout);
 }

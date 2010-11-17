@@ -26,30 +26,30 @@ pjop tokenToOp[tok_undef+1] =
     op_none, /* tok_rparen */
     op_none, /* tok_lbrack */
     op_none, /* tok_rbrack */
-    op_none, /* tok_lthan */
-    op_none, /* tok_gthan */
-    op_none, /* tok_ltequal */
-    op_none, /* tok_gtequal */
-    op_none, /* tok_nequal */
-    op_none, /* tok_equal */
+    op_lt, /* tok_lthan */
+    op_gt, /* tok_gthan */
+    op_lteq, /* tok_ltequal */
+    op_gteq, /* tok_gtequal */
+    op_neq, /* tok_nequal */
+    op_eq, /* tok_equal */
     op_none, /* tok_dot */
     op_none, /* tok_rdots */
     op_none, /* tok_comma */
     op_none, /* tok_semicolon */
     op_none, /* tok_colon */
     op_none, /* tok_colonequal */
-    op_none, /* tok_plus */
-    op_none, /* tok_minus */
-    op_none, /* tok_asterisk */
-    op_none, /* tok_slash */
+    op_add, /* tok_plus */
+    op_sub, /* tok_minus */
+    op_mult, /* tok_asterisk */
+    op_slash, /* tok_slash */
     op_none, /* tok_kw_alfa */
-    op_none, /* tok_kw_and */
+    op_and, /* tok_kw_and */
     op_none, /* tok_kw_array */
     op_none, /* tok_kw_begin */
     op_none, /* tok_kw_boolean */
     op_none, /* tok_kw_char */
     op_none, /* tok_kw_const */
-    op_none, /* tok_kw_div */
+    op_div, /* tok_kw_div */
     op_none, /* tok_kw_do */
     op_none, /* tok_kw_downto */
     op_none, /* tok_kw_else */
@@ -58,10 +58,10 @@ pjop tokenToOp[tok_undef+1] =
     op_none, /* tok_kw_for */
     op_none, /* tok_kw_if */
     op_none, /* tok_kw_integer */
-    op_none, /* tok_kw_mod */
-    op_none, /* tok_kw_not */
+    op_mod, /* tok_kw_mod */
+    op_not, /* tok_kw_not */
     op_none, /* tok_kw_of */
-    op_none, /* tok_kw_or */
+    op_or, /* tok_kw_or */
     op_none, /* tok_kw_procedure */
     op_none, /* tok_kw_program */
     op_none, /* tok_kw_real */

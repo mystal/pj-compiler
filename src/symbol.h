@@ -47,10 +47,24 @@ pjtype symConstVarGetType(symbol *);
 
 pjtype symArrayGetType(symbol *);
 
-string *symConstGetValue(symbol *);
+string *symConstVarGetValue(symbol *);
+
+unsigned int symArrayGetRange(symbol *);
+
+bool symArrayInRange(symbol *, unsigned int);
+
+unsigned int symArrayGetLowBound(symbol *);
+
+pjbuiltin symBuiltinGetType(symbol *);
 
 void symVarSetLocation(symbol *, unsigned int);
 
 void symArraySetLocation(symbol *, unsigned int);
 
 void symProcSetLocation(symbol *, unsigned int);
+
+unsigned int symVarGetLocation(symbol *);
+
+unsigned int symArrayGetLocation(symbol *);
+
+unsigned int symProcGetLocation(symbol *);

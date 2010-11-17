@@ -39,7 +39,7 @@ bool stAddSymbol(symtable *, symbol *);
  * Checks the symbol table for a symbol with the given name. Returns a pointer
  * to the symbol found if it is in the table, otherwise returns NULL.
  **/
-symbol *stLookup(symtable *, string *);
+symbol *stLookup(symtable *, string *, unsigned int *);
 
 /**
  * Prints up to the given number of blocks in the symbol table, starting from

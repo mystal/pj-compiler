@@ -28,52 +28,48 @@ op_check operatorTypes[op_none][pj_undef][pj_undef+1] =
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
     /* op_mod */
-    {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
-    /* op_identity */
-    {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
+    {{{pj_integer, false, false}, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
     /* op_negate */
-    {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
+    {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, {pj_integer, false, false}},
+     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, {pj_real, false, false}},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
     /* op_and */
     {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
+     {DEF, DEF, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF}},
     /* op_or */
     {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
+     {DEF, DEF, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF}},
     /* op_not */
     {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
+     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, {pj_boolean, false, false}}},
     /* op_lt */
-    {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
+    {{{pj_boolean, false, false}, {pj_boolean, true, false}, DEF, DEF, DEF, DEF, DEF, DEF},
+     {{pj_boolean, false, true}, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
     /* op_lteq */
-    {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
+    {{{pj_boolean, false, false}, {pj_boolean, true, false}, DEF, DEF, DEF, DEF, DEF, DEF},
+     {{pj_boolean, false, true}, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
     /* op_eq */
-    {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
+    {{{pj_boolean, false, false}, {pj_boolean, true, false}, DEF, DEF, DEF, DEF, DEF, DEF},
+     {{pj_boolean, false, true}, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
     /* op_gteq */
-    {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
+    {{{pj_boolean, false, false}, {pj_boolean, true, false}, DEF, DEF, DEF, DEF, DEF, DEF},
+     {{pj_boolean, false, true}, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
     /* op_gt */
-    {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
+    {{{pj_boolean, false, false}, {pj_boolean, true, false}, DEF, DEF, DEF, DEF, DEF, DEF},
+     {{pj_boolean, false, true}, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
     /* op_neq */
-    {{DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF},
+    {{{pj_boolean, false, false}, {pj_boolean, true, false}, DEF, DEF, DEF, DEF, DEF, DEF},
+     {{pj_boolean, false, true}, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF, DEF},
      {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}}
 };
 

@@ -19,6 +19,8 @@ typedef enum __error_kind
     err_undecl_file,
     err_range_not_const,
     err_redef_builtin,
+    err_op_type_mismatch,
+    err_bad_fileptr,
     err_num
 } error_kind;
 
@@ -28,3 +30,5 @@ typedef enum __error_kind
 void errorParse(error_kind, token *, token_kind);
 
 void errorST(error_kind, string *);
+
+void errorType(error_kind);

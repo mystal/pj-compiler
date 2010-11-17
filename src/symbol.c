@@ -169,9 +169,29 @@ pjtype symArrayGetType(symbol *sym)
     return sym->data.a.type;
 }
 
-string *symConstGetValue(symbol *sym)
+string *symConstVarGetValue(symbol *sym)
 {
     return sym->data.c.value;
+}
+
+unsigned int symArrayGetRange(symbol *sym)
+{
+    return sym->data.a.upBound - sym->data.a.lowBound + 1;
+}
+
+bool symArrayInRange(symbol *sym, unsigned int index)
+{
+    return index >= sym->data.a.lowBound && index <= sym->data.a.upBound;
+}
+
+unsigned int symArrayGetLowBound(symbol *sym)
+{
+    return sym->data.a.lowBound;
+}
+
+pjbuiltin symBuiltinGetType(symbol *sym)
+{
+    return sym->data.b.pjb;
 }
 
 void symVarSetLocation(symbol *sym, unsigned int loc)
@@ -187,6 +207,21 @@ void symArraySetLocation(symbol *sym, unsigned int loc)
 void symProcSetLocation(symbol *sym, unsigned int loc)
 {
     sym->data.p.loc = loc;
+}
+
+unsigned int symVarGetLocation(symbol *sym)
+{
+    return sym->data.v.loc;
+}
+
+unsigned int symArrayGetLocation(symbol *sym)
+{
+    return sym->data.a.loc;
+}
+
+unsigned int symProcGetLocation(symbol *sym)
+{
+    return sym->data.p.loc;
 }
 
 void printVar(string *name, sym_var var)

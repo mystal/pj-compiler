@@ -15,7 +15,7 @@ OBJS := bst.o buffer.o codegen.o directive.o error.o exprparser.o exprprods.o \
 	symbol.o symtable.o token.o tokenbst.o typecheck.o
 
 INCS := 
-LIBS := 
+LIBS := -lm
 
 .PHONY: all all-static pj-compiler pj-compiler-static $(OLD_BINS) $(OLD_SBINS)
 

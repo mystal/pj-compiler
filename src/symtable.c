@@ -99,7 +99,8 @@ bool stAddSymbol(symtable *st, symbol *sym)
             symVarSetLocation(sym, b->nextLoc++);
             break;
         case symt_array:
-            symArraySetLocation(sym, b->nextLoc++);
+            symArraySetLocation(sym, b->nextLoc);
+            b->nextLoc += symArrayGetRange(sym);
             break;
         case symt_proc:
             symProcSetLocation(sym, b->nextLoc++);
@@ -111,7 +112,7 @@ bool stAddSymbol(symtable *st, symbol *sym)
     return true;
 }
 
-symbol *stLookup(symtable *st, string *name)
+symbol *stLookup(symtable *st, string *name, unsigned int *level)
 {
     symbol *ret;
     //TODO: create iterator for lists?
@@ -121,7 +122,11 @@ symbol *stLookup(symtable *st, string *name)
         ret = (symbol *) bstGet(((block *) listGet(st->blockList, i))->symbols, test);
         symbolDestroy(test);
         if (ret != NULL)
+        {
+            if (level != NULL)
+                *level = i;
             return ret;
+        }
     }
     return NULL;
 }

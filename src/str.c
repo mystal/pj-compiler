@@ -94,6 +94,31 @@ char *stringGetBuffer(string *str)
     return str->buffer;
 }
 
+int stringToInt(string *str)
+{
+    int ret;
+    stringAppendChar(str, '\0');
+    ret = atoi(stringGetBuffer(str));
+    stringDrop(str, 1);
+    return ret;
+}
+
+float stringToFloat(string *str)
+{
+    float ret;
+    stringAppendChar(str, '\0');
+    ret = atof(stringGetBuffer(str));
+    stringDrop(str, 1);
+    return ret;
+}
+
+bool stringToBool(string *str)
+{
+    if (stringCompareCharArray(str, "true", 4*sizeof(char)) == 0)
+        return true;
+    return false;
+}
+
 void stringDestroy(string *str)
 {
     free(str->buffer);

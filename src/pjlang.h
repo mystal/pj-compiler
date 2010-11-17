@@ -24,7 +24,6 @@ typedef enum __pjop
     op_slash,
     op_div,
     op_mod,
-    op_identity,
     op_negate,
     op_and,
     op_or,

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 typedef struct __string string;
 
 /**
@@ -50,6 +52,21 @@ unsigned int stringGetLength(string *);
  * Gets a pointer to the given string's buffer.
  **/
 char *stringGetBuffer(string *);
+
+/**
+ *
+ **/
+int stringToInt(string *);
+
+/**
+ *
+ **/
+float stringToFloat(string *);
+
+/**
+ *
+ **/
+bool stringToBool(string *);
 
 /**
  * Deallocates memory for the string and sets its pointer to NULL.

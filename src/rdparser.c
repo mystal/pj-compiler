@@ -65,7 +65,6 @@
 void errorRecovery(void);
 void initStopSet(void);
 void addFilename(bst *, string *);
-int stringToInt(string *);
 
 /* Parsing procedures */
 void program(void);
@@ -533,14 +532,14 @@ void range_const(unsigned int *bound)
     if (t->kind == tok_id)
     {
         //Lookup symbol
-        sym = stLookup(st, t->lexeme);
+        sym = stLookup(st, t->lexeme, NULL);
         if (sym == NULL)
             errorST(err_undef_sym, t->lexeme);
         else if (!(symbolGetType(sym) == symt_const_var && 
                    symConstVarGetType(sym) == pj_integer))
             errorST(err_range_not_const, t->lexeme);
         else
-            *bound = stringToInt(symConstGetValue(sym));
+            *bound = stringToInt(symConstVarGetValue(sym));
     }
     else if (t->kind == tok_integer_const)
     {
@@ -753,15 +752,6 @@ void constant(symbol *sym)
     else
         errorParse(err_exp_const, t, tok_undef);
     dirTrace("constant", tr_exit);
-}
-
-int stringToInt(string *str)
-{
-    int ret;
-    stringAppendChar(str, '\0');
-    ret = atoi(stringGetBuffer(str));
-    stringDrop(str, 1);
-    return ret;
 }
 
 int bstCompareString(void *v1, void *v2)

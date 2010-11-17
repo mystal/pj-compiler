@@ -233,10 +233,12 @@ void actIgnore(state s, token *t, char c)
  **/
 void actProcessDirective(state s, token *t, char c)
 {
-    char test;
+    char d, f, test;
     do
     {
-        dirSet(bufferGetChar(), bufferGetChar());
+        d = bufferGetChar();
+        f = bufferGetChar();
+        dirSet(d, f);
         test = bufferGetChar();
     } while (test == ',');
     bufferPushBack(1);
