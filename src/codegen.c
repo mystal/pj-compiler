@@ -7,179 +7,12 @@
 
 #include "directive.h"
 #include "error.h"
+#include "hypomac.h"
 #include "list.h"
 #include "pjlang.h"
 #include "string.h"
 #include "symbol.h"
 #include "typecheck.h"
-
-typedef enum __hypo_op
-{
-    hop_push = 1,
-    hop_pushr,
-    hop_pushi,
-    hop_pushc,
-    hop_pop,
-    hop_popc,
-    hop_popr,
-    hop_move,
-    hop_swap,
-    hop_load,
-    hop_loadr,
-    hop_loada,
-    hop_loadi,
-    hop_store,
-    hop_storeregs,
-    hop_loadregs,
-    hop_halt,
-    hop_add,
-    hop_sub,
-    hop_negate,
-    hop_mult,
-    hop_div,
-    hop_mod,
-    hop_or,
-    hop_and,
-    hop_not,
-    hop_trunc,
-    hop_round,
-    hop_float,
-    hop_shift,
-    hop_gt,
-    hop_ge,
-    hop_lt,
-    hop_le,
-    hop_eq,
-    hop_ne,
-    hop_b,
-    hop_bct,
-    hop_bcf,
-    hop_noop,
-    hop_pack,
-    hop_unpack,
-    hop_syscall,
-    hop_call,
-    hop_return,
-    hop_num
-} hypo_op;
-
-typedef enum __hypo_syscall
-{
-    hsys_open = 1,
-    hsys_close,
-    hsys_get,
-    hsys_put,
-    hsys_readln,
-    hsys_writeln,
-    hsys_readbuff,
-    hsys_writebuff,
-    hsys_readint,
-    hsys_readreal,
-    hsys_writeint,
-    hsys_writereal,
-    hsys_clock,
-    hsys_eoln,
-    hsys_eof,
-    hsys_dumpit,
-    hsys_chr,
-    hsys_ord,
-    hsys_sqr,
-    hsys_dumpr,
-    hsys_dumpi,
-    hsys_dumpd,
-    hsys_linelimit,
-    hsys_instlim,
-    hsys_num
-} hypo_syscall;
-
-char *hypoOpStrings[hop_num] =
-{
-    "push", /* hop_push */
-    "pushr", /* hop_pushr */
-    "pushi", /* hop_pushi */
-    "pushc", /* hop_pushc */
-    "pop", /* hop_pop */
-    "popc", /* hop_popc */
-    "popr", /* hop_popr */
-    "move", /* hop_move */
-    "swap", /* hop_swap */
-    "load", /* hop_load */
-    "loadr", /* hop_loadr */
-    "loada", /* hop_loada */
-    "loadi", /* hop_loadi */
-    "store", /* hop_store */
-    "storeregs", /* hop_storeregs */
-    "loadregs", /* hop_loadregs */
-    "halt", /* hop_halt */
-    "add", /* hop_add */
-    "sub", /* hop_sub */
-    "negate", /* hop_negate */
-    "mult", /* hop_mult */
-    "div", /* hop_div */
-    "mod", /* hop_mod */
-    "or", /* hop_or */
-    "and", /* hop_and */
-    "not", /* hop_not */
-    "trunc", /* hop_trunc */
-    "round", /* hop_round */
-    "float", /* hop_float */
-    "shift", /* hop_shift */
-    "gt", /* hop_gt */
-    "ge", /* hop_ge */
-    "lt", /* hop_lt */
-    "le", /* hop_le */
-    "eq", /* hop_eq */
-    "ne", /* hop_ne */
-    "b", /* hop_b */
-    "bct", /* hop_bct */
-    "bcf", /* hop_bcf */
-    "noop", /* hop_noop */
-    "pack", /* hop_pack */
-    "unpack", /* hop_unpack */
-    "syscall", /* hop_syscall */
-    "call", /* hop_call */
-    "return" /* hop_return */
-};
-
-typedef char alfa[10];
-typedef enum __hypo_type {h_int, h_real, h_char, h_alfa, h_bool} hypo_type;
-typedef enum __spaces { ispace, dspace, regs } spaces;
-
-typedef struct __varval
-{
-	hypo_type type;
-	union {
-		int intval;
-		float realval;
-		char charval;
-		alfa alfaval;   /* array of 10 characters */
-		char boolval;   /* set to NUMERIC 0 or 1 */
-	} ircab_val;
-} varval;
-
-typedef struct __instruction {
-	int opcode;
-	varval oper1;
-	int oper2;
-} instruction;
-
-typedef struct __reg
-{
-	int regnum, regval;
-} reg;
-
-typedef struct __loadrec
-{
-	int loc;
-	spaces space;
-	union {
-		instruction ivalue;
-		varval dvalue;
-		reg rvalue;
-	} idr_value;
-} loadrec;
-
-char *spaceStrings[regs+1] = {"ispace", "dspace", "regs"};
 
 hypo_op pjopToHypoOp[op_none] =
 {
@@ -204,8 +37,8 @@ hypo_op pjopToHypoOp[op_none] =
 /* Private helper functions */
 void writeCode(loadrec *);
 void printCode(loadrec *);
-int genaddr(unsigned int, unsigned int);
-loadrec coerceInstruction(bool);
+loadrec genInstruction(hypo_op, varval, int);
+int genAddress(unsigned int, unsigned int);
 
 /* Function pointer type for code generating functions */
 typedef pjtype (*code_func)(list *);
@@ -295,30 +128,28 @@ pjtype codeBinaryOp(list *l)
     op_check check = typeCheckOperator(op, pjt1, pjt2);
     if (check.ret != pj_undef)
     {
-        hypo_op hop = pjopToHypoOp[op];
         loadrec lr;
+        hypo_op opcode = pjopToHypoOp[op];
+        varval vv;
+        vv.type = h_int;
         if (check.coerce1)
         {
-            lr = coerceInstruction(true);
+            vv.ircab_val.intval = 1;
+            lr = genInstruction(hop_float, vv, 0);
             writeCode(&lr);
         }
         else if (check.coerce2)
         {
-            lr = coerceInstruction(false);
+            vv.ircab_val.intval = 0;
+            lr = genInstruction(hop_float, vv, 0);
             writeCode(&lr);
         }
-        lr.loc = nextLoc++;
-        lr.space = ispace;
-        instruction in;
-        in.opcode = hop;
-        in.oper2 = 0;
-        in.oper1.type = h_int;
-        if (hop == hop_add || hop == hop_sub || hop == hop_negate ||
-            hop == hop_mult || hop == hop_div)
-            in.oper1.ircab_val.intval = (pjt1 == pj_integer && pjt2 == pj_integer) ? 0 : 1;
+        if (opcode == hop_add || opcode == hop_sub || opcode == hop_negate ||
+            opcode == hop_mult || opcode == hop_div)
+            vv.ircab_val.intval = (pjt1 == pj_integer && pjt2 == pj_integer) ? 0 : 1;
         else
-            in.oper1.ircab_val.intval = 0;
-        lr.idr_value.ivalue = in;
+            vv.ircab_val.intval = 0;
+        lr = genInstruction(opcode, vv, 0);
         writeCode(&lr);
     }
     else
@@ -332,32 +163,28 @@ pjtype codePushConst(list *l)
     string *val = sem->sem.constVal.val;
     pjtype ret = sem->sem.constVal.type;
     loadrec lr;
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    instruction in;
-    in.opcode = hop_pushi;
-    in.oper2 = 0;
+    varval vv;
     switch (ret)
     {
         case pj_integer:
-            in.oper1.type = h_int;
-            in.oper1.ircab_val.intval = stringToInt(val);
+            vv.type = h_int;
+            vv.ircab_val.intval = stringToInt(val);
             break;
         case pj_real:
-            in.oper1.type = h_real;
-            in.oper1.ircab_val.realval = stringToFloat(val);
+            vv.type = h_real;
+            vv.ircab_val.realval = stringToFloat(val);
             break;
         case pj_boolean:
-            in.oper1.type = h_bool;
-            in.oper1.ircab_val.boolval = (stringToBool(val)) ? 1 : 0;
+            vv.type = h_bool;
+            vv.ircab_val.boolval = (stringToBool(val)) ? 1 : 0;
             break;
         case pj_alfa:
-            in.oper1.type = h_alfa;
-            strncpy(in.oper1.ircab_val.alfaval, stringGetBuffer(val), 10);
+            vv.type = h_alfa;
+            strncpy(vv.ircab_val.alfaval, stringGetBuffer(val), 10);
             break;
         case pj_char:
-            in.oper1.type = h_char;
-            in.oper1.ircab_val.charval = stringGetBuffer(val)[0];
+            vv.type = h_char;
+            vv.ircab_val.charval = stringGetBuffer(val)[0];
             break;
         case pj_string:
             break;
@@ -365,7 +192,7 @@ pjtype codePushConst(list *l)
             //TODO error
             break;
     }
-    lr.idr_value.ivalue = in;
+    lr = genInstruction(hop_pushi, vv, 0);
     writeCode(&lr);
     return ret;
 }
@@ -377,36 +204,35 @@ pjtype codePushId(list *l)
     sym_type type = symbolGetType(sym);
     pjtype ret = pj_undef;
     loadrec lr;
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    instruction in;
-    in.oper2 = 0;
+    hypo_op opcode;
+    varval vv;
+    int oper2 = 0;
     if (type == symt_const_var)
     {
         string *val = symConstVarGetValue(sym);
         ret = symConstVarGetType(sym);
-        in.opcode = hop_pushi;
+        opcode = hop_pushi;
         switch (ret)
         {
             case pj_integer:
-                in.oper1.type = h_int;
-                in.oper1.ircab_val.intval = stringToInt(val);
+                vv.type = h_int;
+                vv.ircab_val.intval = stringToInt(val);
                 break;
             case pj_real:
-                in.oper1.type = h_real;
-                in.oper1.ircab_val.realval = stringToFloat(val);
+                vv.type = h_real;
+                vv.ircab_val.realval = stringToFloat(val);
                 break;
             case pj_boolean:
-                in.oper1.type = h_bool;
-                in.oper1.ircab_val.boolval = (char) stringToBool(val);
+                vv.type = h_bool;
+                vv.ircab_val.boolval = (char) stringToBool(val);
                 break;
             case pj_alfa:
-                in.oper1.type = h_alfa;
-                strncpy(in.oper1.ircab_val.alfaval, stringGetBuffer(val), 10);
+                vv.type = h_alfa;
+                strncpy(vv.ircab_val.alfaval, stringGetBuffer(val), 10);
                 break;
             case pj_char:
-                in.oper1.type = h_char;
-                in.oper1.ircab_val.charval = stringGetBuffer(val)[0];
+                vv.type = h_char;
+                vv.ircab_val.charval = stringGetBuffer(val)[0];
                 break;
             case pj_string:
                 break;
@@ -421,22 +247,22 @@ pjtype codePushId(list *l)
         if (ret == pj_text)
         {
             string *filename = symbolGetName(sym);
-            in.opcode = hop_pushi;
-            in.oper1.type = h_alfa;
-            memset(in.oper1.ircab_val.alfaval, ' ', sizeof(alfa));
-            strncpy(in.oper1.ircab_val.alfaval, stringGetBuffer(filename),
+            opcode = hop_pushi;
+            vv.type = h_alfa;
+            memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+            strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
                     stringGetLength(filename));
         }
         else
         {
-            in.opcode = hop_push;
-            in.oper2 = 1;
-            in.oper1.type = h_int;
-            in.oper1.ircab_val.intval = genaddr(sem->sem.sym.level,
-                                                symVarGetLocation(sym));
+            opcode = hop_push;
+            oper2 = 1;
+            vv.type = h_int;
+            vv.ircab_val.intval = genAddress(sem->sem.sym.level,
+                                             symVarGetLocation(sym));
         }
     }
-    lr.idr_value.ivalue = in;
+    lr = genInstruction(opcode, vv, oper2);
     writeCode(&lr);
     return ret;
 }
@@ -454,25 +280,17 @@ pjtype codePushFileid(list *l)
         return pj_undef;
     }
     loadrec lr;
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    instruction in;
-    in.oper2 = 0;
+    varval vv;
     string *filename = symbolGetName(sym);
-    in.opcode = hop_pushi;
-    in.oper1.type = h_alfa;
-    memset(in.oper1.ircab_val.alfaval, ' ', sizeof(alfa));
-    strncpy(in.oper1.ircab_val.alfaval, stringGetBuffer(filename),
+    vv.type = h_alfa;
+    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
             stringGetLength(filename));
-    lr.idr_value.ivalue = in;
+    lr = genInstruction(hop_pushi, vv, 0);
     writeCode(&lr);
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    in.oper2 = 0;
-    in.opcode = hop_syscall;
-    in.oper1.type = h_int;
-    in.oper1.ircab_val.intval = hsys_readbuff;
-    lr.idr_value.ivalue = in;
+    vv.type = h_int;
+    vv.ircab_val.intval = hsys_readbuff;
+    lr = genInstruction(hop_syscall, vv, 0);
     writeCode(&lr);
     return pj_char;
 }
@@ -488,19 +306,15 @@ pjtype codeUnaryOp(list *l)
     op_check check = typeCheckOperator(op, ret, pj_undef);
     if (check.ret != pj_undef)
     {
-        hypo_op hop = pjopToHypoOp[op];
         loadrec lr;
-        lr.loc = nextLoc++;
-        lr.space = ispace;
-        instruction in;
-        in.opcode = hop;
-        in.oper2 = 0;
-        in.oper1.type = h_int;
-        if (hop == hop_negate)
-            in.oper1.ircab_val.intval = (check.ret == pj_integer) ? 0 : 1;
+        hypo_op opcode = pjopToHypoOp[op];
+        varval vv;
+        vv.type = h_int;
+        if (opcode == hop_negate)
+            vv.ircab_val.intval = (check.ret == pj_integer) ? 0 : 1;
         else
-            in.oper1.ircab_val.intval = 0;
-        lr.idr_value.ivalue = in;
+            vv.ircab_val.intval = 0;
+        lr = genInstruction(opcode, vv, 0);
         writeCode(&lr);
     }
     return check.ret;
@@ -518,46 +332,38 @@ pjtype codeCallBuiltin(list *l)
     slr_semantics *semExpr = (slr_semantics *) listGet(l, 2);
     pjtype pjt = semExpr->sem.type;
     loadrec lr;
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    instruction in;
-    in.oper1.type = h_int;
-    in.oper2 = 0;
+    hypo_op opcode = hop_syscall;
+    varval vv;
+    vv.type = h_int;
+    vv.ircab_val.intval = 0;
     switch (pjb)
     {
         case builtin_chr:
-            in.opcode = hop_syscall;
-            in.oper1.ircab_val.intval = hsys_chr;
+            vv.ircab_val.intval = hsys_chr;
             break;
         case builtin_eof:
-            in.opcode = hop_syscall;
-            in.oper1.ircab_val.intval = hsys_eof;
+            vv.ircab_val.intval = hsys_eof;
             break;
         case builtin_eoln:
-            in.opcode = hop_syscall;
-            in.oper1.ircab_val.intval = hsys_eoln;
+            vv.ircab_val.intval = hsys_eoln;
             break;
         case builtin_ord:
-            in.opcode = hop_syscall;
-            in.oper1.ircab_val.intval = hsys_ord;
+            vv.ircab_val.intval = hsys_ord;
             break;
         case builtin_sqr:
-            in.opcode = hop_syscall;
-            in.oper1.ircab_val.intval = hsys_sqr;
+            vv.ircab_val.intval = hsys_sqr;
             break;
         case builtin_round:
-            in.opcode = hop_round;
-            in.oper1.ircab_val.intval = 0;
+            opcode = hop_round;
             break;
         case builtin_trunc:
-            in.opcode = hop_trunc;
-            in.oper1.ircab_val.intval = 0;
+            opcode = hop_trunc;
             break;
         default:
             //TODO error
             break;
     }
-    lr.idr_value.ivalue = in;
+    lr = genInstruction(opcode, vv, 0);
     ret = typeCheckBuiltinFunction(pjb, pjt);
     if (ret != pj_undef)
     {
@@ -581,54 +387,25 @@ pjtype codePushArray(list *l)
         //TODO error
         return pj_undef;
     loadrec lr;
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    instruction in;
-    in.opcode = hop_pushi;
-    in.oper1.type = h_int;
-    in.oper1.ircab_val.intval = symArrayGetLowBound(sym);
-    in.oper2 = 0;
-    lr.idr_value.ivalue = in;
+    varval vv;
+    vv.type = h_int;
+    vv.ircab_val.intval = symArrayGetLowBound(sym);
+    lr = genInstruction(hop_pushi, vv, 0);
     writeCode(&lr);
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    in.opcode = hop_sub;
-    in.oper1.type = h_int;
-    in.oper1.ircab_val.intval = 0;
-    in.oper2 = 0;
-    lr.idr_value.ivalue = in;
+    vv.ircab_val.intval = 0;
+    lr = genInstruction(hop_sub, vv, 0);
     writeCode(&lr);
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    in.opcode = hop_pushi;
-    in.oper1.type = h_int;
-    in.oper1.ircab_val.intval = genaddr(level, symArrayGetLocation(sym));
-    in.oper2 = 0;
-    lr.idr_value.ivalue = in;
+    vv.ircab_val.intval = genAddress(level, symArrayGetLocation(sym));
+    lr = genInstruction(hop_pushi, vv, 0);
     writeCode(&lr);
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    in.opcode = hop_add;
-    in.oper1.type = h_int;
-    in.oper1.ircab_val.intval = 0;
-    in.oper2 = 0;
-    lr.idr_value.ivalue = in;
+    vv.ircab_val.intval = 0;
+    lr = genInstruction(hop_add, vv, 0);
     writeCode(&lr);
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    in.opcode = hop_popr;
-    in.oper1.type = h_int;
-    in.oper1.ircab_val.intval = 5;
-    in.oper2 = 0;
-    lr.idr_value.ivalue = in;
+    vv.ircab_val.intval = 5;
+    lr = genInstruction(hop_popr, vv, 0);
     writeCode(&lr);
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    in.opcode = hop_push;
-    in.oper1.type = h_int;
-    in.oper1.ircab_val.intval = 5*pow(10, 7);
-    in.oper2 = 1;
-    lr.idr_value.ivalue = in;
+    vv.ircab_val.intval = 5*pow(10, 7);
+    lr = genInstruction(hop_push, vv, 1);
     writeCode(&lr);
     return ret;
 }
@@ -668,7 +445,21 @@ void printCode(loadrec *lr)
     fprintf(stdout, " %4d\n", lr->idr_value.ivalue.oper2);
 }
 
-int genaddr(unsigned int level, unsigned int loc)
+loadrec genInstruction(hypo_op opcode, varval oper1, int oper2)
+{
+    loadrec lr;
+    lr.loc = nextLoc++;
+    lr.space = ispace;
+    instruction in;
+    in.opcode = opcode;
+    in.oper1.type = oper1.type;
+    in.oper1.ircab_val = oper1.ircab_val;
+    in.oper2 = oper2;
+    lr.idr_value.ivalue = in;
+    return lr;
+}
+
+int genAddress(unsigned int level, unsigned int loc)
 {
     //TODO don't just do indirect
     int addr = 0;
@@ -677,18 +468,4 @@ int genaddr(unsigned int level, unsigned int loc)
     addr += (12+level)*pow(10, 5);
     addr += (loc-1);
     return addr;
-}
-
-loadrec coerceInstruction(bool coerceFirst)
-{
-    loadrec lr;
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    instruction in;
-    in.opcode = hop_float;
-    in.oper1.type = h_int;
-    in.oper1.ircab_val.intval = (coerceFirst) ? 1 : 0;
-    in.oper2 = 0;
-    lr.idr_value.ivalue = in;
-    return lr;
 }
