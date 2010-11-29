@@ -4,6 +4,7 @@
 #include "pjlang.h"
 #include "string.h"
 #include "symbol.h"
+#include "symtable.h"
 
 typedef enum __slr_sem_kind
 {
@@ -40,6 +41,6 @@ void codegenInit(void);
 
 void codegenCleanup(void);
 
-pjtype codegenExpr(unsigned int, list *);
+pjtype codegenExpr(unsigned int, list *, symtable *);
 
 void codegenReportError(void);

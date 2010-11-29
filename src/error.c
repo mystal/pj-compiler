@@ -76,7 +76,9 @@ void errorST(error_kind e, string *lexeme)
 
 void errorType(error_kind e)
 {
+    unsigned int line = bufferLineNumber();
+    unsigned int pos = bufferPos();
     codegenReportError();
-    fprintf(stdout, "error: %s\n", errorStrings[e]);
+    fprintf(stdout, "(%d, %d): error: %s\n", line, pos, errorStrings[e]);
     bufferPrint(stdout);
 }

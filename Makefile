@@ -4,8 +4,8 @@ SRCDIR := src
 BUILDDIR := build
 DEPSDIR := .deps
 
-BIN := pj-compiler
-SBIN := pj-compiler-static
+BIN := pjc
+SBIN := pjc-static
 OLD_BINS := expr lexer
 OLD_SBINS := $(addsuffix -static, $(OLD_BINS))
 BIN_FILES := $(addprefix $(BUILDDIR)/, $(OLD_BINS))
@@ -17,7 +17,7 @@ OBJS := bst.o buffer.o codegen.o directive.o error.o exprparser.o exprprods.o \
 INCS := 
 LIBS := -lm
 
-.PHONY: all all-static pj-compiler pj-compiler-static $(OLD_BINS) $(OLD_SBINS)
+.PHONY: all all-static pjc pjc-static $(OLD_BINS) $(OLD_SBINS)
 
 $(BIN) $(SBIN): %: $(BUILDDIR)/%
 
@@ -30,10 +30,10 @@ all-static: $(SBIN) $(OLD_SBINS)
 clean:
 	-rm -rf $(BUILDDIR)
 
-$(BUILDDIR)/pj-compiler: $(addprefix $(BUILDDIR)/, $(OBJS)) $(BUILDDIR)/driver.o
+$(BUILDDIR)/pjc: $(addprefix $(BUILDDIR)/, $(OBJS)) $(BUILDDIR)/driver.o
 	$(CC) $(LIBS) -g -o $@ $^
 
-$(BUILDDIR)/pj-compiler-static: $(addprefix $(BUILDDIR)/, $(OBJS)) $(BUILDDIR)/driver.o
+$(BUILDDIR)/pjc-static: $(addprefix $(BUILDDIR)/, $(OBJS)) $(BUILDDIR)/driver.o
 	$(CC) $(LIBS) -static -g -o $@ $^
 
 $(BIN_FILES): %: $(addprefix $(BUILDDIR)/, $(OBJS)) %driver.o

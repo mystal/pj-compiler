@@ -129,29 +129,28 @@ void expr(token *t, symtable *st)
                 listAddFront(l, sem);
             }
             //Generate code
-            pjtype type = codegenExpr(entry.num, l);
+            pjtype type = codegenExpr(entry.num, l, st);
             if (type == pj_undef)
             {
                 //Cleanup list
                 sem = (slr_semantics *) listRemoveBack(l);
-                listDestroy(l);
                 stackPush(semStk, sem);
             }
             else
             {
-                //Cleanup list
-                while (listSize(l) > 0)
-                {
-                    sem = (slr_semantics *) listRemoveBack(l);
-                    slrSemanticsDestroy(sem);
-                }
-                listDestroy(l);
                 //Push returned type
                 sem = (slr_semantics *) malloc(sizeof(slr_semantics));
                 sem->kind = slr_sem_type;
                 sem->sem.type = type;
                 stackPush(semStk, sem);
             }
+            //Cleanup list
+            while (listSize(l) > 0)
+            {
+                sem = (slr_semantics *) listRemoveBack(l);
+                slrSemanticsDestroy(sem);
+            }
+            listDestroy(l);
             //Push gotox[top stack state][lhs] state and lhs onto stack
             //Allocate memory for pushed item
             s = slrEntryCreate(gotox[((slr_stack_entry *) stackPeek(slrStk))->state][p.lhs],

@@ -12,6 +12,7 @@
 #include "pjlang.h"
 #include "string.h"
 #include "symbol.h"
+#include "symtable.h"
 #include "typecheck.h"
 
 hypo_op pjopToHypoOp[op_none] =
@@ -35,22 +36,23 @@ hypo_op pjopToHypoOp[op_none] =
 };
 
 /* Private helper functions */
-void writeCode(loadrec *);
-void printCode(loadrec *);
 loadrec genInstruction(hypo_op, varval, int);
 int genAddress(unsigned int, unsigned int);
+void writeCode(loadrec *);
+void printCode(loadrec *);
+void getConstValue(pjtype, string *, varval *);
 
 /* Function pointer type for code generating functions */
-typedef pjtype (*code_func)(list *);
+typedef pjtype (*code_func)(list *, symtable *);
 
 /* Code generating functions */
-pjtype codeBinaryOp(list *);
-pjtype codePushConst(list *);
-pjtype codePushId(list *);
-pjtype codePushFileid(list *);
-pjtype codeUnaryOp(list *);
-pjtype codeCallBuiltin(list *);
-pjtype codePushArray(list *);
+pjtype codeBinaryOp(list *, symtable *);
+pjtype codePushConst(list *, symtable *);
+pjtype codePushId(list *, symtable *);
+pjtype codePushFileid(list *, symtable *);
+pjtype codeUnaryOp(list *, symtable *);
+pjtype codeCallBuiltin(list *, symtable *);
+pjtype codePushArray(list *, symtable *);
 
 code_func genFuncs[18] =
 {
@@ -74,8 +76,10 @@ code_func genFuncs[18] =
     codePushArray /* array --> id [ expr ] */
 };
 
+/* File pointer to loadfile to be run using hypomac */
 FILE *loadfile = NULL;
 
+/* Next available location in ispace */
 unsigned int nextLoc = 1;
 
 void codegenInit()
@@ -89,13 +93,13 @@ void codegenCleanup()
         fclose(loadfile);
 }
 
-pjtype codegenExpr(unsigned int prod, list *l)
+pjtype codegenExpr(unsigned int prod, list *l, symtable *st)
 {
     if (prod > 17)
         return pj_undef;
     code_func genFunc = genFuncs[prod];
     if (genFunc != NULL)
-        return genFunc(l);
+        return genFunc(l, st);
     if (prod == 14 || prod == 15)
     {
         slr_semantics *sem = (slr_semantics *) listGet(l, 1);
@@ -117,7 +121,7 @@ void codegenReportError()
     }
 }
 
-pjtype codeBinaryOp(list *l)
+pjtype codeBinaryOp(list *l, symtable *st)
 {
     slr_semantics *sem1 = (slr_semantics *) listGetFront(l);
     slr_semantics *semOp = (slr_semantics *) listGet(l, 1);
@@ -157,47 +161,20 @@ pjtype codeBinaryOp(list *l)
     return check.ret;
 }
 
-pjtype codePushConst(list *l)
+pjtype codePushConst(list *l, symtable *st)
 {
     slr_semantics *sem = (slr_semantics *) listGetFront(l);
     string *val = sem->sem.constVal.val;
     pjtype ret = sem->sem.constVal.type;
     loadrec lr;
     varval vv;
-    switch (ret)
-    {
-        case pj_integer:
-            vv.type = h_int;
-            vv.ircab_val.intval = stringToInt(val);
-            break;
-        case pj_real:
-            vv.type = h_real;
-            vv.ircab_val.realval = stringToFloat(val);
-            break;
-        case pj_boolean:
-            vv.type = h_bool;
-            vv.ircab_val.boolval = (stringToBool(val)) ? 1 : 0;
-            break;
-        case pj_alfa:
-            vv.type = h_alfa;
-            strncpy(vv.ircab_val.alfaval, stringGetBuffer(val), 10);
-            break;
-        case pj_char:
-            vv.type = h_char;
-            vv.ircab_val.charval = stringGetBuffer(val)[0];
-            break;
-        case pj_string:
-            break;
-        default:
-            //TODO error
-            break;
-    }
+    getConstValue(ret, val, &vv);
     lr = genInstruction(hop_pushi, vv, 0);
     writeCode(&lr);
     return ret;
 }
 
-pjtype codePushId(list *l)
+pjtype codePushId(list *l, symtable *st)
 {
     slr_semantics *sem = (slr_semantics *) listGetFront(l);
     symbol *sym = sem->sem.sym.val;
@@ -212,38 +189,11 @@ pjtype codePushId(list *l)
         string *val = symConstVarGetValue(sym);
         ret = symConstVarGetType(sym);
         opcode = hop_pushi;
-        switch (ret)
-        {
-            case pj_integer:
-                vv.type = h_int;
-                vv.ircab_val.intval = stringToInt(val);
-                break;
-            case pj_real:
-                vv.type = h_real;
-                vv.ircab_val.realval = stringToFloat(val);
-                break;
-            case pj_boolean:
-                vv.type = h_bool;
-                vv.ircab_val.boolval = (char) stringToBool(val);
-                break;
-            case pj_alfa:
-                vv.type = h_alfa;
-                strncpy(vv.ircab_val.alfaval, stringGetBuffer(val), 10);
-                break;
-            case pj_char:
-                vv.type = h_char;
-                vv.ircab_val.charval = stringGetBuffer(val)[0];
-                break;
-            case pj_string:
-                break;
-            default:
-                //TODO error
-                break;
-        }
+        getConstValue(ret, val, &vv);
     }
     else if (type == symt_var)
     {
-        ret = symConstVarGetType(sym);
+        ret = symVarGetType(sym);
         if (ret == pj_text)
         {
             string *filename = symbolGetName(sym);
@@ -267,7 +217,7 @@ pjtype codePushId(list *l)
     return ret;
 }
 
-pjtype codePushFileid(list *l)
+pjtype codePushFileid(list *l, symtable *st)
 {
     //TODO may be able to merge with PushId
     slr_semantics *sem = (slr_semantics *) listGetFront(l);
@@ -295,7 +245,7 @@ pjtype codePushFileid(list *l)
     return pj_char;
 }
 
-pjtype codeUnaryOp(list *l)
+pjtype codeUnaryOp(list *l, symtable *st)
 {
     slr_semantics *semOp = (slr_semantics *) listGetFront(l);
     slr_semantics *semFactor = (slr_semantics *) listGetBack(l);
@@ -320,7 +270,7 @@ pjtype codeUnaryOp(list *l)
     return check.ret;
 }
 
-pjtype codeCallBuiltin(list *l)
+pjtype codeCallBuiltin(list *l, symtable *st)
 {
     slr_semantics *semId = (slr_semantics *) listGetFront(l);
     symbol *sym = semId->sem.sym.val;
@@ -372,7 +322,7 @@ pjtype codeCallBuiltin(list *l)
     return ret;
 }
 
-pjtype codePushArray(list *l)
+pjtype codePushArray(list *l, symtable *st)
 {
     slr_semantics *semId = (slr_semantics *) listGetFront(l);
     symbol *sym = semId->sem.sym.val;
@@ -410,6 +360,31 @@ pjtype codePushArray(list *l)
     return ret;
 }
 
+loadrec genInstruction(hypo_op opcode, varval oper1, int oper2)
+{
+    loadrec lr;
+    //memset(&lr, 0, sizeof(loadrec));
+    lr.loc = nextLoc++;
+    lr.space = ispace;
+    instruction in;
+    in.opcode = opcode;
+    in.oper1 = oper1;
+    in.oper2 = oper2;
+    lr.idr_value.ivalue = in;
+    return lr;
+}
+
+int genAddress(unsigned int level, unsigned int loc)
+{
+    //TODO support direct addressing
+    int addr = 0;
+    addr += 1*pow(10, 8);
+    addr += 1*pow(10, 7);
+    addr += (12+level)*pow(10, 5);
+    addr += (loc-1);
+    return addr;
+}
+
 void writeCode(loadrec *lr)
 {
     if (dirGet(dir_echo_code))
@@ -445,27 +420,34 @@ void printCode(loadrec *lr)
     fprintf(stdout, " %4d\n", lr->idr_value.ivalue.oper2);
 }
 
-loadrec genInstruction(hypo_op opcode, varval oper1, int oper2)
+void getConstValue(pjtype pjt, string *val, varval *vv)
 {
-    loadrec lr;
-    lr.loc = nextLoc++;
-    lr.space = ispace;
-    instruction in;
-    in.opcode = opcode;
-    in.oper1.type = oper1.type;
-    in.oper1.ircab_val = oper1.ircab_val;
-    in.oper2 = oper2;
-    lr.idr_value.ivalue = in;
-    return lr;
-}
-
-int genAddress(unsigned int level, unsigned int loc)
-{
-    //TODO don't just do indirect
-    int addr = 0;
-    addr += 1*pow(10, 8);
-    addr += 1*pow(10, 7);
-    addr += (12+level)*pow(10, 5);
-    addr += (loc-1);
-    return addr;
+    switch (pjt)
+    {
+        case pj_integer:
+            vv->type = h_int;
+            vv->ircab_val.intval = stringToInt(val);
+            break;
+        case pj_real:
+            vv->type = h_real;
+            vv->ircab_val.realval = stringToFloat(val);
+            break;
+        case pj_boolean:
+            vv->type = h_bool;
+            vv->ircab_val.boolval = (char) stringToBool(val);
+            break;
+        case pj_alfa:
+            vv->type = h_alfa;
+            strncpy(vv->ircab_val.alfaval, stringGetBuffer(val), 10);
+            break;
+        case pj_char:
+            vv->type = h_char;
+            vv->ircab_val.charval = stringGetBuffer(val)[0];
+            break;
+        case pj_string:
+            break;
+        default:
+            //TODO error
+            break;
+    }
 }
