@@ -1,0 +1,131 @@
+(*****************************************************)
+(*                                                   *)
+(* this program does nothing useful.  it tests       *)
+(* builtin functions, integer and real output, deeply*)
+(* nested procedures, boolean expressions, and       *)
+(* nested if-then-elses                              *)
+(*                                                   *)
+(*****************************************************)
+(*$c+*)
+program ariths(input,output,outpt);
+const
+   x = 10;
+   y = 15;
+   z = 25;
+
+var
+   outpt : text;
+   
+   procedure one(x : integer);
+      var
+         y : real;
+         q : real;
+      
+      procedure two (y : integer);
+         var
+            z : char;
+
+         procedure three ( z : integer);
+            var
+               x : boolean;
+               i : integer;
+     
+            procedure four (x:integer);
+               var
+                  y : alfa;
+
+               procedure five ( y:integer);
+                  begin
+                     if (y*z-z div x) <= (y*(z-z) div x) then begin
+                        y := x;
+                        x := y
+                        end
+                     else
+                        if ((y<z) = (y>z)) then
+                           y := z
+                        else
+                           if (sqr(y) - sqr(z) > sqr(y*z-x)) then
+                              y := sqr(x)
+                           else
+                              y := sqr(z);
+                      writeln(outpt,y)     (* should be 225 *)
+                  end; (* five *)
+
+               begin (* four *)
+                  y := '    string';
+                  five(50);
+                  if x div z < 0 then
+                     x := x mod z
+                  else begin
+                     if x mod z > 0 then
+                        x := x div z
+                        else begin
+                           x := 0;
+                           z := 0
+                           end
+                      end;
+                  writeln(outpt,x)   (* should be 2 *)
+               end; (* four *)
+
+            begin (* three *)
+              four(32);
+              x := true;
+              for i := 1 to 2 do
+                  if x then begin
+                     z := z * y div y * z + z + z + z - z;
+                     x := false
+                     end
+                  else
+                     x := ((not x) or (x=x)) or (x and (x<>x));
+              if x then
+                 writeln (outpt,1) (* should be 1*)
+              else
+                 writeln (outpt,0);
+              writeln(outpt,z) (* should be 255 *)
+            end; (* three *)
+
+         begin (* two *)
+            three(15);
+            z := 'a';
+            if ord('d')-ord(z) < x then begin
+               if x < 0 then
+                  x := 0 - x
+               else
+                  x := x;
+               while (x > 63) do
+                  x := x - 63;
+               if x = 0 then
+                  x := 1
+               else
+                  x := x;
+               z := chr(x)
+               end
+            else
+               z := chr(32);
+            y := ord(chr(ord(chr(ord(z)))));
+            writeln(outpt,y)  (* should be 10 *)
+         end; (* two *)
+
+      begin (* one *)
+         two(66);
+         y := 3.58;
+         q := 4.02;
+         if trunc(q) = round(y) then begin
+            y := y * q / (q - 3.9 * 0.002);
+            q := q * q * q * q / 6.904
+            end
+         else
+            x := trunc(y);
+         x := trunc(q);
+         writeln(outpt,x); (* should be 37 *)
+         writeln(outpt,y); (* should be 3.58696e+00 *)
+         writeln(outpt,q)  (* should be 3.78271e+01 *)
+      end; (* one *)
+
+   begin (* main program *)
+      rewrite(outpt);
+      one(x);
+      writeln(outpt,x); (* should be 10 *)
+      writeln(outpt,y); (* should be 15 *)
+      writeln(outpt,z) (* should be 25 *)
+   end.

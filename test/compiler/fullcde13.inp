@@ -1,0 +1,48 @@
+(* exercize array storage: integer, real, char *)
+(*$c+*)
+program arraystrg1 (input,output,out,f1);
+var
+   out  : text;
+   f1   : text;
+   i : integer;
+   a : array [2..6] of integer; 
+   b : array [1..5] of real;
+   c : array [1..5] of char;
+begin
+   reset(f1);
+   rewrite(out);
+   
+   writeln(out,'Reading 5 integers into array A....');
+   for i := 2 to 6 do
+      read(f1,a[i]);
+   writeln(out,'Here are the numbers read.');
+   for i := 2 to 6 do begin 
+      write(out,'A[');
+      write(out,i);
+      write(out,'] = ');
+      writeln(out,a[i])
+   end;
+
+   writeln(out,'Reading 5 reals into array B....');
+   for i := 1 to 5 do
+      read(f1,b[i]);
+   writeln(out,'Here are the numbers read.');
+   for i := 1 to 5 do begin
+      write(out,'B[');
+      write(out,i);
+      write(out,'] = ');
+      writeln(out,b[i])
+   end;
+   
+   writeln(out,'Reading 5 chars into array C....');
+   for i := 1 to 5 do
+      read(f1,c[i]);
+   writeln(out,'Here are the chars read.');
+   for i := 1 to 5 do begin
+      write(out,'C[');
+      write(out,i);
+      write(out,'] = ');
+      writeln(out,c[i])
+   end
+   
+end.

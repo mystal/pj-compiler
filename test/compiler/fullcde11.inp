@@ -1,0 +1,46 @@
+(* there should be no errors in this "program" *)
+(* if you have generated the correct code
+   your output should look like the following:
+*)
+(*$c+*)
+program arrayprog(input, output, outfle);
+const
+  thirty = 30;
+var
+  list : array[5..thirty] of integer;
+  outfle:text;
+  max: integer;
+  i: integer;
+  j: integer;
+  k: integer;
+  lb : integer;
+
+procedure swap(arval1:integer;indx1:integer;arval2:integer;indx2:integer);
+const
+  one = 1;
+var
+  temp: integer;
+begin
+  temp := 2;
+  list[indx1 + one - one] := arval2;
+  list[indx2 + temp - temp] := arval1
+end;
+ 
+begin
+ 
+  rewrite(outfle);
+  max := thirty;
+  lb := 5;
+
+  for i := lb to max do
+    list[i] := i mod 6 + 5;  (* 10 5 6 7 8 9 10 5 ....  *)
+
+  for i := lb + 1 to max - 1 do
+    list[list[i - 1]] := list[list[i+1]];
+  
+  for i := lb to max-1 do
+    for j := i+1 to max do
+      if list[i] > list[j] then swap(list[i],i,list[j],j);
+ 
+  for i := lb to max do writeln(outfle,list[i])
+end.

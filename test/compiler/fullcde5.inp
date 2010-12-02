@@ -1,0 +1,49 @@
+(*********************************************************************)
+(*                                                                   *)
+(*   this program reads an input file f1.  any character with        *)
+(*   ordinal value less than split is written to                     *)
+(*   output file f2 and any character with ordinal value greater     *)
+(*   than or equal to split is written to output file f3.            *)
+(*                                                                   *)
+(*   this program tests character i/o, file declarations, nested     *)
+(*   while loops, and some boolean expressions.                      *)
+(*                                                                   *)
+(*********************************************************************)
+(*$c+*)
+
+program io(input,output,f1,f2,f3);
+   var
+      f1       : text ;
+      f2       : text ;
+      f3       : text ;
+      ch       : char ;
+      split    : integer;
+begin
+   reset(f1);
+   rewrite(f2);
+   rewrite(f3);
+   split := ord('j');
+
+   while not eof(f1) do begin
+      read(f1,ch);
+      while not eoln(f1) do begin
+         while (ord(ch) < split) and (not eoln(f1)) do begin
+            write(f2,ch);
+            read(f1,ch)
+            end;
+         while not ((ord(ch) < split) or eoln(f1)) do begin
+            write(f3,ch);
+            read(f1,ch)
+            end
+         end;
+      (* write last character on the line *)
+      if ord(ch) < split then
+         write(f2,ch)
+      else
+         write(f3,ch);
+      if not eof(f1) then
+         readln(f1);
+      writeln(f2);
+      writeln(f3)
+      end
+end.

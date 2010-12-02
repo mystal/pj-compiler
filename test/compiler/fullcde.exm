@@ -1,0 +1,943 @@
+(****************************************************************)
+(*                                                              *)
+(*   this program calculates the first several terms of the     *)
+(*   fibonacci sequence.  it tests variable addressing and      *)
+(*   nested procedures as well as arithmetic and i/o.           *)
+(*                                                              *)
+(****************************************************************)
+(*$c+*)
+
+(* note:  the code generated for the 'for' loop does not take   *)
+(*        take into account the special considerations you must *)
+(*        implement!                                            *)
+
+program fibonacci(input,output,outpt);
+   const
+
+ dspace :   20 :      0
+ dspace :   21 :      0
+ dspace :   22 :      0
+ dspace :   33 :     34
+ register :  1 :     20
+ register :  2 :     33
+ register : 10 :      0
+ 
+      howmany = 40 ; (* print the first howmany fibonacci numbers *)
+      sqrtmsg = 'sqrt(5) = ';
+   var
+      outpt : text ;    (* output file *)
+      x : real ; (* number whose square root is to be taken *)
+      f1 : integer ;    (* successive fibonacci numbers *)
+      f2 : integer ;
+      ratio : real ;    (* ratio of f2 to f1 *)
+      relerr : real ;   (* rel. error between ratio and golden  *)
+      golden : real ;   (* the golden ratio = 1.6180339887498948...*)
+      i      : integer ; (* loop index *)
+      blank  : char ;    (* space ' '  *)
+
+(* calculate the golden ratio *)
+(*    = (1 + sqrt(5.0)) / 2   *)
+
+procedure findgr;
+
+ ispace :    0 : storeregs  : 10000003     7
+ ispace :    1 : push       :      0     2
+ ispace :    2 : push       :      0     9
+ 
+   const
+      epsilon = 1.0e-10;
+   var
+      sqrtx : real ;
+
+   (* iterate the sqrt(x) *)
+
+   procedure newtons(e : real);  (* e = iteration tolerance *)
+
+ ispace :    4 : storeregs  : 10000003     7
+ ispace :    5 : push       :      0     2
+ ispace :    6 : push       :      0     1
+ 
+      const
+         blank = ' ';
+      var
+         error : real;
+         numits : integer ;
+      begin
+
+ ispace :    8 : storeregs  : 10000003     7
+ ispace :    9 : push       :      0     2
+ ispace :   10 : push       : 40000000     1
+ ispace :   11 : push       :      0     2
+ ispace :   12 : b          :     13     0
+
+         numits := 0;
+
+ ispace :   13 : pushi      :      0     0
+ ispace :   14 : pop        : 10000020     1
+
+         sqrtx := 1.0;
+
+ ispace :   15 : pushi      :  1.00000E+00     0
+ ispace :   16 : pop        : 111400002     1
+
+         error := x - sqrtx * sqrtx ;
+
+ ispace :   17 : push       : 111300003     1
+ ispace :   18 : push       : 111400002     1
+ ispace :   19 : push       : 111400002     1
+ ispace :   20 : mult       :      1     0
+ ispace :   21 : sub        :      1     0
+ ispace :   22 : pop        : 10000019     1
+
+         if error < 0.0 then
+
+ ispace :   23 : push       : 10000019     1
+ ispace :   24 : pushi      :  0.00000E-01     0
+ ispace :   25 : lt         :      0     0
+
+            error := -error;
+
+ ispace :   27 : push       : 10000019     1
+ ispace :   28 : negate     :      1     0
+ ispace :   29 : pop        : 10000019     1
+ ispace :   26 : bcf        :     30     0
+ 
+         while error > e do begin
+
+ ispace :   30 : push       : 10000019     1
+ ispace :   31 : push       : 10000018     1
+ ispace :   32 : gt         :      0     0
+
+            numits := numits + trunc(1.41421);
+
+ ispace :   34 : push       : 10000020     1
+ ispace :   35 : pushi      :  1.41421E+00     0
+ ispace :   36 : trunc      :      0     0
+ ispace :   37 : add        :      0     0
+ ispace :   38 : pop        : 10000020     1
+
+            sqrtx := (x / sqrtx + sqrtx) / 2.0 ;
+
+ ispace :   39 : push       : 111300003     1
+ ispace :   40 : push       : 111400002     1
+ ispace :   41 : div        :      1     0
+ ispace :   42 : push       : 111400002     1
+ ispace :   43 : add        :      1     0
+ ispace :   44 : pushi      :  2.00000E+00     0
+ ispace :   45 : div        :      1     0
+ ispace :   46 : pop        : 111400002     1
+ 
+            error := x - sqrtx * sqrtx;
+
+ ispace :   47 : push       : 111300003     1
+ ispace :   48 : push       : 111400002     1
+ ispace :   49 : push       : 111400002     1
+ ispace :   50 : mult       :      1     0
+ ispace :   51 : sub        :      1     0
+ ispace :   52 : pop        : 10000019     1
+ 
+            if error < 0.0 then
+
+ ispace :   53 : push       : 10000019     1
+ ispace :   54 : pushi      :  0.00000E-01     0
+ ispace :   55 : lt         :      0     0
+ 
+               error := -error
+            end;
+
+ ispace :   57 : push       : 10000019     1
+ ispace :   58 : negate     :      1     0
+ ispace :   59 : pop        : 10000019     1
+ ispace :   56 : bcf        :     60     0
+ ispace :   33 : bcf        :     61     0
+ ispace :   60 : b          :     30     0
+ 
+         write(outpt,blank);    (* ' ' *)
+
+ ispace :   61 : pushi      : outpt          0
+ ispace :   62 : loadr      :      4     2
+ ispace :   63 : pushi      :       0
+ ispace :   64 : syscall    :      8     0
+ ispace :   65 : pushi      : outpt          0
+ ispace :   66 : syscall    :      4     0
+ 
+         write(outpt,sqrtmsg);  (* 'sqrt(5) = ' *)
+
+ ispace :   67 : pushi      : outpt          0
+ ispace :   68 : loadr      :      4     2
+ ispace :   69 : pushi      : sqrt(5) =      0
+ ispace :   70 : unpack     :      0     0
+ ispace :   71 : pop        :      2     1
+ ispace :   72 : pushi      : outpt          0
+ ispace :   73 : push       :      2     1
+ ispace :   74 : syscall    :      8     0
+ ispace :   75 : pushi      : outpt          0
+ ispace :   76 : syscall    :      4     0
+ ispace :   77 : pop        :      2     1
+ ispace :   78 : pushi      : outpt          0
+ ispace :   79 : push       :      2     1
+ ispace :   80 : syscall    :      8     0
+ ispace :   81 : pushi      : outpt          0
+ ispace :   82 : syscall    :      4     0
+ ispace :   83 : pop        :      2     1
+ ispace :   84 : pushi      : outpt          0
+ ispace :   85 : push       :      2     1
+ ispace :   86 : syscall    :      8     0
+ ispace :   87 : pushi      : outpt          0
+ ispace :   88 : syscall    :      4     0
+ ispace :   89 : pop        :      2     1
+ ispace :   90 : pushi      : outpt          0
+ ispace :   91 : push       :      2     1
+ ispace :   92 : syscall    :      8     0
+ ispace :   93 : pushi      : outpt          0
+ ispace :   94 : syscall    :      4     0
+ ispace :   95 : pop        :      2     1
+ ispace :   96 : pushi      : outpt          0
+ ispace :   97 : push       :      2     1
+ ispace :   98 : syscall    :      8     0
+ ispace :   99 : pushi      : outpt          0
+ ispace :  100 : syscall    :      4     0
+ ispace :  101 : pop        :      2     1
+ ispace :  102 : pushi      : outpt          0
+ ispace :  103 : push       :      2     1
+ ispace :  104 : syscall    :      8     0
+ ispace :  105 : pushi      : outpt          0
+ ispace :  106 : syscall    :      4     0
+ ispace :  107 : pop        :      2     1
+ ispace :  108 : pushi      : outpt          0
+ ispace :  109 : push       :      2     1
+ ispace :  110 : syscall    :      8     0
+ ispace :  111 : pushi      : outpt          0
+ ispace :  112 : syscall    :      4     0
+ ispace :  113 : pop        :      2     1
+ ispace :  114 : pushi      : outpt          0
+ ispace :  115 : push       :      2     1
+ ispace :  116 : syscall    :      8     0
+ ispace :  117 : pushi      : outpt          0
+ ispace :  118 : syscall    :      4     0
+ ispace :  119 : pop        :      2     1
+ ispace :  120 : pushi      : outpt          0
+ ispace :  121 : push       :      2     1
+ ispace :  122 : syscall    :      8     0
+ ispace :  123 : pushi      : outpt          0
+ ispace :  124 : syscall    :      4     0
+ ispace :  125 : pop        :      2     1
+ ispace :  126 : pushi      : outpt          0
+ ispace :  127 : push       :      2     1
+ ispace :  128 : syscall    :      8     0
+ ispace :  129 : pushi      : outpt          0
+ ispace :  130 : syscall    :      4     0
+ ispace :  131 : pop        :      0     1
+ 
+         write(outpt,sqrtx);
+
+ ispace :  132 : pushi      : outpt          0
+ ispace :  133 : loadr      :      4     2
+ ispace :  134 : push       : 111400002     1
+ ispace :  135 : syscall    :     12     0
+ 
+         write(outpt,'   taking ');
+
+ ispace :  136 : pushi      : outpt          0
+ ispace :  137 : loadr      :      4     2
+ ispace :  138 : pushi      :    taking      0
+ ispace :  139 : unpack     :      0     0
+ ispace :  140 : pop        :      2     1
+ ispace :  141 : pushi      : outpt          0
+ ispace :  142 : push       :      2     1
+ ispace :  143 : syscall    :      8     0
+ ispace :  144 : pushi      : outpt          0
+ ispace :  145 : syscall    :      4     0
+ ispace :  146 : pop        :      2     1
+ ispace :  147 : pushi      : outpt          0
+ ispace :  148 : push       :      2     1
+ ispace :  149 : syscall    :      8     0
+ ispace :  150 : pushi      : outpt          0
+ ispace :  151 : syscall    :      4     0
+ ispace :  152 : pop        :      2     1
+ ispace :  153 : pushi      : outpt          0
+ ispace :  154 : push       :      2     1
+ ispace :  155 : syscall    :      8     0
+ ispace :  156 : pushi      : outpt          0
+ ispace :  157 : syscall    :      4     0
+ ispace :  158 : pop        :      2     1
+ ispace :  159 : pushi      : outpt          0
+ ispace :  160 : push       :      2     1
+ ispace :  161 : syscall    :      8     0
+ ispace :  162 : pushi      : outpt          0
+ ispace :  163 : syscall    :      4     0
+ ispace :  164 : pop        :      2     1
+ ispace :  165 : pushi      : outpt          0
+ ispace :  166 : push       :      2     1
+ ispace :  167 : syscall    :      8     0
+ ispace :  168 : pushi      : outpt          0
+ ispace :  169 : syscall    :      4     0
+ ispace :  170 : pop        :      2     1
+ ispace :  171 : pushi      : outpt          0
+ ispace :  172 : push       :      2     1
+ ispace :  173 : syscall    :      8     0
+ ispace :  174 : pushi      : outpt          0
+ ispace :  175 : syscall    :      4     0
+ ispace :  176 : pop        :      2     1
+ ispace :  177 : pushi      : outpt          0
+ ispace :  178 : push       :      2     1
+ ispace :  179 : syscall    :      8     0
+ ispace :  180 : pushi      : outpt          0
+ ispace :  181 : syscall    :      4     0
+ ispace :  182 : pop        :      2     1
+ ispace :  183 : pushi      : outpt          0
+ ispace :  184 : push       :      2     1
+ ispace :  185 : syscall    :      8     0
+ ispace :  186 : pushi      : outpt          0
+ ispace :  187 : syscall    :      4     0
+ ispace :  188 : pop        :      2     1
+ ispace :  189 : pushi      : outpt          0
+ ispace :  190 : push       :      2     1
+ ispace :  191 : syscall    :      8     0
+ ispace :  192 : pushi      : outpt          0
+ ispace :  193 : syscall    :      4     0
+ ispace :  194 : pop        :      2     1
+ ispace :  195 : pushi      : outpt          0
+ ispace :  196 : push       :      2     1
+ ispace :  197 : syscall    :      8     0
+ ispace :  198 : pushi      : outpt          0
+ ispace :  199 : syscall    :      4     0
+ ispace :  200 : pop        :      0     1
+
+         write(outpt,numits);
+
+ ispace :  201 : pushi      : outpt          0
+ ispace :  202 : loadr      :      4     2
+ ispace :  203 : push       : 10000020     1
+ ispace :  204 : syscall    :     11     0
+
+         write(outpt,' ');
+
+ ispace :  205 : pushi      : outpt          0
+ ispace :  206 : loadr      :      4     2
+ ispace :  207 : pushi      :       0
+ ispace :  208 : syscall    :      8     0
+ ispace :  209 : pushi      : outpt          0
+ ispace :  210 : syscall    :      4     0
+
+         writeln(outpt,'iterations')
+
+ ispace :  211 : pushi      : outpt          0
+ ispace :  212 : loadr      :      4     2
+ ispace :  213 : pushi      : iterations     0
+ ispace :  214 : unpack     :      0     0
+ ispace :  215 : pop        :      2     1
+ ispace :  216 : pushi      : outpt          0
+ ispace :  217 : push       :      2     1
+ ispace :  218 : syscall    :      8     0
+ ispace :  219 : pushi      : outpt          0
+ ispace :  220 : syscall    :      4     0
+ ispace :  221 : pop        :      2     1
+ ispace :  222 : pushi      : outpt          0
+ ispace :  223 : push       :      2     1
+ ispace :  224 : syscall    :      8     0
+ ispace :  225 : pushi      : outpt          0
+ ispace :  226 : syscall    :      4     0
+ ispace :  227 : pop        :      2     1
+ ispace :  228 : pushi      : outpt          0
+ ispace :  229 : push       :      2     1
+ ispace :  230 : syscall    :      8     0
+ ispace :  231 : pushi      : outpt          0
+ ispace :  232 : syscall    :      4     0
+ ispace :  233 : pop        :      2     1
+ ispace :  234 : pushi      : outpt          0
+ ispace :  235 : push       :      2     1
+ ispace :  236 : syscall    :      8     0
+ ispace :  237 : pushi      : outpt          0
+ ispace :  238 : syscall    :      4     0
+ ispace :  239 : pop        :      2     1
+ ispace :  240 : pushi      : outpt          0
+ ispace :  241 : push       :      2     1
+ ispace :  242 : syscall    :      8     0
+ ispace :  243 : pushi      : outpt          0
+ ispace :  244 : syscall    :      4     0
+ ispace :  245 : pop        :      2     1
+ ispace :  246 : pushi      : outpt          0
+ ispace :  247 : push       :      2     1
+ ispace :  248 : syscall    :      8     0
+ ispace :  249 : pushi      : outpt          0
+ ispace :  250 : syscall    :      4     0
+ ispace :  251 : pop        :      2     1
+ ispace :  252 : pushi      : outpt          0
+ ispace :  253 : push       :      2     1
+ ispace :  254 : syscall    :      8     0
+ ispace :  255 : pushi      : outpt          0
+ ispace :  256 : syscall    :      4     0
+ ispace :  257 : pop        :      2     1
+ ispace :  258 : pushi      : outpt          0
+ ispace :  259 : push       :      2     1
+ ispace :  260 : syscall    :      8     0
+ ispace :  261 : pushi      : outpt          0
+ ispace :  262 : syscall    :      4     0
+ ispace :  263 : pop        :      2     1
+ ispace :  264 : pushi      : outpt          0
+ ispace :  265 : push       :      2     1
+ ispace :  266 : syscall    :      8     0
+ ispace :  267 : pushi      : outpt          0
+ ispace :  268 : syscall    :      4     0
+ ispace :  269 : pop        :      2     1
+ ispace :  270 : pushi      : outpt          0
+ ispace :  271 : push       :      2     1
+ ispace :  272 : syscall    :      8     0
+ ispace :  273 : pushi      : outpt          0
+ ispace :  274 : syscall    :      4     0
+ ispace :  275 : pop        :      0     1
+ ispace :  276 : pushi      : outpt          0
+ ispace :  277 : syscall    :      6     0
+
+      end; (* newtons *)
+
+ ispace :  278 : loadregs   : 10000003     7
+ ispace :  279 : return     :      0     0
+ 
+   begin (* findgr *)
+
+ ispace :    7 : b          :    280     0
+
+      x := 5 ;
+
+ ispace :  280 : pushi      :      5     0
+ ispace :  281 : float      :      0     0
+ ispace :  282 : pop        : 111300003     1
+
+      newtons(epsilon);
+
+ ispace :  283 : pushi      :  1.00000E-10     0
+ ispace :  284 : loadr      :      4     2
+ ispace :  285 : call       :      3     8
+ ispace :  286 : pop        :      0     1
+ 
+      golden := (1 + sqrtx) / 2;
+
+ ispace :  287 : pushi      :      1     0
+ ispace :  288 : push       : 10000017     1
+ ispace :  289 : float      :      1     0
+ ispace :  290 : add        :      1     0
+ ispace :  291 : pushi      :      2     0
+ ispace :  292 : float      :      0     0
+ ispace :  293 : div        :      1     0
+ ispace :  294 : pop        : 111300008     1
+ 
+      write(outpt,' golden = ');
+
+ ispace :  295 : pushi      : outpt          0
+ ispace :  296 : loadr      :      4     2
+ ispace :  297 : pushi      :  golden =      0
+ ispace :  298 : unpack     :      0     0
+ ispace :  299 : pop        :      2     1
+ ispace :  300 : pushi      : outpt          0
+ ispace :  301 : push       :      2     1
+ ispace :  302 : syscall    :      8     0
+ ispace :  303 : pushi      : outpt          0
+ ispace :  304 : syscall    :      4     0
+ ispace :  305 : pop        :      2     1
+ ispace :  306 : pushi      : outpt          0
+ ispace :  307 : push       :      2     1
+ ispace :  308 : syscall    :      8     0
+ ispace :  309 : pushi      : outpt          0
+ ispace :  310 : syscall    :      4     0
+ ispace :  311 : pop        :      2     1
+ ispace :  312 : pushi      : outpt          0
+ ispace :  313 : push       :      2     1
+ ispace :  314 : syscall    :      8     0
+ ispace :  315 : pushi      : outpt          0
+ ispace :  316 : syscall    :      4     0
+ ispace :  317 : pop        :      2     1
+ ispace :  318 : pushi      : outpt          0
+ ispace :  319 : push       :      2     1
+ ispace :  320 : syscall    :      8     0
+ ispace :  321 : pushi      : outpt          0
+ ispace :  322 : syscall    :      4     0
+ ispace :  323 : pop        :      2     1
+ ispace :  324 : pushi      : outpt          0
+ ispace :  325 : push       :      2     1
+ ispace :  326 : syscall    :      8     0
+ ispace :  327 : pushi      : outpt          0
+ ispace :  328 : syscall    :      4     0
+ ispace :  329 : pop        :      2     1
+ ispace :  330 : pushi      : outpt          0
+ ispace :  331 : push       :      2     1
+ ispace :  332 : syscall    :      8     0
+ ispace :  333 : pushi      : outpt          0
+ ispace :  334 : syscall    :      4     0
+ ispace :  335 : pop        :      2     1
+ ispace :  336 : pushi      : outpt          0
+ ispace :  337 : push       :      2     1
+ ispace :  338 : syscall    :      8     0
+ ispace :  339 : pushi      : outpt          0
+ ispace :  340 : syscall    :      4     0
+ ispace :  341 : pop        :      2     1
+ ispace :  342 : pushi      : outpt          0
+ ispace :  343 : push       :      2     1
+ ispace :  344 : syscall    :      8     0
+ ispace :  345 : pushi      : outpt          0
+ ispace :  346 : syscall    :      4     0
+ ispace :  347 : pop        :      2     1
+ ispace :  348 : pushi      : outpt          0
+ ispace :  349 : push       :      2     1
+ ispace :  350 : syscall    :      8     0
+ ispace :  351 : pushi      : outpt          0
+ ispace :  352 : syscall    :      4     0
+ ispace :  353 : pop        :      2     1
+ ispace :  354 : pushi      : outpt          0
+ ispace :  355 : push       :      2     1
+ ispace :  356 : syscall    :      8     0
+ ispace :  357 : pushi      : outpt          0
+ ispace :  358 : syscall    :      4     0
+ ispace :  359 : pop        :      0     1
+ 
+      writeln(outpt, golden )
+
+ ispace :  360 : pushi      : outpt          0
+ ispace :  361 : loadr      :      4     2
+ ispace :  362 : push       : 111300008     1
+ ispace :  363 : syscall    :     12     0
+ ispace :  364 : pushi      : outpt          0
+ ispace :  365 : syscall    :      6     0
+
+   end; (* golden *)
+
+ ispace :  366 : loadregs   : 10000003     7
+ ispace :  367 : return     :      0     0
+ 
+begin (* fibonacci *)
+
+ ispace :    3 : b          :    368     0
+
+   rewrite(outpt);
+
+ ispace :  368 : pushi      : outpt          0
+ ispace :  369 : loadr      :      4     2
+ ispace :  370 : pushi      :      1     0
+ ispace :  371 : syscall    :      1     0
+
+   blank := ' ';
+
+ ispace :  372 : pushi      :       0
+ ispace :  373 : pop        : 10000024     1
+ 
+   findgr;
+
+ ispace :  374 : call       :      2     4
+ ispace :  375 : pop        :      0     0
+ 
+   f1 := 1;
+
+ ispace :  376 : pushi      :      1     0
+ ispace :  377 : pop        : 10000018     1
+ 
+   f2 := 1;
+
+ ispace :  378 : pushi      :      1     0
+ ispace :  379 : pop        : 10000019     1
+ 
+   for i := 2 to howmany do begin
+
+ ispace :  380 : pushi      :      2     0
+ ispace :  381 : pop        : 10000023     1
+ ispace :  382 : pushi      :     40     0
+ ispace :  383 : push       : 20000000     1
+ ispace :  384 : push       : 10000023     1
+ ispace :  385 : lt         :      0     0
+ 
+        write(outpt,'fibonacci ');
+
+ ispace :  387 : pushi      : outpt          0
+ ispace :  388 : loadr      :      4     2
+ ispace :  389 : pushi      : fibonacci      0
+ ispace :  390 : unpack     :      0     0
+ ispace :  391 : pop        :      2     1
+ ispace :  392 : pushi      : outpt          0
+ ispace :  393 : push       :      2     1
+ ispace :  394 : syscall    :      8     0
+ ispace :  395 : pushi      : outpt          0
+ ispace :  396 : syscall    :      4     0
+ ispace :  397 : pop        :      2     1
+ ispace :  398 : pushi      : outpt          0
+ ispace :  399 : push       :      2     1
+ ispace :  400 : syscall    :      8     0
+ ispace :  401 : pushi      : outpt          0
+ ispace :  402 : syscall    :      4     0
+ ispace :  403 : pop        :      2     1
+ ispace :  404 : pushi      : outpt          0
+ ispace :  405 : push       :      2     1
+ ispace :  406 : syscall    :      8     0
+ ispace :  407 : pushi      : outpt          0
+ ispace :  408 : syscall    :      4     0
+ ispace :  409 : pop        :      2     1
+ ispace :  410 : pushi      : outpt          0
+ ispace :  411 : push       :      2     1
+ ispace :  412 : syscall    :      8     0
+ ispace :  413 : pushi      : outpt          0
+ ispace :  414 : syscall    :      4     0
+ ispace :  415 : pop        :      2     1
+ ispace :  416 : pushi      : outpt          0
+ ispace :  417 : push       :      2     1
+ ispace :  418 : syscall    :      8     0
+ ispace :  419 : pushi      : outpt          0
+ ispace :  420 : syscall    :      4     0
+ ispace :  421 : pop        :      2     1
+ ispace :  422 : pushi      : outpt          0
+ ispace :  423 : push       :      2     1
+ ispace :  424 : syscall    :      8     0
+ ispace :  425 : pushi      : outpt          0
+ ispace :  426 : syscall    :      4     0
+ ispace :  427 : pop        :      2     1
+ ispace :  428 : pushi      : outpt          0
+ ispace :  429 : push       :      2     1
+ ispace :  430 : syscall    :      8     0
+ ispace :  431 : pushi      : outpt          0
+ ispace :  432 : syscall    :      4     0
+ ispace :  433 : pop        :      2     1
+ ispace :  434 : pushi      : outpt          0
+ ispace :  435 : push       :      2     1
+ ispace :  436 : syscall    :      8     0
+ ispace :  437 : pushi      : outpt          0
+ ispace :  438 : syscall    :      4     0
+ ispace :  439 : pop        :      2     1
+ ispace :  440 : pushi      : outpt          0
+ ispace :  441 : push       :      2     1
+ ispace :  442 : syscall    :      8     0
+ ispace :  443 : pushi      : outpt          0
+ ispace :  444 : syscall    :      4     0
+ ispace :  445 : pop        :      2     1
+ ispace :  446 : pushi      : outpt          0
+ ispace :  447 : push       :      2     1
+ ispace :  448 : syscall    :      8     0
+ ispace :  449 : pushi      : outpt          0
+ ispace :  450 : syscall    :      4     0
+ ispace :  451 : pop        :      0     1
+
+        write(outpt, i );
+
+ ispace :  452 : pushi      : outpt          0
+ ispace :  453 : loadr      :      4     2
+ ispace :  454 : push       : 10000023     1
+ ispace :  455 : syscall    :     11     0
+
+        write(outpt, blank );
+
+ ispace :  456 : pushi      : outpt          0
+ ispace :  457 : loadr      :      4     2
+ ispace :  458 : push       : 10000024     1
+ ispace :  459 : syscall    :      8     0
+ ispace :  460 : pushi      : outpt          0
+ ispace :  461 : syscall    :      4     0
+ 
+        write(outpt, '=');
+
+ ispace :  462 : pushi      : outpt          0
+ ispace :  463 : loadr      :      4     2
+ ispace :  464 : pushi      : =     0
+ ispace :  465 : syscall    :      8     0
+ ispace :  466 : pushi      : outpt          0
+ ispace :  467 : syscall    :      4     0
+ 
+        write(outpt, blank );
+
+ ispace :  468 : pushi      : outpt          0
+ ispace :  469 : loadr      :      4     2
+ ispace :  470 : push       : 10000024     1
+ ispace :  471 : syscall    :      8     0
+ ispace :  472 : pushi      : outpt          0
+ ispace :  473 : syscall    :      4     0
+
+        write(outpt, f1 );
+
+ ispace :  474 : pushi      : outpt          0
+ ispace :  475 : loadr      :      4     2
+ ispace :  476 : push       : 10000018     1
+ ispace :  477 : syscall    :     11     0
+ 
+        ratio := f1 / f2;
+
+ ispace :  479 : push       : 10000019     1
+ ispace :  480 : float      :      1     0
+ ispace :  481 : float      :      0     0
+ ispace :  482 : div        :      1     0
+ ispace :  483 : pop        : 10000020     1
+
+        write(outpt, '  ratio = ');
+
+ ispace :  484 : pushi      : outpt          0
+ ispace :  485 : loadr      :      4     2
+ ispace :  486 : pushi      :   ratio =      0
+ ispace :  487 : unpack     :      0     0
+ ispace :  488 : pop        :      2     1
+ ispace :  489 : pushi      : outpt          0
+ ispace :  490 : push       :      2     1
+ ispace :  491 : syscall    :      8     0
+ ispace :  492 : pushi      : outpt          0
+ ispace :  493 : syscall    :      4     0
+ ispace :  494 : pop        :      2     1
+ ispace :  495 : pushi      : outpt          0
+ ispace :  496 : push       :      2     1
+ ispace :  497 : syscall    :      8     0
+ ispace :  498 : pushi      : outpt          0
+ ispace :  499 : syscall    :      4     0
+ ispace :  500 : pop        :      2     1
+ ispace :  501 : pushi      : outpt          0
+ ispace :  502 : push       :      2     1
+ ispace :  503 : syscall    :      8     0
+ ispace :  504 : pushi      : outpt          0
+ ispace :  505 : syscall    :      4     0
+ ispace :  506 : pop        :      2     1
+ ispace :  507 : pushi      : outpt          0
+ ispace :  508 : push       :      2     1
+ ispace :  509 : syscall    :      8     0
+ ispace :  510 : pushi      : outpt          0
+ ispace :  511 : syscall    :      4     0
+ ispace :  512 : pop        :      2     1
+ ispace :  513 : pushi      : outpt          0
+ ispace :  514 : push       :      2     1
+ ispace :  515 : syscall    :      8     0
+ ispace :  516 : pushi      : outpt          0
+ ispace :  517 : syscall    :      4     0
+ ispace :  518 : pop        :      2     1
+ ispace :  519 : pushi      : outpt          0
+ ispace :  520 : push       :      2     1
+ ispace :  521 : syscall    :      8     0
+ ispace :  522 : pushi      : outpt          0
+ ispace :  523 : syscall    :      4     0
+ ispace :  524 : pop        :      2     1
+ ispace :  525 : pushi      : outpt          0
+ ispace :  526 : push       :      2     1
+ ispace :  527 : syscall    :      8     0
+ ispace :  528 : pushi      : outpt          0
+ ispace :  529 : syscall    :      4     0
+ ispace :  530 : pop        :      2     1
+ ispace :  531 : pushi      : outpt          0
+ ispace :  532 : push       :      2     1
+ ispace :  533 : syscall    :      8     0
+ ispace :  534 : pushi      : outpt          0
+ ispace :  535 : syscall    :      4     0
+ ispace :  536 : pop        :      2     1
+ ispace :  537 : pushi      : outpt          0
+ ispace :  538 : push       :      2     1
+ ispace :  539 : syscall    :      8     0
+ ispace :  540 : pushi      : outpt          0
+ ispace :  541 : syscall    :      4     0
+ ispace :  542 : pop        :      2     1
+ ispace :  543 : pushi      : outpt          0
+ ispace :  544 : push       :      2     1
+ ispace :  545 : syscall    :      8     0
+ ispace :  546 : pushi      : outpt          0
+ ispace :  547 : syscall    :      4     0
+ ispace :  548 : pop        :      0     1
+
+        write(outpt, ratio );
+
+ ispace :  549 : pushi      : outpt          0
+ ispace :  550 : loadr      :      4     2
+ ispace :  551 : push       : 10000020     1
+ ispace :  552 : syscall    :     12     0
+ 
+        relerr := 1 - ratio / golden ;
+
+ ispace :  553 : pushi      :      1     0
+ ispace :  554 : push       : 10000020     1
+ ispace :  555 : push       : 10000022     1
+ ispace :  556 : div        :      1     0
+ ispace :  557 : float      :      1     0
+ ispace :  558 : sub        :      1     0
+ ispace :  559 : pop        : 10000021     1
+
+        write(outpt, ' relerr = ');
+
+ ispace :  560 : pushi      : outpt          0
+ ispace :  561 : loadr      :      4     2
+ ispace :  562 : pushi      :  relerr =      0
+ ispace :  563 : unpack     :      0     0
+ ispace :  564 : pop        :      2     1
+ ispace :  565 : pushi      : outpt          0
+ ispace :  566 : push       :      2     1
+ ispace :  567 : syscall    :      8     0
+ ispace :  568 : pushi      : outpt          0
+ ispace :  569 : syscall    :      4     0
+ ispace :  570 : pop        :      2     1
+ ispace :  571 : pushi      : outpt          0
+ ispace :  572 : push       :      2     1
+ ispace :  573 : syscall    :      8     0
+ ispace :  574 : pushi      : outpt          0
+ ispace :  575 : syscall    :      4     0
+ ispace :  576 : pop        :      2     1
+ ispace :  577 : pushi      : outpt          0
+ ispace :  578 : push       :      2     1
+ ispace :  579 : syscall    :      8     0
+ ispace :  580 : pushi      : outpt          0
+ ispace :  581 : syscall    :      4     0
+ ispace :  582 : pop        :      2     1
+ ispace :  583 : pushi      : outpt          0
+ ispace :  584 : push       :      2     1
+ ispace :  585 : syscall    :      8     0
+ ispace :  586 : pushi      : outpt          0
+ ispace :  587 : syscall    :      4     0
+ ispace :  588 : pop        :      2     1
+ ispace :  589 : pushi      : outpt          0
+ ispace :  590 : push       :      2     1
+ ispace :  591 : syscall    :      8     0
+ ispace :  592 : pushi      : outpt          0
+ ispace :  593 : syscall    :      4     0
+ ispace :  594 : pop        :      2     1
+ ispace :  595 : pushi      : outpt          0
+ ispace :  596 : push       :      2     1
+ ispace :  597 : syscall    :      8     0
+ ispace :  598 : pushi      : outpt          0
+ ispace :  599 : syscall    :      4     0
+ ispace :  600 : pop        :      2     1
+ ispace :  601 : pushi      : outpt          0
+ ispace :  602 : push       :      2     1
+ ispace :  603 : syscall    :      8     0
+ ispace :  604 : pushi      : outpt          0
+ ispace :  605 : syscall    :      4     0
+ ispace :  606 : pop        :      2     1
+ ispace :  607 : pushi      : outpt          0
+ ispace :  608 : push       :      2     1
+ ispace :  609 : syscall    :      8     0
+ ispace :  610 : pushi      : outpt          0
+ ispace :  611 : syscall    :      4     0
+ ispace :  612 : pop        :      2     1
+ ispace :  613 : pushi      : outpt          0
+ ispace :  614 : push       :      2     1
+ ispace :  615 : syscall    :      8     0
+ ispace :  616 : pushi      : outpt          0
+ ispace :  617 : syscall    :      4     0
+ ispace :  618 : pop        :      2     1
+ ispace :  619 : pushi      : outpt          0
+ ispace :  620 : push       :      2     1
+ ispace :  621 : syscall    :      8     0
+ ispace :  622 : pushi      : outpt          0
+ ispace :  623 : syscall    :      4     0
+ ispace :  624 : pop        :      0     1
+
+        write(outpt, relerr );
+
+ ispace :  625 : pushi      : outpt          0
+ ispace :  626 : loadr      :      4     2
+ ispace :  627 : push       : 10000021     1
+ ispace :  628 : syscall    :     12     0
+ 
+        writeln(outpt);
+
+ ispace :  629 : pushi      : outpt          0
+ ispace :  630 : loadr      :      4     2
+ ispace :  631 : syscall    :      6     0
+ 
+        x := f1 + 1;    (* complicated way to do *)
+
+ ispace :  632 : push       : 10000018     1
+ ispace :  633 : pushi      :      1     0
+ ispace :  634 : add        :      0     0
+ ispace :  635 : float      :      0     0
+ ispace :  636 : pop        : 10000017     1
+
+        f1 := f1 + f2;  (* x := f1 ; f1 := f1 + f2 ; f2 := x *)
+
+ ispace :  637 : push       : 10000018     1
+ ispace :  638 : push       : 10000019     1
+ ispace :  639 : add        :      0     0
+ ispace :  640 : pop        : 10000018     1
+
+        f2 := trunc( x - 0.8 )
+
+ ispace :  641 : push       : 10000017     1
+ ispace :  642 : pushi      :  8.00000E-01     0
+ ispace :  643 : sub        :      1     0
+
+        end;
+
+ ispace :  644 : trunc      :      0     0
+ ispace :  645 : pop        : 10000019     1
+ ispace :  646 : push       : 10000023     1
+ ispace :  647 : pushi      :      1     0
+ ispace :  648 : add        :      0     0
+ ispace :  649 : pop        : 10000023     1
+ ispace :  650 : b          :    383     0
+ ispace :  386 : bct        :    651     0
+ ispace :  651 : pop        :      0     1
+ 
+   writeln(outpt);
+
+ ispace :  652 : pushi      : outpt          0
+ ispace :  653 : loadr      :      4     2
+ ispace :  654 : syscall    :      6     0
+ 
+   writeln(outpt,' all done ')
+
+ ispace :  655 : pushi      : outpt          0
+ ispace :  656 : loadr      :      4     2
+ ispace :  657 : pushi      :  all done      0
+ ispace :  658 : unpack     :      0     0
+ ispace :  659 : pop        :      2     1
+ ispace :  660 : pushi      : outpt          0
+ ispace :  661 : push       :      2     1
+ ispace :  662 : syscall    :      8     0
+ ispace :  663 : pushi      : outpt          0
+ ispace :  664 : syscall    :      4     0
+ ispace :  665 : pop        :      2     1
+ ispace :  666 : pushi      : outpt          0
+ ispace :  667 : push       :      2     1
+ ispace :  668 : syscall    :      8     0
+ ispace :  669 : pushi      : outpt          0
+ ispace :  670 : syscall    :      4     0
+ ispace :  671 : pop        :      2     1
+ ispace :  672 : pushi      : outpt          0
+ ispace :  673 : push       :      2     1
+ ispace :  674 : syscall    :      8     0
+ ispace :  675 : pushi      : outpt          0
+ ispace :  676 : syscall    :      4     0
+ ispace :  677 : pop        :      2     1
+ ispace :  678 : pushi      : outpt          0
+ ispace :  679 : push       :      2     1
+ ispace :  680 : syscall    :      8     0
+ ispace :  681 : pushi      : outpt          0
+ ispace :  682 : syscall    :      4     0
+ ispace :  683 : pop        :      2     1
+ ispace :  684 : pushi      : outpt          0
+ ispace :  685 : push       :      2     1
+ ispace :  686 : syscall    :      8     0
+ ispace :  687 : pushi      : outpt          0
+ ispace :  688 : syscall    :      4     0
+ ispace :  689 : pop        :      2     1
+ ispace :  690 : pushi      : outpt          0
+ ispace :  691 : push       :      2     1
+ ispace :  692 : syscall    :      8     0
+ ispace :  693 : pushi      : outpt          0
+ ispace :  694 : syscall    :      4     0
+ ispace :  695 : pop        :      2     1
+ ispace :  696 : pushi      : outpt          0
+ ispace :  697 : push       :      2     1
+ ispace :  698 : syscall    :      8     0
+ ispace :  699 : pushi      : outpt          0
+ ispace :  700 : syscall    :      4     0
+ ispace :  701 : pop        :      2     1
+ ispace :  702 : pushi      : outpt          0
+ ispace :  703 : push       :      2     1
+ ispace :  704 : syscall    :      8     0
+ ispace :  705 : pushi      : outpt          0
+ ispace :  706 : syscall    :      4     0
+ ispace :  707 : pop        :      2     1
+ ispace :  708 : pushi      : outpt          0
+ ispace :  709 : push       :      2     1
+ ispace :  710 : syscall    :      8     0
+ ispace :  711 : pushi      : outpt          0
+ ispace :  712 : syscall    :      4     0
+ ispace :  713 : pop        :      2     1
+ ispace :  714 : pushi      : outpt          0
+ ispace :  715 : push       :      2     1
+ ispace :  716 : syscall    :      8     0
+ ispace :  717 : pushi      : outpt          0
+ ispace :  718 : syscall    :      4     0
+ ispace :  719 : pop        :      0     1
+ ispace :  720 : pushi      : outpt          0
+ ispace :  721 : syscall    :      6     0
+
+end.
+
+ ispace :  722 : hault      :      0     0
+

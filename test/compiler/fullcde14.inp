@@ -1,0 +1,35 @@
+(* continue array storage test: alfa, boolean *)
+(*$c+*)
+program test02(input,output,out,f1);
+var
+   out  : text;
+   f1   : text;
+   i : integer;
+   d : array [1..5] of alfa;
+   e : array [3..7] of boolean;
+begin
+   reset(f1);
+   rewrite(out);
+   
+   writeln(out,'Reading 5 alfa into array D....');
+   for i := 1 to 5 do
+      read(f1,d[i]);
+   writeln(out,'Here are the alfas read.');
+   for i := 1 to 5 do begin
+      write(out,'D[');
+      write(out,i);
+      write(out,'] = ');
+      writeln(out,d[i])
+   end;
+
+   writeln(out,'Reading 5 booleans into array E....');
+   for i := 3 to 7 do
+      read(f1,e[i]);
+   writeln(out,'Here are the booleans read.');
+   for i := 3 to 7 do begin
+      write(out,'E[');
+      write(out,i);
+      write(out,'] = ');
+      writeln(out,e[i])
+   end
+end.

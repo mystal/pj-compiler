@@ -1,0 +1,56 @@
+(****************************************************************)
+(*                                                              *)
+(* this program reads from two files, f1, and f2.  f1 contains  *)
+(* integers. f2 contains reals reals. all integers greater than *)
+(* 0 are written out to file f3, all reals greater than 0 are   *)
+(* written out to file f4                                       *)
+(*                                                              *)
+(****************************************************************)
+(*$c+ *)
+program test(input,output, f1, f2, f3, f4);
+const
+   endflag = 9999.9;
+var
+   intval    : integer;
+   realval   : real;
+   f1        : text;    (* input file *)
+   f2        : text;    (* input file *)
+   f3        : text;    (* output file *)
+   f4        : text;    (* output file *)
+   
+   procedure readint;
+   begin
+      read(f1,intval)
+   end; (* readint *)
+
+   procedure readreal;
+   begin
+      read(f2,realval)
+   end; (* readreal *)
+
+   procedure writeint;
+   begin
+      writeln(f3,intval)
+   end; (* writeint *)
+
+   procedure writereal;
+   begin
+      writeln(f4,realval)
+   end; (* writereal *)
+
+   begin (* main program *)
+      reset(f1);
+      reset(f2);
+      rewrite(f3);
+      rewrite(f4);
+      readint;
+      readreal;
+      while (intval <> 0) and (realval < endflag) do begin  
+         if intval > 0 then
+            writeint;
+         if realval > 0.0 then
+            writereal;
+         readint;
+         readreal
+         end
+   end. 

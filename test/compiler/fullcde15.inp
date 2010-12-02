@@ -1,0 +1,43 @@
+program test (input, output);                                                   
+                                                                                
+(*********************************************************)                     
+(* this is an invalid pj program and tests the following *)                     
+(* error conditions:                                     *)                     
+(*    wrong number of procedure parameters               *)                     
+(*    incompatible types at procedure invocation         *)                     
+(*    for statement expressions of different types       *)                     
+(*    attempt to modify for statement lcv                *)                     
+(*    if statement expression not a boolean expression   *)                     
+(*********************************************************)                     
+(*$c-*)
+                                                                                
+const                                                                           
+   numchars = 5;                                                                
+var                                                                             
+   ch : char;                                                                   
+   i : integer;                                                                 
+   intvar : integer;                                                            
+   bool : boolean;                                                              
+   realvar : real;                                                              
+                                                                                
+procedure nothing(a : integer; b : real);                                       
+begin                                                                           
+   a := 1;                                                                      
+   b := 1.0                                                                     
+end;                                                                            
+                                                                                
+begin                                                                           
+   nothing(i);                     (* wrong number of parameters        *)
+   nothing(realvar, realvar);      (* parameter 1 in error              *)
+   nothing(1,3);                   (* parameter 2  should be coerced    *)
+                                   (* if it is not flagged as an error  *)
+
+   for i := 1 to 3.2 do            (* lcv and lim must be integer in pj *)
+      ch := 'z';
+
+   for i := 1 to 15 do
+      i := i + 6;                  (* cannot modify lcv                 *)
+
+   if i + 2 then                   (* condition is not boolean expr     *)
+      nothing(intvar, realvar)                                                  
+end.                                                                            

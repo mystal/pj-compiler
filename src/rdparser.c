@@ -109,6 +109,7 @@ void parse()
 {
     lexerInit();
     codegenInit();
+    //TODO initialize DSPACE
     st = stCreate();
     if (dirGet(dir_sym_table))
         stPrintBlocks(st, 1);
@@ -200,6 +201,7 @@ blockStart:
     stringDestroy(progName);
     if (t->kind != tok_dot)
         errorParse(err_exp_dot, t, tok_undef);
+    //TODO generate halt instruction
     dirTrace("program", tr_exit);
 }
 
@@ -609,13 +611,17 @@ stmtEnd:
 void id_stmt()
 {
     dirTrace("id_stmt", tr_enter);
-    if (t->kind == tok_colonequal)
+    if (t->kind == tok_colonequal) //id assignment
     {
+        //TODO id assignment code
+        //pop ADDR(id) 1
         t = lexerGetToken();
         expr(t, st);
     }
-    else if (t->kind == tok_lbrack)
+    else if (t->kind == tok_lbrack) //array value assignment
     {
+        //TODO array value assignment code
+        //pop ADDR_ARRAY(id, int) 1
         t = lexerGetToken();
         expr(t, st);
         EXPECT_GOTO(tok_rbrack, id_stmtEnd);
@@ -624,14 +630,19 @@ void id_stmt()
         t = lexerGetToken();
         expr(t, st);
     }
-    else if (t->kind == tok_lparen)
+    else if (t->kind == tok_lparen) //procedure call with arguments
     {
+        //TODO procedure parameter type check
+        //TODO procedure call code
         t = lexerGetToken();
         arg_list();
         EXPECT_GOTO(tok_rparen, id_stmtEnd);
         t = lexerGetToken();
     }
-    //else, procedure call with no arguments
+    else //procedure call with no arguments
+    {
+        //TODO procedure call code
+    }
 id_stmtEnd:
     dirTrace("id_stmt", tr_exit);
 }
@@ -640,6 +651,8 @@ void fileptr_stmt()
 {
     dirTrace("fileptr_stmt", tr_enter);
     EXPECT_GOTO(tok_colonequal, fileptr_stmtEnd);
+    //TODO fileid assignhment code
+    //writebuff
     t = lexerGetToken();
     expr(t, st);
 fileptr_stmtEnd:
@@ -651,13 +664,16 @@ void if_stmt()
     dirTrace("if_stmt", tr_enter);
     expr(t, st);
     EXPECT_GOTO(tok_kw_then, if_stmtEnd);
+    //TODO if statement THEN code
     t = lexerGetToken();
     stmt();
     if (t->kind == tok_kw_else)
     {
+        //TODO if statement ELSE code
         t = lexerGetToken();
         stmt();
     }
+    //TODO if statement end code
 if_stmtEnd:
     dirTrace("if_stmt", tr_exit);
 }
@@ -667,8 +683,10 @@ void while_stmt()
     dirTrace("while_stmt", tr_enter);
     expr(t, st);
     EXPECT_GOTO(tok_kw_do, while_stmtEnd);
+    //TODO while statement DO code
     t = lexerGetToken();
     stmt();
+    //TODO while statement end code
 while_stmtEnd:
     dirTrace("while_stmt", tr_exit);
 }
@@ -681,14 +699,18 @@ void for_stmt()
     EXPECT_GOTO(tok_colonequal, for_stmtEnd);
     t = lexerGetToken();
     expr(t, st);
+    //TODO for statement counter assignment code
     if (t->kind == tok_kw_downto || t->kind == tok_kw_to)
         t = lexerGetToken();
     else
         errorParse(err_exp_downto, t, tok_undef);
     expr(t, st);
+    //TODO for statement limit code
     EXPECT_GOTO(tok_kw_do, for_stmtEnd);
+    //TODO for statement DO code
     t = lexerGetToken();
     stmt();
+    //TODO for statement end code
 for_stmtEnd:
     dirTrace("for_stmt", tr_exit);
 }

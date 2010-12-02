@@ -1,0 +1,30 @@
+(*$c+*)
+program test (input,output, f1,f2,f3);
+const
+   integerconst = 4321;
+var
+   ch : char;
+   realvar : real;
+   integervar : integer;
+   f1 : text;
+   f2 : text;
+   f3 : text;
+begin
+   reset(f1);
+   reset(f2);
+   rewrite(f3);
+
+   while not(eof(f1)) do begin
+      ch := f1^;
+      get(f1);
+      f3^ := ch;
+      put(f3)
+      end;
+
+   integervar := 1234;
+   realvar := integervar + integerconst;
+
+   write(f3,f2^);
+   write(f3, realvar);
+   writeln(f3)
+end.

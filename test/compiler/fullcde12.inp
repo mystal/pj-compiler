@@ -1,0 +1,10 @@
+(* can you write out string constants? *)
+(*$c+*)
+program wrtstrng (input,output,out);
+var
+   out : text;
+begin
+   rewrite(out);
+   writeln(out,'Hello there my friend.');
+   writeln(out,'I''m here.')
+end.

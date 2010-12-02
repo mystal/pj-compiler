@@ -38,6 +38,7 @@ hypo_op pjopToHypoOp[op_none] =
 /* Private helper functions */
 loadrec genInstruction(hypo_op, varval, int);
 int genAddress(unsigned int, unsigned int);
+int genArrayAddress(unsigned int, unsigned int, unsigned int);
 void writeCode(loadrec *);
 void printCode(loadrec *);
 void getConstValue(pjtype, string *, varval *);
@@ -80,6 +81,7 @@ code_func genFuncs[18] =
 FILE *loadfile = NULL;
 
 /* Next available location in ispace */
+//TODO check if ISPACE starts at 0 or 1
 unsigned int nextLoc = 1;
 
 void codegenInit()
@@ -362,6 +364,7 @@ pjtype codePushArray(list *l, symtable *st)
 
 loadrec genInstruction(hypo_op opcode, varval oper1, int oper2)
 {
+    //TODO initialize loadrec and varval
     loadrec lr;
     //memset(&lr, 0, sizeof(loadrec));
     lr.loc = nextLoc++;
@@ -383,6 +386,11 @@ int genAddress(unsigned int level, unsigned int loc)
     addr += (12+level)*pow(10, 5);
     addr += (loc-1);
     return addr;
+}
+
+int genArrayAddress(unsigned int level, unsigned int loc, unsigned int idx)
+{
+    //TODO generate code for array address
 }
 
 void writeCode(loadrec *lr)

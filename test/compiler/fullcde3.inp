@@ -1,0 +1,47 @@
+(*********************************************************************)
+(*                                                                   *)
+(*   this program calculates e to the 1.0, 2.0, 3.0, 4.0, and 5.0    *)
+(*   powers. it uses nested loops, mixed arithmetic, real and alfa   *)
+(*   i/o. it does not call any procedures or builtin functions       *)
+(*                                                                   *)
+(*   this program uses a taylor series to calculate e to the x       *)
+(*   and is, incidently, very inaccurate.                            *)
+(*                                                                   *)
+(*********************************************************************)
+(*$c+*)
+
+program expon(input,output,outpt);
+   const
+      numterms = 10;    (* number of terms in the series *)
+      x        = 1.0;   (* initial value of x1 *)
+      topx     = 6.0;   (* final value of x1 *)
+   var
+      outpt    : text ;
+      fact     : integer ;
+      i        : integer ;
+      power    : real ;
+      etothex  : real ;
+      x1       : real ;
+      j        : integer;
+
+begin (* expon *)
+   rewrite(outpt);
+   x1 := x;
+   while x1 < topx do begin  (* calculate e to the x1 *)
+      etothex := 1.0;
+      for i := 2 to numterms do begin
+         fact := i-1;
+         for j := fact-1 downto 1 do
+            fact := fact * j;
+         power := 1.0;
+         for j := 1 to i-1 do
+            power := power * x1;
+         etothex := etothex + power / fact
+         end;
+      write(outpt,' e to the ');
+      write(outpt, x1);
+      write(outpt,' equals   ');
+      writeln(outpt, etothex);
+      x1 := x1 + 1
+      end
+end.

@@ -1,0 +1,29 @@
+(**************************************************************)
+(*                                                            *)
+(* this file tests the reading and writing of both alpha      *)
+(* and booleans                                               *)
+(*                                                            *)
+(* it reads its input from file f1 and writes its output      *)
+(* to file f2.                                                *)
+(*                                                            *)
+(**************************************************************)
+(*$c+*)
+program ohno (input,output,f1,f2);
+var
+    f1 : text;
+    f2 : text;
+    alfavar : alfa;
+    boolvar : boolean;
+begin
+    reset(f1);
+    rewrite(f2);
+    read(f1,alfavar);     (* reads '*alfvalue*' *)
+    writeln(f2,alfavar);
+    boolvar := false;
+    read(f1,boolvar);     (* reads 'true' *)
+    if boolvar then
+       writeln(f2,boolvar);
+    read(f1,boolvar);     (* reads 'false' *)
+    if not(boolvar) then
+       writeln(f2,boolvar)
+end.   
