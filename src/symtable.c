@@ -47,7 +47,7 @@ symtable *stCreate()
     //Initialize block0 with PJ's builtin procedures and input/output files
     for (unsigned int i = 0; i < builtin_num; i++)
     {
-        char *builtinName = pjbuiltinString(i);
+        const char *builtinName = pjbuiltinString(i);
         string *name = stringCreate();
         stringAppendCharArray(name, builtinName, strlen(builtinName));
         symbol *sym = symbolCreate(name);

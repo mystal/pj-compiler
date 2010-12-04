@@ -59,7 +59,7 @@ typedef enum __pjbuiltin
     builtin_num
 } pjbuiltin;
 
-char *pjtypeString(pjtype);
+const char *pjtypeString(pjtype);
 
 bool ispjop(token_kind);
 
@@ -67,4 +67,4 @@ pjop pjopLookup(token_kind);
 
 pjtype isConstant(token_kind);
 
-char *pjbuiltinString(pjbuiltin);
+const char *pjbuiltinString(pjbuiltin);

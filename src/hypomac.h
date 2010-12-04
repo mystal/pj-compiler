@@ -79,55 +79,6 @@ typedef enum __hypo_syscall
     hsys_num
 } hypo_syscall;
 
-char *hypoOpStrings[hop_num] =
-{
-    "push", /* hop_push */
-    "pushr", /* hop_pushr */
-    "pushi", /* hop_pushi */
-    "pushc", /* hop_pushc */
-    "pop", /* hop_pop */
-    "popc", /* hop_popc */
-    "popr", /* hop_popr */
-    "move", /* hop_move */
-    "swap", /* hop_swap */
-    "load", /* hop_load */
-    "loadr", /* hop_loadr */
-    "loada", /* hop_loada */
-    "loadi", /* hop_loadi */
-    "store", /* hop_store */
-    "storeregs", /* hop_storeregs */
-    "loadregs", /* hop_loadregs */
-    "halt", /* hop_halt */
-    "add", /* hop_add */
-    "sub", /* hop_sub */
-    "negate", /* hop_negate */
-    "mult", /* hop_mult */
-    "div", /* hop_div */
-    "mod", /* hop_mod */
-    "or", /* hop_or */
-    "and", /* hop_and */
-    "not", /* hop_not */
-    "trunc", /* hop_trunc */
-    "round", /* hop_round */
-    "float", /* hop_float */
-    "shift", /* hop_shift */
-    "gt", /* hop_gt */
-    "ge", /* hop_ge */
-    "lt", /* hop_lt */
-    "le", /* hop_le */
-    "eq", /* hop_eq */
-    "ne", /* hop_ne */
-    "b", /* hop_b */
-    "bct", /* hop_bct */
-    "bcf", /* hop_bcf */
-    "noop", /* hop_noop */
-    "pack", /* hop_pack */
-    "unpack", /* hop_unpack */
-    "syscall", /* hop_syscall */
-    "call", /* hop_call */
-    "return" /* hop_return */
-};
-
 typedef char alfa[10];
 typedef enum __hypo_type {h_int, h_real, h_char, h_alfa, h_bool} hypo_type;
 typedef enum __spaces { ispace, dspace, regs } spaces;
@@ -166,4 +117,8 @@ typedef struct __loadrec
 	} idr_value;
 } loadrec;
 
-char *spaceStrings[regs+1] = {"ispace", "dspace", "regs"};
+const char *hypomacGetOpString(hypo_op);
+
+const char *hypomacGetSyscallString(hypo_syscall);
+
+const char *hypomacGetSpaceString(spaces);

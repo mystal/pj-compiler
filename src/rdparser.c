@@ -8,6 +8,7 @@
 #include "directive.h"
 #include "error.h"
 #include "exprparser.h"
+#include "hypomac.h"
 #include "lexer.h"
 #include "list.h"
 #include "str.h"
@@ -81,7 +82,7 @@ void range_decl(unsigned int *, unsigned int *);
 void range_const(unsigned int *);
 void stmt_list(void);
 void stmt(void);
-void id_stmt(void);
+void id_stmt(symbol *, unsigned int);
 void fileptr_stmt(void);
 void if_stmt(void);
 void while_stmt(void);
@@ -109,7 +110,6 @@ void parse()
 {
     lexerInit();
     codegenInit();
-    //TODO initialize DSPACE
     st = stCreate();
     if (dirGet(dir_sym_table))
         stPrintBlocks(st, 1);
@@ -201,7 +201,6 @@ blockStart:
     stringDestroy(progName);
     if (t->kind != tok_dot)
         errorParse(err_exp_dot, t, tok_undef);
-    //TODO generate halt instruction
     dirTrace("program", tr_exit);
 }
 
@@ -570,11 +569,15 @@ void stmt()
     tokenbstInsert(followSet, tok_semicolon);
     if (t->kind == tok_id)
     {
+        //TODO lookup id in symbol table
+        unsigned int level;
+        symbol *id = stLookup(st, t->lexeme, &level);
         t = lexerGetToken();
-        id_stmt();
+        id_stmt(id, level);
     }
     else if (t->kind == tok_fileid)
     {
+        //TODO lookup id in symbol table
         t = lexerGetToken();
         fileptr_stmt();
     }
@@ -608,27 +611,31 @@ stmtEnd:
     dirTrace("stmt", tr_exit);
 }
 
-void id_stmt()
+void id_stmt(symbol *id, unsigned int level)
 {
     dirTrace("id_stmt", tr_enter);
+    varval vv;
     if (t->kind == tok_colonequal) //id assignment
     {
-        //TODO id assignment code
-        //pop ADDR(id) 1
         t = lexerGetToken();
         expr(t, st);
+        //TODO type checking
+        vv.type = h_int;
+        vv.ircab_val.intval = codegenIdAddress(id, level);
+        codegenInstruction(hop_pop, vv, 1);
     }
     else if (t->kind == tok_lbrack) //array value assignment
     {
-        //TODO array value assignment code
-        //pop ADDR_ARRAY(id, int) 1
         t = lexerGetToken();
         expr(t, st);
+        //TODO codegenArrayAddress
         EXPECT_GOTO(tok_rbrack, id_stmtEnd);
         t = lexerGetToken();
         EXPECT_GOTO(tok_colonequal, id_stmtEnd);
         t = lexerGetToken();
         expr(t, st);
+        //TODO type checking
+        //TODO pop ADDR_ARRAY(id, int) 1
     }
     else if (t->kind == tok_lparen) //procedure call with arguments
     {
@@ -651,7 +658,8 @@ void fileptr_stmt()
 {
     dirTrace("fileptr_stmt", tr_enter);
     EXPECT_GOTO(tok_colonequal, fileptr_stmtEnd);
-    //TODO fileid assignhment code
+    //TODO fileid assignment code
+    //TODO type checking
     //writebuff
     t = lexerGetToken();
     expr(t, st);

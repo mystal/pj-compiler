@@ -22,7 +22,7 @@ void stringAppendString(string *, string *);
 /**
  * Appends the given character array of provided length to the string.
  **/
-void stringAppendCharArray(string *, char *, unsigned int);
+void stringAppendCharArray(string *, const char *, unsigned int);
 
 /**
  * Removes a number of characteres from the end of the string.
@@ -41,7 +41,7 @@ int stringCompareString(string *, string *);
  * returning an integer. If negative, the first string is smaller, if
  * positive, the first string is larger, and if zero they are equal.
  **/
-int stringCompareCharArray(string *, char *, unsigned int);
+int stringCompareCharArray(string *, const char *, unsigned int);
 
 /**
  * Gets the given string's length. 
@@ -51,20 +51,20 @@ unsigned int stringGetLength(string *);
 /**
  * Gets a pointer to the given string's buffer.
  **/
-char *stringGetBuffer(string *);
+const char *stringGetBuffer(string *);
 
 /**
- *
+ * Returns an integer representation of the given string.
  **/
 int stringToInt(string *);
 
 /**
- *
+ * Returns a floating point representation of the given string.
  **/
 float stringToFloat(string *);
 
 /**
- *
+ * Returns a boolean representation of the given string.
  **/
 bool stringToBool(string *);
 

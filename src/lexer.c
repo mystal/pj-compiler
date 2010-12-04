@@ -49,7 +49,7 @@ token *lexerGetToken()
     if (dirGet(dir_token_echo))
     {
         unsigned int len = stringGetLength(curToken.lexeme);
-        char *buff = stringGetBuffer(curToken.lexeme);
+        const char *buff = stringGetBuffer(curToken.lexeme);
         fprintf(stdout, "Lexeme: %.*s\tLength: %d\tKind: %s\n",
                 len, buff, len, tokenKindString(curToken.kind));
     }

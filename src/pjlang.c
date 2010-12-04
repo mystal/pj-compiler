@@ -1,6 +1,6 @@
 #include "pjlang.h"
 
-char *pjtypeStrings[pj_undef] =
+const char *pjtypeStrings[pj_undef] =
 {
     "integer", /* pj_integer */
     "real", /* pj_real */
@@ -74,7 +74,7 @@ pjop tokenToOp[tok_undef+1] =
     op_none, /* tok_undef */
 };
 
-char *builtinNames[builtin_num] =
+const char *builtinNames[builtin_num] =
 {
     "chr", /* builtin_chr */
     "eoln", /* builtin_eoln */
@@ -95,7 +95,7 @@ char *builtinNames[builtin_num] =
     "output" /* builtin_output_var */
 };
 
-char *pjtypeString(pjtype type)
+const char *pjtypeString(pjtype type)
 {
     return pjtypeStrings[type];
 }
@@ -132,7 +132,7 @@ pjtype isConstant(token_kind tk)
     }
 }
 
-char *pjbuiltinString(pjbuiltin pjb)
+const char *pjbuiltinString(pjbuiltin pjb)
 {
     return builtinNames[pjb];
 }

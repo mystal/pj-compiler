@@ -40,7 +40,7 @@ void stringAppendString(string *str, string *other)
     stringAppendCharArray(str, other->buffer, other->len);
 }
 
-void stringAppendCharArray(string *str, char *other, unsigned int n)
+void stringAppendCharArray(string *str, const char *other, unsigned int n)
 {
     unsigned int len = str->len;
     bool resized = (len + n) >= str->bytes_alloc;
@@ -67,7 +67,7 @@ int stringCompareString(string *s1, string *s2)
     return stringCompareCharArray(s1, s2->buffer, s2->len);
 }
 
-int stringCompareCharArray(string *s1, char *s2, unsigned int n)
+int stringCompareCharArray(string *s1, const char *s2, unsigned int n)
 {
     for (unsigned int i = 0; i < s1->len && i < n; i++)
     {
@@ -89,7 +89,7 @@ unsigned int stringGetLength(string *str)
     return str->len;
 }
 
-char *stringGetBuffer(string *str)
+const char *stringGetBuffer(string *str)
 {
     return str->buffer;
 }

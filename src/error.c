@@ -34,7 +34,7 @@ void errorParse(error_kind e, token *t, token_kind tok)
     unsigned int line = bufferLineNumber();
     unsigned int pos = bufferPos();
     unsigned int lexLen = stringGetLength(t->lexeme);
-    char *lexBuffer = stringGetBuffer(t->lexeme);
+    const char *lexBuffer = stringGetBuffer(t->lexeme);
     if (t->kind != tok_char_const && t->kind != tok_alfa_const &&
         t->kind != tok_string_const)
         fprintf(stdout, "(%d, %d): error: %s, found \"%.*s\"", line,
@@ -63,7 +63,7 @@ void errorST(error_kind e, string *lexeme)
         e == err_range_not_const)
     {
         unsigned int lexLen = stringGetLength(lexeme);
-        char *lexBuffer = stringGetBuffer(lexeme);
+        const char *lexBuffer = stringGetBuffer(lexeme);
         unsigned int line = bufferLineNumber();
         unsigned int pos = bufferPos();
         fprintf(stdout, "(%d, %d): error: %s, \"%.*s\"\n", line,
