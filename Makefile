@@ -15,7 +15,7 @@ OBJS := bst.o buffer.o codegen.o directive.o error.o exprparser.o exprprods.o \
 	str.o symbol.o symtable.o token.o tokenbst.o typecheck.o
 
 INCS := 
-LIBS := -lm
+LIBS := 
 
 .PHONY: all all-static pjc pjc-static $(OLD_BINS) $(OLD_SBINS)
 

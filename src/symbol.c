@@ -189,6 +189,16 @@ unsigned int symArrayGetLowBound(symbol *sym)
     return sym->data.a.lowBound;
 }
 
+unsigned int symProcGetNumParams(symbol *sym)
+{
+    return sym->data.p.numParams;
+}
+
+const pjtype *symProcGetParams(symbol *sym)
+{
+    return sym->data.p.paramTypes;
+}
+
 pjbuiltin symBuiltinGetType(symbol *sym)
 {
     return sym->data.b.pjb;
@@ -256,7 +266,7 @@ void printProc(string *name, sym_proc proc)
             fprintf(stdout, "%s, ", pjtypeString(proc.paramTypes[i]));
         fprintf(stdout, "%s", pjtypeString(proc.paramTypes[proc.numParams-1]));
     }
-    fprintf(stdout, "), Location: %d)\n", proc.loc);
+    fprintf(stdout, "), Start: %d)\n", proc.loc);
 }
 
 void printBuiltin(string *name, sym_builtin builtin)

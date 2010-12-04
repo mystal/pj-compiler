@@ -1,6 +1,5 @@
 #include "codegen.h"
 
-#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -125,17 +124,16 @@ int codegenIdAddress(symbol *id, unsigned int level)
     //TODO support direct addressing
     //TODO check type and get proper location
     int addr = 0;
-    addr += 1*pow(10, 8);
-    addr += 1*pow(10, 7);
-    addr += (12+level)*pow(10, 5);
-    addr += (symbolGetType(id) == symt_var) ? symVarGetType(id) :
-            symArrayGetType(id) - 1;
+    addr += 100000000; //10^8
+    addr += 10000000; //10^7
+    addr += (12+level)*100000; //10^5
+    addr += (symbolGetType(id) == symt_var) ? symVarGetLocation(id) :
+            symArrayGetLocation(id) - 1;
     return addr;
 }
 
 void codegenArrayAddress(symbol *arr, unsigned int level)
 {
-    //TODO generate code for array address
     varval vv;
     vv.type = h_int;
     vv.ircab_val.intval = symArrayGetLowBound(arr);
@@ -148,8 +146,20 @@ void codegenArrayAddress(symbol *arr, unsigned int level)
     codegenInstruction(hop_add, vv, 0);
     vv.ircab_val.intval = 5;
     codegenInstruction(hop_popr, vv, 0);
-    vv.ircab_val.intval = 5*pow(10, 7);
-    codegenInstruction(hop_push, vv, 1);
+}
+
+void codegenProcedureCall(symbol *proc, unsigned int level)
+{
+    unsigned int numParams = symProcGetNumParams(proc);
+    varval vv;
+    vv.type = h_int;
+    vv.ircab_val.intval = level+1;
+    codegenInstruction(hop_call, vv, symProcGetLocation(proc));
+    if (numParams > 0)
+    {
+        vv.ircab_val.intval = 0;
+        codegenInstruction(hop_pop, vv, numParams);
+    }
 }
 
 pjtype codegenExpr(unsigned int prod, list *l, symtable *st)
@@ -169,6 +179,11 @@ pjtype codegenExpr(unsigned int prod, list *l, symtable *st)
     }
     slr_semantics *sem = (slr_semantics *) listGetFront(l);
     return sem->sem.type;
+}
+
+void codegenIncrementNextLocation()
+{
+    nextLoc++;
 }
 
 unsigned int codegenGetNextLocation()
@@ -382,6 +397,10 @@ pjtype codePushArray(list *l, symtable *st)
         //TODO error
         return pj_undef;
     codegenArrayAddress(sym, level);
+    varval vv;
+    vv.type = h_int;
+    vv.ircab_val.intval = 50000000; //10^7
+    codegenInstruction(hop_push, vv, 1);
     return ret;
 }
 

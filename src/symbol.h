@@ -55,6 +55,10 @@ bool symArrayInRange(symbol *, unsigned int);
 
 unsigned int symArrayGetLowBound(symbol *);
 
+unsigned int symProcGetNumParams(symbol *);
+
+const pjtype *symProcGetParams(symbol *);
+
 pjbuiltin symBuiltinGetType(symbol *);
 
 void symVarSetLocation(symbol *, unsigned int);

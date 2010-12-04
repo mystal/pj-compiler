@@ -42,7 +42,7 @@ symtable *stCreate()
     b->name = stringCreate();
     stringAppendCharArray(b->name, "block0", 6*sizeof(char));
     b->symbols = bstCreate(bstCompareSymbol);
-    b->nextLoc = 1;
+    b->nextLoc = 0;
     listAddBack(st->blockList, b);
     //Initialize block0 with PJ's builtin procedures and input/output files
     for (unsigned int i = 0; i < builtin_num; i++)
@@ -63,7 +63,7 @@ void stEnterBlock(symtable *st, string *name)
     block *b = (block *) malloc(sizeof(block));
     b->name = name;
     b->symbols = bstCreate(bstCompareSymbol);
-    b->nextLoc = 1;
+    b->nextLoc = 0;
     listAddBack(st->blockList, b);
 }
 
@@ -101,9 +101,6 @@ bool stAddSymbol(symtable *st, symbol *sym)
         case symt_array:
             symArraySetLocation(sym, b->nextLoc);
             b->nextLoc += symArrayGetRange(sym);
-            break;
-        case symt_proc:
-            symProcSetLocation(sym, b->nextLoc++);
             break;
         default:
             break;

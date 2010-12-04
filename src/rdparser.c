@@ -70,7 +70,7 @@ void addFilename(bst *, string *);
 /* Parsing procedures */
 void program(void);
 void prog_arg_list(bst *);
-void block(bst *);
+void block(symbol *, unsigned int, bst *);
 void const_decl(void);
 void var_decl(bst *);
 void var_id_list(list *);
@@ -87,7 +87,7 @@ void fileptr_stmt(void);
 void if_stmt(void);
 void while_stmt(void);
 void for_stmt(void);
-void arg_list(void);
+void arg_list(symbol *);
 pjtype stype(void);
 void constant(symbol *);
 
@@ -195,7 +195,7 @@ void program()
     t = lexerGetToken();
 blockStart:
     stEnterBlock(st, progName);
-    block(progFiles);
+    block(NULL, 0, progFiles);
     bstDestroy(progFiles, bstDelString);
     stExitBlock(st);
     stringDestroy(progName);
@@ -223,8 +223,10 @@ prog_arg_listEnd:
     dirTrace("prog_arg_list", tr_exit);
 }
 
-void block(bst *progFiles)
+void block(symbol *procSym, unsigned int numArgs, bst *progFiles)
 {
+    varval vv;
+    unsigned int branchLoc, varCount = 0;
     dirTrace("block", tr_enter);
     tokenbstInsert(followSet, tok_dot);
     tokenbstInsert(followSet, tok_semicolon);
@@ -239,8 +241,12 @@ void block(bst *progFiles)
     {
         t = lexerGetToken();
         var_decl(progFiles);
+        varCount++;
         while (t->kind == tok_id)
+        {
             var_decl(progFiles);
+            varCount++;
+        }
         //Check if progFiles is not empty
         if (progFiles != NULL && bstSize(progFiles) != 0)
         {
@@ -252,6 +258,25 @@ void block(bst *progFiles)
     }
     if (dirGet(dir_sym_table))
         stPrintBlocks(st, 2);
+    vv.type = h_int;
+    if (procSym != NULL)
+    {
+        symProcSetLocation(procSym, codegenGetNextLocation());
+        vv.ircab_val.intval = 10000003;
+        codegenInstruction(hop_storeregs, vv, 7); //store caller's registers
+    }
+    if (numArgs > 0)
+    {
+        vv.ircab_val.intval = 40000000;
+        codegenInstruction(hop_push, vv, numArgs); //copy args
+    }
+    if (varCount > 0)
+    {
+        vv.ircab_val.intval = 0;
+        codegenInstruction(hop_push, vv, varCount); //push vars
+    }
+    branchLoc = codegenGetNextLocation();
+    codegenIncrementNextLocation();
     while (t->kind == tok_kw_procedure)
     {
         t = lexerGetToken();
@@ -260,12 +285,20 @@ void block(bst *progFiles)
     tokenbstInsert(followSet, tok_semicolon);
     tokenbstInsert(followSet, tok_id);
     EXPECT_GOTO(tok_kw_begin, stmt_listStart);
+    vv.ircab_val.intval = codegenGetNextLocation();
+    codegenInstructionAt(hop_b, vv, 0, branchLoc); //branch to next instruction
     t = lexerGetToken();
 stmt_listStart:
     tokenbstRemove(followSet, tok_id);
     stmt_list();
     tokenbstInsert(followSet, tok_semicolon);
     EXPECT_GOTO(tok_kw_end, blockEnd);
+    if (procSym != NULL)
+    {
+        vv.ircab_val.intval = 10000003;
+        codegenInstruction(hop_loadregs, vv, 7); //load caller's registers
+        codegenInstruction(hop_return, vv, 0); //return to the caller
+    }
     t = lexerGetToken();
 blockEnd:
     if (dirGet(dir_sym_table))
@@ -413,14 +446,14 @@ void proc()
     string *procName;
     unsigned int numParams = 0;
     pjtype *paramTypes = NULL;
-    symbol *sym;
+    symbol *procSym;
     list *params = listCreate();
     dirTrace("proc", tr_enter);
     tokenbstInsert(followSet, tok_lparen);
     EXPECT_GOTO(tok_id, param_listStart);
     procName = stringCreate(); //Get procedure name
     stringAppendString(procName, t->lexeme);
-    sym = symbolCreate(procName); //Create new symbol for procedure
+    procSym = symbolCreate(procName); //Create new symbol for procedure
     t = lexerGetToken();
 param_listStart:
     tokenbstRemove(followSet, tok_lparen);
@@ -442,23 +475,22 @@ param_listStart:
         EXPECT_GOTO(tok_rparen, param_listEnd);
         t = lexerGetToken();
     }
-    symbolSetProc(sym, numParams, paramTypes);
-    if (!stAddSymbol(st, sym)) //Try to add procedure symbol
+    symbolSetProc(procSym, numParams, paramTypes);
+    if (!stAddSymbol(st, procSym)) //Try to add procedure symbol
     {
         //Print error, free memory
-        errorST(err_dup_sym, symbolGetName(sym));
-        symbolDestroy(sym);
+        errorST(err_dup_sym, symbolGetName(procSym));
+        symbolDestroy(procSym);
     }
 param_listEnd:
     EXPECT_GOTO(tok_semicolon, procBlockStart);
     t = lexerGetToken();
 procBlockStart:
-    sym = NULL;
     stEnterBlock(st, procName);
     //Add params to symbol table in new block
     while (listSize(params) != 0)
     {
-        sym = (symbol *) listRemoveFront(params);
+        symbol *sym = (symbol *) listRemoveFront(params);
         if (!stAddSymbol(st, sym))
         {
             //Print error, free symbol memory
@@ -466,7 +498,7 @@ procBlockStart:
             symbolDestroy(sym);
         }
     }
-    block(NULL);
+    block(procSym, numParams, NULL);
     stExitBlock(st);
     stringDestroy(procName);
     EXPECT_GOTO(tok_semicolon, procEnd);
@@ -613,8 +645,8 @@ stmtEnd:
 
 void id_stmt(symbol *id, unsigned int level)
 {
-    dirTrace("id_stmt", tr_enter);
     varval vv;
+    dirTrace("id_stmt", tr_enter);
     if (t->kind == tok_colonequal) //id assignment
     {
         t = lexerGetToken();
@@ -628,27 +660,34 @@ void id_stmt(symbol *id, unsigned int level)
     {
         t = lexerGetToken();
         expr(t, st);
-        //TODO codegenArrayAddress
+        codegenArrayAddress(id, level);
         EXPECT_GOTO(tok_rbrack, id_stmtEnd);
         t = lexerGetToken();
         EXPECT_GOTO(tok_colonequal, id_stmtEnd);
         t = lexerGetToken();
         expr(t, st);
         //TODO type checking
-        //TODO pop ADDR_ARRAY(id, int) 1
+        vv.type = h_int;
+        vv.ircab_val.intval = 50000000; //10^7
+        codegenInstruction(hop_pop, vv, 1);
     }
     else if (t->kind == tok_lparen) //procedure call with arguments
     {
-        //TODO procedure parameter type check
-        //TODO procedure call code
         t = lexerGetToken();
-        arg_list();
+        vv.type = h_int;
+        vv.ircab_val.intval = 4;
+        codegenInstruction(hop_loada, vv, 20000001);
+        arg_list(id);
         EXPECT_GOTO(tok_rparen, id_stmtEnd);
+        codegenProcedureCall(id, level);
         t = lexerGetToken();
     }
     else //procedure call with no arguments
     {
-        //TODO procedure call code
+        vv.type = h_int;
+        vv.ircab_val.intval = 4;
+        codegenInstruction(hop_loada, vv, 20000001);
+        codegenProcedureCall(id, level);
     }
 id_stmtEnd:
     dirTrace("id_stmt", tr_exit);
@@ -723,9 +762,10 @@ for_stmtEnd:
     dirTrace("for_stmt", tr_exit);
 }
 
-void arg_list()
+void arg_list(symbol *p)
 {
     dirTrace("arg_list", tr_enter);
+    //TODO procedure parameter type check
     expr(t, st);
     while (t->kind == tok_comma)
     {

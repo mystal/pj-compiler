@@ -73,9 +73,19 @@ int codegenIdAddress(symbol *, unsigned int);
 void codegenArrayAddress(symbol *, unsigned int);
 
 /**
+ * Generates code to call the given procedure at the given level.
+ **/
+void codegenProcedureCall(symbol *, unsigned int);
+
+/**
  * Generate code for the given reduction, provided the current semantics.
  **/
 pjtype codegenExpr(unsigned int, list *, symtable *);
+
+/**
+ * Increments the next location.
+ **/
+void codegenIncrementNextLocation(void);
 
 /**
  * Returns the next location in ispace.
