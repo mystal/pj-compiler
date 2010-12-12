@@ -76,8 +76,9 @@ void flushStack(stack *);
  * 41 s' --> start $
  **/
 
-void expr(token *t, symtable *st)
+pjtype expr(token *t, symtable *st, bool isIO, bool isRead)
 {
+    pjtype retType = pj_undef;
     stack *slrStk = stackCreate();
     stack *semStk = stackCreate();
     slr_stack_entry *bot = slrEntryCreate(0, (expr_symbol) (nonterminal) slr_start, false);
@@ -128,20 +129,24 @@ void expr(token *t, symtable *st)
                 sem = (slr_semantics *) stackPop(semStk);
                 listAddFront(l, sem);
             }
-            //Generate code
-            pjtype type = codegenExpr(entry.num, l, st);
-            if (type == pj_undef)
+            if (entry.num <= 17) //Generate code
             {
-                //Cleanup list
-                sem = (slr_semantics *) listRemoveBack(l);
-                stackPush(semStk, sem);
+                pjtype type = codegenExpr(entry.num, l, st);
+                if (type != pj_undef) //Push returned type
+                {
+                    sem = (slr_semantics *) malloc(sizeof(slr_semantics));
+                    sem->kind = slr_sem_type;
+                    sem->sem.type = type;
+                    stackPush(semStk, sem);
+                }
+                else //Error
+                {
+                    //TODO report/handle error
+                }
             }
             else
             {
-                //Push returned type
-                sem = (slr_semantics *) malloc(sizeof(slr_semantics));
-                sem->kind = slr_sem_type;
-                sem->sem.type = type;
+                sem = (slr_semantics *) listRemoveBack(l);
                 stackPush(semStk, sem);
             }
             //Cleanup list
@@ -161,6 +166,8 @@ void expr(token *t, symtable *st)
         }
         else if (entry.act == act_accept) //Parsing is done
         {
+            slr_semantics *sem = (slr_semantics *) stackPeek(semStk);
+            retType = sem->sem.type;
             if (dirGet(dir_expr_flush_echo))
                 fprintf(stdout, "ACCEPT\n");
             break;
@@ -209,6 +216,7 @@ void expr(token *t, symtable *st)
     stackDestroy(slrStk);
     //No push-back, next token ready for caller to use
     dirTrace("expr", tr_exit);
+    return retType;
 }
 
 slr_stack_entry *slrEntryCreate(unsigned int state, expr_symbol exp, bool isTerm)

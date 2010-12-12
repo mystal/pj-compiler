@@ -67,4 +67,8 @@ pjop pjopLookup(token_kind);
 
 pjtype isConstant(token_kind);
 
+bool ispjbuiltinFunction(pjbuiltin);
+
+bool ispjbuiltinProcedure(pjbuiltin);
+
 const char *pjbuiltinString(pjbuiltin);

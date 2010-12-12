@@ -14,3 +14,5 @@ typedef struct __op_check
 op_check typeCheckOperator(pjop, pjtype, pjtype);
 
 pjtype typeCheckBuiltinFunction(pjbuiltin, pjtype);
+
+bool typeCheckBuiltinProcedure(pjbuiltin, pjtype, pjtype);

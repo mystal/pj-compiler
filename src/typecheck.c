@@ -91,6 +91,18 @@ pjtype builtinFunctionTypes[7][pj_undef] =
     {pj_undef, pj_integer, pj_undef, pj_undef, pj_undef, pj_undef, pj_undef}
 };
 
+bool builtinProcedureChecks[8][pj_undef] =
+{
+    /* builtin_read */
+    {true, true, true, true, true, false, false},
+    /* builtin_write */
+    {true, true, true, true, true, true, false},
+    /* builtin_readln */
+    {true, true, true, true, true, false, false},
+    /* builtin_writeln */
+    {true, true, true, true, true, true, false}
+};
+
 op_check typeCheckOperator(pjop op, pjtype pjt1, pjtype pjt2)
 {
     if (pjt1 > pj_boolean)
@@ -103,7 +115,16 @@ op_check typeCheckOperator(pjop op, pjtype pjt1, pjtype pjt2)
 
 pjtype typeCheckBuiltinFunction(pjbuiltin pjb, pjtype pjt)
 {
-    if (pjb > builtin_trunc)
+    if (!ispjbuiltinFunction(pjb))
         return pj_undef;
     return builtinFunctionTypes[pjb][pjt];
+}
+
+bool typeCheckBuiltinProcedure(pjbuiltin pjb, pjtype pjt1, pjtype pjt2)
+{
+    if (!ispjbuiltinProcedure(pjb) || pjt1 != pj_text)
+        return false;
+    if (pjb < builtin_read)
+        return true;
+    return builtinProcedureChecks[pjb-builtin_read][pjt2];
 }

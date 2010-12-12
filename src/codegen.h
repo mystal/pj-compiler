@@ -73,9 +73,15 @@ int codegenIdAddress(symbol *, unsigned int);
 void codegenArrayAddress(symbol *, unsigned int);
 
 /**
- * Generates code to call the given procedure at the given level.
+ * Generates code to call the given user-defined procedure at the given level.
  **/
 void codegenProcedureCall(symbol *, unsigned int);
+
+/**
+ * Generates code to perform the given bulitin procedure on the given filename,
+ * using the provided type as the second argument, if needed.
+ **/
+void codegenBuiltinProcedure(pjbuiltin, string *, pjtype);
 
 /**
  * Generate code for the given reduction, provided the current semantics.

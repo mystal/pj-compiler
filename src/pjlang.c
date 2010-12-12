@@ -1,5 +1,7 @@
 #include "pjlang.h"
 
+#include <stdbool.h>
+
 const char *pjtypeStrings[pj_undef] =
 {
     "integer", /* pj_integer */
@@ -130,6 +132,16 @@ pjtype isConstant(token_kind tk)
         default:
             return pj_undef;
     }
+}
+
+bool ispjbuiltinFunction(pjbuiltin pjb)
+{
+    return pjb >= builtin_chr && pjb <= builtin_trunc;
+}
+
+bool ispjbuiltinProcedure(pjbuiltin pjb)
+{
+    return pjb >= builtin_reset && pjb <= builtin_writeln;
 }
 
 const char *pjbuiltinString(pjbuiltin pjb)

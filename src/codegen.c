@@ -37,11 +37,21 @@ hypo_op pjopToHypoOp[op_none] =
 /* Private helper functions */
 void genSetDspace(unsigned int, varval);
 void genSetRegister(unsigned int, int);
-void getConstValue(pjtype, string *, varval *);
+varval getConstValue(pjtype, string *);
 void writeCode(loadrec *);
 void printCode(loadrec *);
 void initDspace(void);
 void initRegisters(void);
+
+/* Builting procedure calls */
+void codeBuiltinReset(string *);
+void codeBuiltinRewrite(string *);
+void codeBuiltinPut(string *);
+void codeBuiltinGet(string *);
+void codeBuiltinRead(string *, pjtype);
+void codeBuiltinWrite(string *, pjtype);
+void codeBuiltinReadln(string *, pjtype);
+void codeBuiltinWriteln(string *, pjtype);
 
 /* Function pointer type for code generating functions */
 typedef pjtype (*expr_code_func)(list *, symtable *);
@@ -83,6 +93,12 @@ FILE *loadfile = NULL;
 
 /* Next available location in ispace */
 unsigned int nextLoc = 0;
+
+/* Filename for input/output */
+string *ioFilename = NULL;
+
+/* Symbol to store data into for a read */
+symbol *readVar = NULL;
 
 void codegenInit()
 {
@@ -162,10 +178,41 @@ void codegenProcedureCall(symbol *proc, unsigned int level)
     }
 }
 
+void codegenBuiltinProcedure(pjbuiltin pjb, string *filename, pjtype pjt)
+{
+    switch (pjb)
+    {
+        case builtin_reset:
+            codeBuiltinReset(filename);
+            break;
+        case builtin_rewrite:
+            codeBuiltinRewrite(filename);
+            break;
+        case builtin_put:
+            codeBuiltinPut(filename);
+            break;
+        case builtin_get:
+            codeBuiltinGet(filename);
+            break;
+        case builtin_read:
+            codeBuiltinRead(filename, pjt);
+            break;
+        case builtin_write:
+            codeBuiltinWrite(filename, pjt);
+            break;
+        case builtin_readln:
+            codeBuiltinReadln(filename, pjt);
+            break;
+        case builtin_writeln:
+            codeBuiltinWriteln(filename, pjt);
+            break;
+        default:
+            break;
+    }
+}
+
 pjtype codegenExpr(unsigned int prod, list *l, symtable *st)
 {
-    if (prod > 17)
-        return pj_undef;
     expr_code_func genFunc = genFuncs[prod];
     if (genFunc != NULL)
         return genFunc(l, st);
@@ -175,7 +222,7 @@ pjtype codegenExpr(unsigned int prod, list *l, symtable *st)
         pjtype type = sem->sem.type;
         if (prod == 14 && type != pj_integer && type != pj_real)
             errorType(err_op_type_mismatch);
-        return sem->sem.type;
+        return type;
     }
     slr_semantics *sem = (slr_semantics *) listGetFront(l);
     return sem->sem.type;
@@ -198,6 +245,186 @@ void codegenReportError()
         fclose(loadfile);
         loadfile = NULL;
     }
+}
+
+void codeBuiltinReset(string *filename)
+{
+    varval vv;
+    vv.type = h_alfa;
+    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
+            stringGetLength(filename));
+    codegenInstruction(hop_pushi, vv, 0);
+    vv.type = h_int;
+    vv.ircab_val.intval = 0;
+    codegenInstruction(hop_pushi, vv, 0);
+    vv.ircab_val.intval = hsys_open;
+    codegenInstruction(hop_syscall, vv, 0);
+}
+
+void codeBuiltinRewrite(string *filename)
+{
+    varval vv;
+    vv.type = h_alfa;
+    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
+            stringGetLength(filename));
+    codegenInstruction(hop_pushi, vv, 0);
+    vv.type = h_int;
+    vv.ircab_val.intval = 1;
+    codegenInstruction(hop_pushi, vv, 0);
+    vv.ircab_val.intval = hsys_open;
+    codegenInstruction(hop_syscall, vv, 0);
+}
+
+void codeBuiltinPut(string *filename)
+{
+    varval vv;
+    vv.type = h_alfa;
+    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
+            stringGetLength(filename));
+    codegenInstruction(hop_pushi, vv, 0);
+    vv.type = h_int;
+    vv.ircab_val.intval = hsys_put;
+    codegenInstruction(hop_syscall, vv, 0);
+}
+
+void codeBuiltinGet(string *filename)
+{
+    varval vv;
+    vv.type = h_alfa;
+    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
+            stringGetLength(filename));
+    codegenInstruction(hop_pushi, vv, 0);
+    vv.type = h_int;
+    vv.ircab_val.intval = hsys_get;
+    codegenInstruction(hop_syscall, vv, 0);
+}
+
+void codeBuiltinRead(string *filename, pjtype pjt)
+{
+    varval vv;
+    vv.type = h_alfa;
+    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
+            stringGetLength(filename));
+    codegenInstruction(hop_pushi, vv, 0);
+    vv.type = h_int;
+    if (pjt == pj_integer)
+    {
+        vv.ircab_val.intval = hsys_readint;
+        codegenInstruction(hop_syscall, vv, 0);
+    }
+    else if (pjt == pj_real)
+    {
+        vv.ircab_val.intval = hsys_readreal;
+        codegenInstruction(hop_syscall, vv, 0);
+    }
+    else if (pjt == pj_boolean)
+    {
+        //TODO implement
+    }
+    else if (pjt == pj_alfa)
+    {
+        //TODO 10 times do:
+        //TODO readbuff
+        //TODO get
+        //TODO pack it
+        //TODO pop it
+    }
+    else if (pjt == pj_char)
+    {
+        vv.ircab_val.intval = hsys_readbuff;
+        codegenInstruction(hop_syscall, vv, 0);
+        vv.type = h_alfa;
+        memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+        strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
+                stringGetLength(filename));
+        codegenInstruction(hop_pushi, vv, 0);
+        vv.ircab_val.intval = hsys_get;
+        codegenInstruction(hop_syscall, vv, 0);
+    }
+}
+
+void codeBuiltinWrite(string *filename, pjtype pjt)
+{
+    varval vv;
+    vv.type = h_int;
+    if (pjt == pj_integer)
+    {
+        vv.ircab_val.intval = hsys_writeint;
+        codegenInstruction(hop_syscall, vv, 0);
+    }
+    else if (pjt == pj_real)
+    {
+        vv.ircab_val.intval = hsys_writereal;
+        codegenInstruction(hop_syscall, vv, 0);
+    }
+    else if (pjt == pj_boolean)
+    {
+        //TODO push bool var
+        //TODO bct (to write true)
+        //TODO write 'false'
+        //TODO b (to after write true)
+        //TODO write 'true'
+    }
+    else if (pjt == pj_alfa)
+    {
+        //TODO push alfa
+        //TODO unpack
+        //TODO 10 times do:
+        //TODO writebuff
+        //TODO put
+    }
+    else if (pjt == pj_char)
+    {
+        vv.ircab_val.intval = hsys_writebuff;
+        codegenInstruction(hop_syscall, vv, 0);
+        vv.type = h_alfa;
+        memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+        strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
+                stringGetLength(filename));
+        codegenInstruction(hop_pushi, vv, 0);
+        vv.ircab_val.intval = hsys_put;
+        codegenInstruction(hop_syscall, vv, 0);
+    }
+    else if (pjt == pj_string)
+    {
+        unsigned int len;
+        for (int i = 0; i < len; i++)
+        {
+        }
+    }
+}
+
+void codeBuiltinReadln(string *filename, pjtype pjt)
+{
+    varval vv;
+    codeBuiltinRead(filename, pjt);
+    vv.type = h_alfa;
+    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
+            stringGetLength(filename));
+    codegenInstruction(hop_pushi, vv, 0);
+    vv.type = h_int;
+    vv.ircab_val.intval = hsys_readln;
+    codegenInstruction(hop_syscall, vv, 0);
+}
+
+void codeBuiltinWriteln(string *filename, pjtype pjt)
+{
+    varval vv;
+    codeBuiltinWrite(filename, pjt);
+    vv.type = h_alfa;
+    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
+            stringGetLength(filename));
+    codegenInstruction(hop_pushi, vv, 0);
+    vv.type = h_int;
+    vv.ircab_val.intval = hsys_writeln;
+    codegenInstruction(hop_syscall, vv, 0);
 }
 
 pjtype codeBinaryOp(list *l, symtable *st)
@@ -241,8 +468,7 @@ pjtype codePushConst(list *l, symtable *st)
     slr_semantics *sem = (slr_semantics *) listGetFront(l);
     string *val = sem->sem.constVal.val;
     pjtype ret = sem->sem.constVal.type;
-    varval vv;
-    getConstValue(ret, val, &vv);
+    varval vv = getConstValue(ret, val);
     codegenInstruction(hop_pushi, vv, 0);
     return ret;
 }
@@ -261,7 +487,7 @@ pjtype codePushId(list *l, symtable *st)
         string *val = symConstVarGetValue(sym);
         ret = symConstVarGetType(sym);
         opcode = hop_pushi;
-        getConstValue(ret, val, &vv);
+        vv = getConstValue(ret, val);
     }
     else if (type == symt_var)
     {
@@ -289,7 +515,7 @@ pjtype codePushId(list *l, symtable *st)
 
 pjtype codePushFileid(list *l, symtable *st)
 {
-    //TODO may be able to merge with PushId
+    //TODO may be able to merge with PushId?
     slr_semantics *sem = (slr_semantics *) listGetFront(l);
     symbol *sym = sem->sem.sym.val;
     sym_type type = symbolGetType(sym);
@@ -422,36 +648,36 @@ void genSetRegister(unsigned int num, int val)
     writeCode(&lr);
 }
 
-void getConstValue(pjtype pjt, string *val, varval *vv)
+varval getConstValue(pjtype pjt, string *val)
 {
+    varval vv;
     switch (pjt)
     {
         case pj_integer:
-            vv->type = h_int;
-            vv->ircab_val.intval = stringToInt(val);
+            vv.type = h_int;
+            vv.ircab_val.intval = stringToInt(val);
             break;
         case pj_real:
-            vv->type = h_real;
-            vv->ircab_val.realval = stringToFloat(val);
+            vv.type = h_real;
+            vv.ircab_val.realval = stringToFloat(val);
             break;
         case pj_boolean:
-            vv->type = h_bool;
-            vv->ircab_val.boolval = (char) stringToBool(val);
+            vv.type = h_bool;
+            vv.ircab_val.boolval = (char) stringToBool(val);
             break;
         case pj_alfa:
-            vv->type = h_alfa;
-            strncpy(vv->ircab_val.alfaval, stringGetBuffer(val), 10);
+            vv.type = h_alfa;
+            strncpy(vv.ircab_val.alfaval, stringGetBuffer(val), 10);
             break;
         case pj_char:
-            vv->type = h_char;
-            vv->ircab_val.charval = stringGetBuffer(val)[0];
+            vv.type = h_char;
+            vv.ircab_val.charval = stringGetBuffer(val)[0];
             break;
-        case pj_string:
-            break;
-        default:
+        default: //Includes pj_string
             //TODO error
             break;
     }
+    return vv;
 }
 
 void writeCode(loadrec *lr)
