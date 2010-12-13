@@ -91,16 +91,16 @@ pjtype builtinFunctionTypes[7][pj_undef] =
     {pj_undef, pj_integer, pj_undef, pj_undef, pj_undef, pj_undef, pj_undef}
 };
 
-bool builtinProcedureChecks[8][pj_undef] =
+bool builtinProcedureChecks[8][pj_undef+1] =
 {
     /* builtin_read */
-    {true, true, true, true, true, false, false},
+    {true, true, true, true, true, false, false, false},
     /* builtin_write */
-    {true, true, true, true, true, true, false},
+    {true, true, true, true, true, true, false, false},
     /* builtin_readln */
-    {true, true, true, true, true, false, false},
+    {true, true, true, true, true, false, false, false},
     /* builtin_writeln */
-    {true, true, true, true, true, true, false}
+    {true, true, true, true, true, true, false, true}
 };
 
 op_check typeCheckOperator(pjop op, pjtype pjt1, pjtype pjt2)

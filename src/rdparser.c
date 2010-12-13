@@ -696,73 +696,79 @@ void id_stmt(symbol *id, unsigned int level)
             {
                 unsigned int level;
                 //TODO check arguments
+                //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0);
                 t = lexerGetToken();
             }
             else if (pjb == builtin_rewrite)
             {
                 unsigned int level;
                 //TODO check arguments
+                //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0);
                 t = lexerGetToken();
             }
             else if (pjb == builtin_put)
             {
                 unsigned int level;
                 //TODO check arguments
+                //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0);
                 t = lexerGetToken();
             }
             else if (pjb == builtin_get)
             {
                 unsigned int level;
                 //TODO check arguments
+                //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0);
                 t = lexerGetToken();
             }
             else if (pjb == builtin_read)
             {
-                //TODO finish
                 unsigned int level;
                 //TODO check arguments
+                //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
                 t = lexerGetToken();
                 EXPECT_GOTO(tok_comma, id_stmtEnd);
                 t = lexerGetToken();
                 symbol *readVar = stLookup(st, t->lexeme, &level);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef);
                 t = lexerGetToken();
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, readVar, level);
             }
             else if (pjb == builtin_write)
             {
                 //TODO support writing strings
                 unsigned int level;
                 //TODO check arguments
+                //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
-                string *filename = symbolGetName(file);
-                vv.type = h_alfa;
-                memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
-                strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
-                        stringGetLength(filename));
-                codegenInstruction(hop_pushi, vv, 0);
                 t = lexerGetToken();
                 EXPECT_GOTO(tok_comma, id_stmtEnd);
                 t = lexerGetToken();
                 type = expr(t, st, false, false);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), type);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), type, NULL, 0);
             }
             else if (pjb == builtin_readln)
             {
-                //TODO finish
                 unsigned int level;
+                symbol *readVar = NULL;
                 //TODO check arguments
+                //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef);
                 t = lexerGetToken();
+                if (t->kind == tok_comma)
+                {
+                    t = lexerGetToken();
+                    readVar = stLookup(st, t->lexeme, &level);
+                    t = lexerGetToken();
+                }
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, readVar, level);
             }
             else if (pjb == builtin_writeln)
             {
@@ -770,20 +776,15 @@ void id_stmt(symbol *id, unsigned int level)
                 unsigned int level;
                 type = pj_undef;
                 //TODO check arguments
+                //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
-                string *filename = symbolGetName(file);
-                vv.type = h_alfa;
-                memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
-                strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
-                        stringGetLength(filename));
-                codegenInstruction(hop_pushi, vv, 0);
                 t = lexerGetToken();
                 if (t->kind == tok_comma)
                 {
                     t = lexerGetToken();
                     type = expr(t, st, false, false);
                 }
-                codegenBuiltinProcedure(pjb, symbolGetName(file), type);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), type, NULL, 0);
             }
             EXPECT_GOTO(tok_rparen, id_stmtEnd);
             t = lexerGetToken();
@@ -897,7 +898,7 @@ void for_stmt()
     EXPECT_GOTO(tok_colonequal, for_stmtEnd);
     t = lexerGetToken();
     type = expr(t, st, false, false); //expr1
-    //TODO check expr is same type as lcv
+    //TODO check expr is of type int
     if (t->kind == tok_kw_to)
     {
         to = true;
@@ -935,7 +936,10 @@ void for_stmt()
     vv.ircab_val.intval = 1;
     codegenInstruction(hop_pushi, vv, 0); //pushi 1
     vv.ircab_val.intval = 0;
-    codegenInstruction(hop_add, vv, 0); //add
+    if (to)
+        codegenInstruction(hop_add, vv, 0); //add
+    else
+        codegenInstruction(hop_sub, vv, 0); //sub
     vv.ircab_val.intval = codegenIdAddress(lcv, lcvLevel);
     codegenInstruction(hop_pop, vv, 1); //pop lcv 1
     vv.ircab_val.intval = forStart;

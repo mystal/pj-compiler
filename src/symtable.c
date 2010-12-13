@@ -96,7 +96,7 @@ bool stAddSymbol(symtable *st, symbol *sym)
     switch (type)
     {
         case symt_var:
-            if (symVarGetType(sym) != pj_text)
+            //if (symVarGetType(sym) != pj_text)
                 symVarSetLocation(sym, b->nextLoc++);
             break;
         case symt_array:

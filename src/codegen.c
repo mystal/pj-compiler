@@ -37,20 +37,21 @@ hypo_op pjopToHypoOp[op_none] =
 /* Private helper functions */
 void genSetDspace(unsigned int, varval);
 void genSetRegister(unsigned int, int);
+void genPushFilename(string *);
 varval getConstValue(pjtype, string *);
 void writeCode(loadrec *);
 void printCode(loadrec *);
 void initDspace(void);
 void initRegisters(void);
 
-/* Builting procedure calls */
+/* Builtin procedure calls */
 void codeBuiltinReset(string *);
 void codeBuiltinRewrite(string *);
 void codeBuiltinPut(string *);
 void codeBuiltinGet(string *);
-void codeBuiltinRead(string *, pjtype);
+void codeBuiltinRead(string *, symbol *, unsigned int);
 void codeBuiltinWrite(string *, pjtype);
-void codeBuiltinReadln(string *, pjtype);
+void codeBuiltinReadln(string *, symbol *, unsigned int);
 void codeBuiltinWriteln(string *, pjtype);
 
 /* Function pointer type for code generating functions */
@@ -178,7 +179,7 @@ void codegenProcedureCall(symbol *proc, unsigned int level)
     }
 }
 
-void codegenBuiltinProcedure(pjbuiltin pjb, string *filename, pjtype pjt)
+void codegenBuiltinProcedure(pjbuiltin pjb, string *filename, pjtype pjt, symbol *readVar, unsigned int level)
 {
     switch (pjb)
     {
@@ -195,13 +196,13 @@ void codegenBuiltinProcedure(pjbuiltin pjb, string *filename, pjtype pjt)
             codeBuiltinGet(filename);
             break;
         case builtin_read:
-            codeBuiltinRead(filename, pjt);
+            codeBuiltinRead(filename, readVar, level);
             break;
         case builtin_write:
             codeBuiltinWrite(filename, pjt);
             break;
         case builtin_readln:
-            codeBuiltinReadln(filename, pjt);
+            codeBuiltinReadln(filename, readVar, level);
             break;
         case builtin_writeln:
             codeBuiltinWriteln(filename, pjt);
@@ -250,11 +251,7 @@ void codegenReportError()
 void codeBuiltinReset(string *filename)
 {
     varval vv;
-    vv.type = h_alfa;
-    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
-    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
-            stringGetLength(filename));
-    codegenInstruction(hop_pushi, vv, 0);
+    genPushFilename(filename);
     vv.type = h_int;
     vv.ircab_val.intval = 0;
     codegenInstruction(hop_pushi, vv, 0);
@@ -265,11 +262,7 @@ void codeBuiltinReset(string *filename)
 void codeBuiltinRewrite(string *filename)
 {
     varval vv;
-    vv.type = h_alfa;
-    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
-    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
-            stringGetLength(filename));
-    codegenInstruction(hop_pushi, vv, 0);
+    genPushFilename(filename);
     vv.type = h_int;
     vv.ircab_val.intval = 1;
     codegenInstruction(hop_pushi, vv, 0);
@@ -280,11 +273,7 @@ void codeBuiltinRewrite(string *filename)
 void codeBuiltinPut(string *filename)
 {
     varval vv;
-    vv.type = h_alfa;
-    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
-    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
-            stringGetLength(filename));
-    codegenInstruction(hop_pushi, vv, 0);
+    genPushFilename(filename);
     vv.type = h_int;
     vv.ircab_val.intval = hsys_put;
     codegenInstruction(hop_syscall, vv, 0);
@@ -293,32 +282,26 @@ void codeBuiltinPut(string *filename)
 void codeBuiltinGet(string *filename)
 {
     varval vv;
-    vv.type = h_alfa;
-    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
-    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
-            stringGetLength(filename));
-    codegenInstruction(hop_pushi, vv, 0);
+    genPushFilename(filename);
     vv.type = h_int;
     vv.ircab_val.intval = hsys_get;
     codegenInstruction(hop_syscall, vv, 0);
 }
 
-void codeBuiltinRead(string *filename, pjtype pjt)
+void codeBuiltinRead(string *filename, symbol *readVar, unsigned int level)
 {
+    pjtype pjt = symVarGetType(readVar);
     varval vv;
-    vv.type = h_alfa;
-    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
-    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
-            stringGetLength(filename));
-    codegenInstruction(hop_pushi, vv, 0);
     vv.type = h_int;
     if (pjt == pj_integer)
     {
+        genPushFilename(filename);
         vv.ircab_val.intval = hsys_readint;
         codegenInstruction(hop_syscall, vv, 0);
     }
     else if (pjt == pj_real)
     {
+        genPushFilename(filename);
         vv.ircab_val.intval = hsys_readreal;
         codegenInstruction(hop_syscall, vv, 0);
     }
@@ -328,24 +311,29 @@ void codeBuiltinRead(string *filename, pjtype pjt)
     }
     else if (pjt == pj_alfa)
     {
-        //TODO 10 times do:
-        //TODO readbuff
-        //TODO get
-        //TODO pack it
-        //TODO pop it
+        for (int i = 0; i < 10; i++)
+        {
+            genPushFilename(filename);
+            vv.ircab_val.intval = hsys_readbuff;
+            codegenInstruction(hop_syscall, vv, 0);
+            genPushFilename(filename);
+            vv.ircab_val.intval = hsys_get;
+            codegenInstruction(hop_syscall, vv, 0);
+        }
+        vv.ircab_val.intval = 0;
+        codegenInstruction(hop_pack, vv, 0);
     }
     else if (pjt == pj_char)
     {
+        genPushFilename(filename);
         vv.ircab_val.intval = hsys_readbuff;
         codegenInstruction(hop_syscall, vv, 0);
-        vv.type = h_alfa;
-        memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
-        strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
-                stringGetLength(filename));
-        codegenInstruction(hop_pushi, vv, 0);
+        genPushFilename(filename);
         vv.ircab_val.intval = hsys_get;
         codegenInstruction(hop_syscall, vv, 0);
     }
+    vv.ircab_val.intval = codegenIdAddress(readVar, level);
+    codegenInstruction(hop_pop, vv, 1);
 }
 
 void codeBuiltinWrite(string *filename, pjtype pjt)
@@ -354,11 +342,17 @@ void codeBuiltinWrite(string *filename, pjtype pjt)
     vv.type = h_int;
     if (pjt == pj_integer)
     {
+        genPushFilename(filename);
+        vv.ircab_val.intval = 0;
+        codegenInstruction(hop_swap, vv, 0);
         vv.ircab_val.intval = hsys_writeint;
         codegenInstruction(hop_syscall, vv, 0);
     }
     else if (pjt == pj_real)
     {
+        genPushFilename(filename);
+        vv.ircab_val.intval = 0;
+        codegenInstruction(hop_swap, vv, 0);
         vv.ircab_val.intval = hsys_writereal;
         codegenInstruction(hop_syscall, vv, 0);
     }
@@ -372,42 +366,46 @@ void codeBuiltinWrite(string *filename, pjtype pjt)
     }
     else if (pjt == pj_alfa)
     {
-        //TODO push alfa
-        //TODO unpack
-        //TODO 10 times do:
-        //TODO writebuff
-        //TODO put
+        codegenInstruction(hop_unpack, vv, 0);
+        for (int i = 0; i < 10; i++)
+        {
+            genPushFilename(filename);
+            vv.ircab_val.intval = 0;
+            codegenInstruction(hop_swap, vv, 0);
+            vv.ircab_val.intval = hsys_writebuff;
+            codegenInstruction(hop_syscall, vv, 0);
+            genPushFilename(filename);
+            vv.ircab_val.intval = hsys_put;
+            codegenInstruction(hop_syscall, vv, 0);
+        }
     }
     else if (pjt == pj_char)
     {
+        genPushFilename(filename);
+        vv.ircab_val.intval = 0;
+        codegenInstruction(hop_swap, vv, 0);
         vv.ircab_val.intval = hsys_writebuff;
         codegenInstruction(hop_syscall, vv, 0);
-        vv.type = h_alfa;
-        memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
-        strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
-                stringGetLength(filename));
-        codegenInstruction(hop_pushi, vv, 0);
+        genPushFilename(filename);
         vv.ircab_val.intval = hsys_put;
         codegenInstruction(hop_syscall, vv, 0);
     }
     else if (pjt == pj_string)
     {
-        unsigned int len;
+        //TODO figure this out!
+        /*unsigned int len;
         for (int i = 0; i < len; i++)
         {
-        }
+        }*/
     }
 }
 
-void codeBuiltinReadln(string *filename, pjtype pjt)
+void codeBuiltinReadln(string *filename, symbol *readVar, unsigned int level)
 {
     varval vv;
-    codeBuiltinRead(filename, pjt);
-    vv.type = h_alfa;
-    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
-    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
-            stringGetLength(filename));
-    codegenInstruction(hop_pushi, vv, 0);
+    if (readVar != NULL)
+        codeBuiltinRead(filename, readVar, level);
+    genPushFilename(filename);
     vv.type = h_int;
     vv.ircab_val.intval = hsys_readln;
     codegenInstruction(hop_syscall, vv, 0);
@@ -416,12 +414,9 @@ void codeBuiltinReadln(string *filename, pjtype pjt)
 void codeBuiltinWriteln(string *filename, pjtype pjt)
 {
     varval vv;
-    codeBuiltinWrite(filename, pjt);
-    vv.type = h_alfa;
-    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
-    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
-            stringGetLength(filename));
-    codegenInstruction(hop_pushi, vv, 0);
+    if (pjt != pj_undef)
+        codeBuiltinWrite(filename, pjt);
+    genPushFilename(filename);
     vv.type = h_int;
     vv.ircab_val.intval = hsys_writeln;
     codegenInstruction(hop_syscall, vv, 0);
@@ -646,6 +641,16 @@ void genSetRegister(unsigned int num, int val)
     lr.idr_value.rvalue.regnum = num;
     lr.idr_value.rvalue.regval = val;
     writeCode(&lr);
+}
+
+void genPushFilename(string *filename)
+{
+    varval vv;
+    vv.type = h_alfa;
+    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
+            stringGetLength(filename));
+    codegenInstruction(hop_pushi, vv, 0);
 }
 
 varval getConstValue(pjtype pjt, string *val)

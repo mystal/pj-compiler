@@ -81,7 +81,7 @@ void codegenProcedureCall(symbol *, unsigned int);
  * Generates code to perform the given bulitin procedure on the given filename,
  * using the provided type as the second argument, if needed.
  **/
-void codegenBuiltinProcedure(pjbuiltin, string *, pjtype);
+void codegenBuiltinProcedure(pjbuiltin, string *, pjtype, symbol *, unsigned int);
 
 /**
  * Generate code for the given reduction, provided the current semantics.
