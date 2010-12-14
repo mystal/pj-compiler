@@ -307,7 +307,51 @@ void codeBuiltinRead(string *filename, symbol *readVar, unsigned int level)
     }
     else if (pjt == pj_boolean)
     {
-        //TODO implement
+        unsigned int bcfLoc, bLoc;
+        genPushFilename(filename);
+        vv.ircab_val.intval = hsys_readbuff;
+        codegenInstruction(hop_syscall, vv, 0);
+        genPushFilename(filename);
+        vv.ircab_val.intval = hsys_get;
+        codegenInstruction(hop_syscall, vv, 0);
+        vv.type = h_char;
+        vv.ircab_val.charval = 't';
+        codegenInstruction(hop_pushi, vv, 0);
+        vv.type = h_int;
+        vv.ircab_val.intval = 0;
+        codegenInstruction(hop_eq, vv, 0);
+        vv.ircab_val.intval = 20000000;
+        codegenInstruction(hop_push, vv, 1);
+        bcfLoc = codegenGetNextLocation();
+        codegenIncrementNextLocation();
+        for (int i = 0; i < 3; i++) //read 'r' 'u' 'e'
+        {
+            genPushFilename(filename);
+            vv.ircab_val.intval = hsys_readbuff;
+            codegenInstruction(hop_syscall, vv, 0);
+            genPushFilename(filename);
+            vv.ircab_val.intval = hsys_get;
+            codegenInstruction(hop_syscall, vv, 0);
+        }
+        vv.ircab_val.intval = 0;
+        codegenInstruction(hop_pop, vv, 3);
+        bLoc = codegenGetNextLocation();
+        codegenIncrementNextLocation();
+        vv.ircab_val.intval = codegenGetNextLocation();
+        codegenInstructionAt(hop_bcf, vv, 0, bcfLoc); //branch on false
+        for (int i = 0; i < 4; i++) //read 'a' 'l' 's' 'e'
+        {
+            genPushFilename(filename);
+            vv.ircab_val.intval = hsys_readbuff;
+            codegenInstruction(hop_syscall, vv, 0);
+            genPushFilename(filename);
+            vv.ircab_val.intval = hsys_get;
+            codegenInstruction(hop_syscall, vv, 0);
+        }
+        vv.ircab_val.intval = 0;
+        codegenInstruction(hop_pop, vv, 4);
+        vv.ircab_val.intval = codegenGetNextLocation();
+        codegenInstructionAt(hop_b, vv, 0, bLoc); //unconditional branch
     }
     else if (pjt == pj_alfa)
     {
@@ -358,11 +402,43 @@ void codeBuiltinWrite(string *filename, pjtype pjt)
     }
     else if (pjt == pj_boolean)
     {
-        //TODO push bool var
-        //TODO bct (to write true)
-        //TODO write 'false'
-        //TODO b (to after write true)
-        //TODO write 'true'
+        unsigned int bcfLoc, bLoc;
+        char trueText[4] = "true";
+        char falseText[5] = "false";
+        bcfLoc = codegenGetNextLocation();
+        codegenIncrementNextLocation();
+        for (int i = 0; i < 4; i++) //write 't' 'r' 'u' 'e'
+        {
+            genPushFilename(filename);
+            vv.type = h_char;
+            vv.ircab_val.charval = trueText[i];
+            codegenInstruction(hop_pushi, vv, 0);
+            vv.type = h_int;
+            vv.ircab_val.intval = hsys_writebuff;
+            codegenInstruction(hop_syscall, vv, 0);
+            genPushFilename(filename);
+            vv.ircab_val.intval = hsys_put;
+            codegenInstruction(hop_syscall, vv, 0);
+        }
+        bLoc = codegenGetNextLocation();
+        codegenIncrementNextLocation();
+        vv.ircab_val.intval = codegenGetNextLocation();
+        codegenInstructionAt(hop_bcf, vv, 0, bcfLoc);
+        for (int i = 0; i < 5; i++) //write 'f' 'a' 'l' 's' 'e'
+        {
+            genPushFilename(filename);
+            vv.type = h_char;
+            vv.ircab_val.charval = falseText[i];
+            codegenInstruction(hop_pushi, vv, 0);
+            vv.type = h_int;
+            vv.ircab_val.intval = hsys_writebuff;
+            codegenInstruction(hop_syscall, vv, 0);
+            genPushFilename(filename);
+            vv.ircab_val.intval = hsys_put;
+            codegenInstruction(hop_syscall, vv, 0);
+        }
+        vv.ircab_val.intval = codegenGetNextLocation();
+        codegenInstructionAt(hop_b, vv, 0, bLoc);
     }
     else if (pjt == pj_alfa)
     {
@@ -438,11 +514,13 @@ pjtype codeBinaryOp(list *l, symtable *st)
         vv.type = h_int;
         if (check.coerce1)
         {
+            pjt1 = pj_real;
             vv.ircab_val.intval = 1;
             codegenInstruction(hop_float, vv, 0);
         }
-        else if (check.coerce2)
+        if (check.coerce2)
         {
+            pjt1 = pj_real;
             vv.ircab_val.intval = 0;
             codegenInstruction(hop_float, vv, 0);
         }

@@ -58,7 +58,7 @@ op_check operatorTypes[op_none][pj_undef][pj_undef+1] =
     /* op_eq */
     {{{pj_boolean, false, false}, {pj_boolean, true, false}, DEF, DEF, DEF, DEF, DEF, DEF},
      {{pj_boolean, false, true}, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}},
+     {DEF, DEF, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF}},
     /* op_gteq */
     {{{pj_boolean, false, false}, {pj_boolean, true, false}, DEF, DEF, DEF, DEF, DEF, DEF},
      {{pj_boolean, false, true}, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF, DEF},
@@ -70,7 +70,7 @@ op_check operatorTypes[op_none][pj_undef][pj_undef+1] =
     /* op_neq */
     {{{pj_boolean, false, false}, {pj_boolean, true, false}, DEF, DEF, DEF, DEF, DEF, DEF},
      {{pj_boolean, false, true}, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF, DEF},
-     {DEF, DEF, DEF, DEF, DEF, DEF, DEF, DEF}}
+     {DEF, DEF, {pj_boolean, false, false}, DEF, DEF, DEF, DEF, DEF}}
 };
 
 pjtype builtinFunctionTypes[7][pj_undef] =

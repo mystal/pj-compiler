@@ -654,14 +654,28 @@ void id_stmt(symbol *id, unsigned int level)
     dirTrace("id_stmt", tr_enter);
     if (t->kind == tok_colonequal) //id assignment
     {
+        //TODO make sure it's a valid var to assign to
+        pjtype varType = symVarGetType(id);
         t = lexerGetToken();
         type = expr(t, st, false, false);
-        //TODO type checking
+        if (varType != type) //type check assignment
+        {
+            if (type == pj_integer && varType == pj_real)
+            {
+                vv.ircab_val.intval = 0;
+                codegenInstruction(hop_float, vv, 0);
+            }
+            else
+            {
+                //TODO error
+            }
+        }
         vv.ircab_val.intval = codegenIdAddress(id, level);
         codegenInstruction(hop_pop, vv, 1);
     }
     else if (t->kind == tok_lbrack) //array value assignment
     {
+        //TODO make sure it's a valid array var to assign to
         t = lexerGetToken();
         type = expr(t, st, false, false);
         //TODO make sure type is int
@@ -817,6 +831,12 @@ void fileptr_stmt(symbol *id)
     varval vv;
     dirTrace("fileptr_stmt", tr_enter);
     EXPECT_GOTO(tok_colonequal, fileptr_stmtEnd);
+    string *filename = symbolGetName(id);
+    vv.type = h_alfa;
+    memset(vv.ircab_val.alfaval, ' ', sizeof(alfa));
+    strncpy(vv.ircab_val.alfaval, stringGetBuffer(filename),
+            stringGetLength(filename));
+    codegenInstruction(hop_pushi, vv, 0);
     t = lexerGetToken();
     type = expr(t, st, false, false);
     //TODO check expr is of type char
