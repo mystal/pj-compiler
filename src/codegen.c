@@ -50,9 +50,9 @@ void codeBuiltinRewrite(string *);
 void codeBuiltinPut(string *);
 void codeBuiltinGet(string *);
 void codeBuiltinRead(string *, symbol *, unsigned int);
-void codeBuiltinWrite(string *, pjtype);
+void codeBuiltinWrite(string *, pjtype, string *);
 void codeBuiltinReadln(string *, symbol *, unsigned int);
-void codeBuiltinWriteln(string *, pjtype);
+void codeBuiltinWriteln(string *, pjtype, string *);
 
 /* Function pointer type for code generating functions */
 typedef pjtype (*expr_code_func)(list *, symtable *);
@@ -145,7 +145,7 @@ int codegenIdAddress(symbol *id, unsigned int level)
     addr += 10000000; //10^7
     addr += (12+level)*100000; //10^5
     addr += (symbolGetType(id) == symt_var) ? symVarGetLocation(id) :
-            symArrayGetLocation(id) - 1;
+            symArrayGetLocation(id);
     return addr;
 }
 
@@ -157,12 +157,22 @@ void codegenArrayAddress(symbol *arr, unsigned int level)
     codegenInstruction(hop_pushi, vv, 0);
     vv.ircab_val.intval = 0;
     codegenInstruction(hop_sub, vv, 0);
-    vv.ircab_val.intval = codegenIdAddress(arr, level);
+    vv.ircab_val.intval = 1;
+    codegenInstruction(hop_pushr, vv, 0);
+    vv.ircab_val.intval = 12+level;
     codegenInstruction(hop_pushi, vv, 0);
     vv.ircab_val.intval = 0;
     codegenInstruction(hop_add, vv, 0);
     vv.ircab_val.intval = 5;
     codegenInstruction(hop_popr, vv, 0);
+    vv.ircab_val.intval = 50000000;
+    codegenInstruction(hop_push, vv, 1);
+    vv.ircab_val.intval = symArrayGetLocation(arr);
+    codegenInstruction(hop_pushi, vv, 0);
+    vv.ircab_val.intval = 0;
+    codegenInstruction(hop_add, vv, 0);
+    vv.ircab_val.intval = 0;
+    codegenInstruction(hop_add, vv, 0);
 }
 
 void codegenProcedureCall(symbol *proc, unsigned int level)
@@ -179,7 +189,7 @@ void codegenProcedureCall(symbol *proc, unsigned int level)
     }
 }
 
-void codegenBuiltinProcedure(pjbuiltin pjb, string *filename, pjtype pjt, symbol *readVar, unsigned int level)
+void codegenBuiltinProcedure(pjbuiltin pjb, string *filename, pjtype pjt, symbol *readVar, unsigned int level, string *str)
 {
     switch (pjb)
     {
@@ -199,13 +209,13 @@ void codegenBuiltinProcedure(pjbuiltin pjb, string *filename, pjtype pjt, symbol
             codeBuiltinRead(filename, readVar, level);
             break;
         case builtin_write:
-            codeBuiltinWrite(filename, pjt);
+            codeBuiltinWrite(filename, pjt, str);
             break;
         case builtin_readln:
             codeBuiltinReadln(filename, readVar, level);
             break;
         case builtin_writeln:
-            codeBuiltinWriteln(filename, pjt);
+            codeBuiltinWriteln(filename, pjt, str);
             break;
         default:
             break;
@@ -380,7 +390,7 @@ void codeBuiltinRead(string *filename, symbol *readVar, unsigned int level)
     codegenInstruction(hop_pop, vv, 1);
 }
 
-void codeBuiltinWrite(string *filename, pjtype pjt)
+void codeBuiltinWrite(string *filename, pjtype pjt, string *str)
 {
     varval vv;
     vv.type = h_int;
@@ -469,10 +479,21 @@ void codeBuiltinWrite(string *filename, pjtype pjt)
     else if (pjt == pj_string)
     {
         //TODO figure this out!
-        /*unsigned int len;
+        unsigned int len = stringGetLength(str);
+        const char *buffer = stringGetBuffer(str);
         for (int i = 0; i < len; i++)
         {
-        }*/
+            genPushFilename(filename);
+            vv.type = h_char;
+            vv.ircab_val.charval = buffer[i];
+            codegenInstruction(hop_pushi, vv, 0);
+            vv.type = h_int;
+            vv.ircab_val.intval = hsys_writebuff;
+            codegenInstruction(hop_syscall, vv, 0);
+            genPushFilename(filename);
+            vv.ircab_val.intval = hsys_put;
+            codegenInstruction(hop_syscall, vv, 0);
+        }
     }
 }
 
@@ -487,11 +508,11 @@ void codeBuiltinReadln(string *filename, symbol *readVar, unsigned int level)
     codegenInstruction(hop_syscall, vv, 0);
 }
 
-void codeBuiltinWriteln(string *filename, pjtype pjt)
+void codeBuiltinWriteln(string *filename, pjtype pjt, string *str)
 {
     varval vv;
     if (pjt != pj_undef)
-        codeBuiltinWrite(filename, pjt);
+        codeBuiltinWrite(filename, pjt, str);
     genPushFilename(filename);
     vv.type = h_int;
     vv.ircab_val.intval = hsys_writeln;
@@ -698,6 +719,8 @@ pjtype codePushArray(list *l, symtable *st)
     codegenArrayAddress(sym, level);
     varval vv;
     vv.type = h_int;
+    vv.ircab_val.intval = 5;
+    codegenInstruction(hop_popr, vv, 0);
     vv.ircab_val.intval = 50000000; //10^7
     codegenInstruction(hop_push, vv, 1);
     return ret;

@@ -73,7 +73,7 @@ void program(void);
 void prog_arg_list(bst *);
 void block(symbol *, unsigned int, bst *);
 void const_decl(void);
-void var_decl(bst *);
+unsigned int var_decl(bst *);
 void var_id_list(list *);
 void type_decl(sym_type *, unsigned int *, unsigned int *, pjtype *);
 void proc(void);
@@ -227,7 +227,7 @@ prog_arg_listEnd:
 void block(symbol *procSym, unsigned int numArgs, bst *progFiles)
 {
     varval vv;
-    unsigned int branchLoc, varCount = 0;
+    unsigned int branchLoc, varSpace = 0;
     dirTrace("block", tr_enter);
     tokenbstInsert(followSet, tok_dot);
     tokenbstInsert(followSet, tok_semicolon);
@@ -241,12 +241,10 @@ void block(symbol *procSym, unsigned int numArgs, bst *progFiles)
     if (t->kind == tok_kw_var)
     {
         t = lexerGetToken();
-        var_decl(progFiles);
-        varCount++;
+        varSpace += var_decl(progFiles);
         while (t->kind == tok_id)
         {
-            var_decl(progFiles);
-            varCount++;
+            varSpace += var_decl(progFiles);
         }
         //Check if progFiles is not empty
         if (progFiles != NULL && bstSize(progFiles) != 0)
@@ -271,10 +269,10 @@ void block(symbol *procSym, unsigned int numArgs, bst *progFiles)
         vv.ircab_val.intval = 40000000;
         codegenInstruction(hop_push, vv, numArgs); //copy args
     }
-    if (varCount > 0)
+    if (varSpace > 0)
     {
         vv.ircab_val.intval = 0;
-        codegenInstruction(hop_push, vv, varCount); //push vars
+        codegenInstruction(hop_push, vv, varSpace); //push varSpace
     }
     branchLoc = codegenGetNextLocation();
     codegenIncrementNextLocation();
@@ -338,8 +336,9 @@ const_declEnd:
     dirTrace("const_decl", tr_exit);
 }
 
-void var_decl(bst *progFiles)
+unsigned int var_decl(bst *progFiles)
 {
+    unsigned int varSpace = 0;
     list *ids = listCreate();
     symbol *sym;
     sym_type symt;
@@ -355,9 +354,16 @@ void var_decl(bst *progFiles)
         sym = (symbol *) listRemoveFront(ids); //Pull first symbol from list
         //TODO Check for pjtype error?
         if (symt == symt_var)
+        {
             symbolSetVar(sym, pjt);
+            if (pjt != pj_text)
+                varSpace = 1;
+        }
         else if (symt == symt_array)
+        {
             symbolSetArray(sym, pjt, low, up);
+            varSpace = up - low + 1;
+        }
         name = symbolGetName(sym);
         if (progFiles != NULL && (stringCompareCharArray(name, "input", 5) == 0
             || stringCompareCharArray(name, "output", 6) == 0))
@@ -394,6 +400,7 @@ var_declEnd:
     tokenbstRemove(followSet, tok_id);
     listDestroy(ids);
     dirTrace("var_decl", tr_exit);
+    return varSpace;
 }
 
 void var_id_list(list *ids)
@@ -686,6 +693,10 @@ void id_stmt(symbol *id, unsigned int level)
         t = lexerGetToken();
         type = expr(t, st, false, false);
         //TODO type checking
+        vv.ircab_val.intval = 0;
+        codegenInstruction(hop_swap, vv, 0);
+        vv.ircab_val.intval = 5;
+        codegenInstruction(hop_popr, vv, 0);
         vv.ircab_val.intval = 50000000; //10^7
         codegenInstruction(hop_pop, vv, 1);
     }
@@ -712,7 +723,7 @@ void id_stmt(symbol *id, unsigned int level)
                 //TODO check arguments
                 //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0, NULL);
                 t = lexerGetToken();
             }
             else if (pjb == builtin_rewrite)
@@ -721,7 +732,7 @@ void id_stmt(symbol *id, unsigned int level)
                 //TODO check arguments
                 //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0, NULL);
                 t = lexerGetToken();
             }
             else if (pjb == builtin_put)
@@ -730,7 +741,7 @@ void id_stmt(symbol *id, unsigned int level)
                 //TODO check arguments
                 //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0, NULL);
                 t = lexerGetToken();
             }
             else if (pjb == builtin_get)
@@ -739,7 +750,7 @@ void id_stmt(symbol *id, unsigned int level)
                 //TODO check arguments
                 //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, NULL, 0, NULL);
                 t = lexerGetToken();
             }
             else if (pjb == builtin_read)
@@ -753,20 +764,29 @@ void id_stmt(symbol *id, unsigned int level)
                 t = lexerGetToken();
                 symbol *readVar = stLookup(st, t->lexeme, &level);
                 t = lexerGetToken();
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, readVar, level);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, readVar, level, NULL);
             }
             else if (pjb == builtin_write)
             {
-                //TODO support writing strings
                 unsigned int level;
                 //TODO check arguments
                 //TODO call expr instead of hard coding this...
                 symbol *file = stLookup(st, t->lexeme, &level);
+                string *str = NULL;
                 t = lexerGetToken();
                 EXPECT_GOTO(tok_comma, id_stmtEnd);
                 t = lexerGetToken();
-                type = expr(t, st, false, false);
-                codegenBuiltinProcedure(pjb, symbolGetName(file), type, NULL, 0);
+                if (t->kind != tok_string_const)
+                {
+                    type = expr(t, st, false, false);
+                    codegenBuiltinProcedure(pjb, symbolGetName(file), type, NULL, 0, NULL);
+                }
+                else
+                {
+                    type = pj_string;
+                    codegenBuiltinProcedure(pjb, symbolGetName(file), type, NULL, 0, t->lexeme);
+                    t = lexerGetToken();
+                }
             }
             else if (pjb == builtin_readln)
             {
@@ -782,11 +802,10 @@ void id_stmt(symbol *id, unsigned int level)
                     readVar = stLookup(st, t->lexeme, &level);
                     t = lexerGetToken();
                 }
-                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, readVar, level);
+                codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, readVar, level, NULL);
             }
             else if (pjb == builtin_writeln)
             {
-                //TODO support writing strings
                 unsigned int level;
                 type = pj_undef;
                 //TODO check arguments
@@ -796,9 +815,20 @@ void id_stmt(symbol *id, unsigned int level)
                 if (t->kind == tok_comma)
                 {
                     t = lexerGetToken();
-                    type = expr(t, st, false, false);
+                    if (t->kind != tok_string_const)
+                    {
+                        type = expr(t, st, false, false);
+                        codegenBuiltinProcedure(pjb, symbolGetName(file), type, NULL, 0, NULL);
+                    }
+                    else
+                    {
+                        type = pj_string;
+                        codegenBuiltinProcedure(pjb, symbolGetName(file), type, NULL, 0, t->lexeme);
+                        t = lexerGetToken();
+                    }
                 }
-                codegenBuiltinProcedure(pjb, symbolGetName(file), type, NULL, 0);
+                else
+                    codegenBuiltinProcedure(pjb, symbolGetName(file), type, NULL, 0, NULL);
             }
             EXPECT_GOTO(tok_rparen, id_stmtEnd);
             t = lexerGetToken();
