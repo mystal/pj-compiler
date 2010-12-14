@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include "hypomac.h"
 #include "list.h"
 #include "pjlang.h"
@@ -86,7 +88,7 @@ void codegenBuiltinProcedure(pjbuiltin, string *, pjtype, symbol *, unsigned int
 /**
  * Generate code for the given reduction, provided the current semantics.
  **/
-pjtype codegenExpr(unsigned int, list *, symtable *);
+pjtype codegenExpr(unsigned int, list *, symtable *, bool);
 
 /**
  * Increments the next location.

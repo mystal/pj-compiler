@@ -131,7 +131,7 @@ pjtype expr(token *t, symtable *st, bool isIO, bool isRead)
             }
             if (entry.num <= 17) //Generate code
             {
-                pjtype type = codegenExpr(entry.num, l, st);
+                pjtype type = codegenExpr(entry.num, l, st, isRead);
                 if (type != pj_undef) //Push returned type
                 {
                     sem = (slr_semantics *) malloc(sizeof(slr_semantics));

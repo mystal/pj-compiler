@@ -82,7 +82,7 @@ void param(list *);
 void range_decl(unsigned int *, unsigned int *);
 void range_const(unsigned int *);
 void stmt_list(void);
-void stmt(void);
+void stmt(symbol *);
 void id_stmt(symbol *, unsigned int);
 void fileptr_stmt(symbol *);
 void if_stmt(void);
@@ -594,16 +594,16 @@ void range_const(unsigned int *bound)
 void stmt_list()
 {
     dirTrace("stmt_list", tr_enter);
-    stmt();
+    stmt(NULL);
     while (t->kind == tok_semicolon)
     {
         t = lexerGetToken();
-        stmt();
+        stmt(NULL);
     }
     dirTrace("stmt_list", tr_exit);
 }
 
-void stmt()
+void stmt(symbol *lcv)
 {
     dirTrace("stmt", tr_enter);
     tokenbstInsert(followSet, tok_semicolon);
@@ -611,6 +611,8 @@ void stmt()
     {
         unsigned int level;
         symbol *id = stLookup(st, t->lexeme, &level);
+        if (lcv != NULL && lcv == id)
+            errorST(err_for_lcv_mod, symbolGetName(lcv));
         t = lexerGetToken();
         id_stmt(id, level);
     }
@@ -763,7 +765,10 @@ void id_stmt(symbol *id, unsigned int level)
                 EXPECT_GOTO(tok_comma, id_stmtEnd);
                 t = lexerGetToken();
                 symbol *readVar = stLookup(st, t->lexeme, &level);
-                t = lexerGetToken();
+                if (symbolGetType(readVar) != symt_array)
+                    t = lexerGetToken();
+                else
+                    expr(t, st, false, true);
                 codegenBuiltinProcedure(pjb, symbolGetName(file), pj_undef, readVar, level, NULL);
             }
             else if (pjb == builtin_write)
@@ -884,12 +889,13 @@ void if_stmt()
     unsigned int bcfLoc;
     dirTrace("if_stmt", tr_enter);
     type = expr(t, st, false, false);
-    //TODO check expr is boolean
+    if (type != pj_boolean)
+        errorType(err_cond_not_bool);
     EXPECT_GOTO(tok_kw_then, if_stmtEnd);
     bcfLoc = codegenGetNextLocation();
     codegenIncrementNextLocation();
     t = lexerGetToken();
-    stmt();
+    stmt(NULL);
     vv.type = h_int;
     if (t->kind == tok_kw_else)
     {
@@ -898,7 +904,7 @@ void if_stmt()
         vv.ircab_val.intval = codegenGetNextLocation();
         codegenInstructionAt(hop_bcf, vv, 0, bcfLoc); //branch on false
         t = lexerGetToken();
-        stmt();
+        stmt(NULL);
         vv.ircab_val.intval = codegenGetNextLocation();
         codegenInstructionAt(hop_b, vv, 0, bLoc); //unconditional branch
     }
@@ -925,7 +931,7 @@ void while_stmt()
     bcfLoc = codegenGetNextLocation();
     codegenIncrementNextLocation();
     t = lexerGetToken();
-    stmt();
+    stmt(NULL);
     vv.ircab_val.intval = whileStart;
     codegenInstruction(hop_b, vv, 0);
     vv.ircab_val.intval = codegenGetNextLocation();
@@ -943,12 +949,22 @@ void for_stmt()
     dirTrace("for_stmt", tr_enter);
     EXPECT_GOTO(tok_id, for_stmtEnd);
     symbol *lcv = stLookup(st, t->lexeme, &lcvLevel);
-    //TODO check that symbol exists, and is of type int
+    if (lcv == NULL)
+    {
+        //TODO report error
+    }
+    else if (symbolGetType(lcv) != symt_var)
+    {
+        //TODO report error
+    }
+    else if (symVarGetType(lcv) != pj_integer)
+        errorType(err_for_lcv_not_int);
     t = lexerGetToken();
     EXPECT_GOTO(tok_colonequal, for_stmtEnd);
     t = lexerGetToken();
     type = expr(t, st, false, false); //expr1
-    //TODO check expr is of type int
+    if (type != pj_integer)
+        errorType(err_for_lcv_not_int);
     if (t->kind == tok_kw_to)
     {
         to = true;
@@ -962,7 +978,8 @@ void for_stmt()
     else
         errorParse(err_exp_downto, t, tok_undef);
     type = expr(t, st, false, false); //expr2
-    //TODO check expr is type int
+    if (type != pj_integer)
+        errorType(err_for_lim_not_int);
     vv.type = h_int;
     vv.ircab_val.intval = 0;
     codegenInstruction(hop_swap, vv, 0); //swap top stack elements
@@ -980,7 +997,7 @@ void for_stmt()
     codegenIncrementNextLocation();
     EXPECT_GOTO(tok_kw_do, for_stmtEnd);
     t = lexerGetToken();
-    stmt();
+    stmt(lcv);
     vv.ircab_val.intval = codegenIdAddress(lcv, lcvLevel);
     codegenInstruction(hop_push, vv, 1); //push lcv
     vv.ircab_val.intval = 1;
@@ -1005,14 +1022,29 @@ for_stmtEnd:
 void arg_list(symbol *procSym)
 {
     pjtype type;
+    unsigned int paramCount = 0;
+    unsigned int numParams = symProcGetNumParams(procSym);
+    const pjtype *paramTypes = symProcGetParams(procSym);
     dirTrace("arg_list", tr_enter);
     //TODO procedure parameter type check
     type = expr(t, st, false, false);
+    paramCount++;
+    if (paramCount > numParams)
+        errorType(err_wrong_num_params);
+    else if (type != paramTypes[paramCount-1])
+        errorType(err_wrong_param_type);
     while (t->kind == tok_comma)
     {
         t = lexerGetToken();
         type = expr(t, st, false, false);
+        paramCount++;
+        if (paramCount > numParams)
+            errorType(err_wrong_num_params);
+        else if (type != paramTypes[paramCount-1])
+            errorType(err_wrong_param_type);
     }
+    if (paramCount < numParams)
+        errorType(err_wrong_num_params);
     dirTrace("arg_list", tr_exit);
 }
 

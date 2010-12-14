@@ -65,6 +65,7 @@ pjtype codePushFileid(list *, symtable *);
 pjtype codeUnaryOp(list *, symtable *);
 pjtype codeCallBuiltin(list *, symtable *);
 pjtype codePushArray(list *, symtable *);
+pjtype codeArray(list *, symtable *);
 
 /* Lookup table for determining which expr codegen function to run */
 expr_code_func genFuncs[18] =
@@ -222,11 +223,14 @@ void codegenBuiltinProcedure(pjbuiltin pjb, string *filename, pjtype pjt, symbol
     }
 }
 
-pjtype codegenExpr(unsigned int prod, list *l, symtable *st)
+pjtype codegenExpr(unsigned int prod, list *l, symtable *st, bool isRead)
 {
     expr_code_func genFunc = genFuncs[prod];
     if (genFunc != NULL)
-        return genFunc(l, st);
+        if (genFunc == codePushArray && isRead)
+            return codeArray(l, st);
+        else
+            return genFunc(l, st);
     if (prod == 14 || prod == 15)
     {
         slr_semantics *sem = (slr_semantics *) listGet(l, 1);
@@ -386,8 +390,16 @@ void codeBuiltinRead(string *filename, symbol *readVar, unsigned int level)
         vv.ircab_val.intval = hsys_get;
         codegenInstruction(hop_syscall, vv, 0);
     }
-    vv.ircab_val.intval = codegenIdAddress(readVar, level);
-    codegenInstruction(hop_pop, vv, 1);
+    if (symbolGetType(readVar) != symt_array)
+    {
+        vv.ircab_val.intval = codegenIdAddress(readVar, level);
+        codegenInstruction(hop_pop, vv, 1);
+    }
+    else
+    {
+        vv.ircab_val.intval = 50000000; //10^7
+        codegenInstruction(hop_pop, vv, 1);
+    }
 }
 
 void codeBuiltinWrite(string *filename, pjtype pjt, string *str)
@@ -723,6 +735,28 @@ pjtype codePushArray(list *l, symtable *st)
     codegenInstruction(hop_popr, vv, 0);
     vv.ircab_val.intval = 50000000; //10^7
     codegenInstruction(hop_push, vv, 1);
+    return ret;
+}
+
+pjtype codeArray(list *l, symtable *st)
+{
+    slr_semantics *semId = (slr_semantics *) listGetFront(l);
+    symbol *sym = semId->sem.sym.val;
+    unsigned int level = semId->sem.sym.level;
+    if (symbolGetType(sym) != symt_array)
+        //TODO error
+        return pj_undef;
+    pjtype ret = symArrayGetType(sym);
+    slr_semantics *semExpr = (slr_semantics *) listGet(l, 2);
+    pjtype pjt = semExpr->sem.type;
+    if (pjt != pj_integer)
+        //TODO error
+        return pj_undef;
+    codegenArrayAddress(sym, level);
+    varval vv;
+    vv.type = h_int;
+    vv.ircab_val.intval = 5;
+    codegenInstruction(hop_popr, vv, 0);
     return ret;
 }
 

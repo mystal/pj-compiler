@@ -25,7 +25,13 @@ char *errorStrings[err_num] =
     "array range must be an integer constant",
     "builtin cannot be redefined",
     "unsupported operand type",
-    "invalid file buffer"
+    "invalid file buffer",
+    "condition is not a boolean expression",
+    "for loop control variable cannot be modified",
+    "for loop control variable must be an integer",
+    "for loop limit must be an integer",
+    "wrong number of parameters",
+    "wrong parameter type"
 };
 
 void errorParse(error_kind e, token *t, token_kind tok)
@@ -60,7 +66,7 @@ void errorST(error_kind e, string *lexeme)
 {
     codegenReportError();
     if (e == err_dup_sym || e == err_undef_sym || e == err_file_not_text ||
-        e == err_range_not_const)
+        e == err_range_not_const || e == err_for_lcv_mod)
     {
         unsigned int lexLen = stringGetLength(lexeme);
         const char *lexBuffer = stringGetBuffer(lexeme);

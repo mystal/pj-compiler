@@ -21,6 +21,12 @@ typedef enum __error_kind
     err_redef_builtin,
     err_op_type_mismatch,
     err_bad_fileptr,
+    err_cond_not_bool,
+    err_for_lcv_mod,
+    err_for_lcv_not_int,
+    err_for_lim_not_int,
+    err_wrong_num_params,
+    err_wrong_param_type,
     err_num
 } error_kind;
 
