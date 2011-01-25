@@ -59,16 +59,37 @@ typedef enum __pjbuiltin
     builtin_num
 } pjbuiltin;
 
+/**
+ * Returns the string representation of the given pjtype.
+ **/
 const char *pjtypeString(pjtype);
 
+/**
+ * Returns whether or not the given token_kind is a pjop.
+ **/
 bool ispjop(token_kind);
 
+/**
+ * Returns the pjop corresponding to the given token_kind.
+ **/
 pjop pjopLookup(token_kind);
 
+/**
+ * Returns the type of constant if token_kind is a constant.
+ **/
 pjtype isConstant(token_kind);
 
+/**
+ * Returns if the given builtin is a function.
+ **/
 bool ispjbuiltinFunction(pjbuiltin);
 
+/**
+ * Returns if the given builtin is a procedure.
+ **/
 bool ispjbuiltinProcedure(pjbuiltin);
 
+/**
+ * Returns the string representation of the given pjbuiltin.
+ **/
 const char *pjbuiltinString(pjbuiltin);

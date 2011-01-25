@@ -17,6 +17,7 @@ struct __symtable
     list *blockList;
 };
 
+/* A block in the symbol table */
 typedef struct __block
 {
     string *name;
@@ -96,7 +97,7 @@ bool stAddSymbol(symtable *st, symbol *sym)
     switch (type)
     {
         case symt_var:
-            if (symVarGetType(sym) != pj_text)
+            if (symVarGetType(sym) != pj_text) //Don't allocate space for files
                 symVarSetLocation(sym, b->nextLoc++);
             break;
         case symt_array:

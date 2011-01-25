@@ -228,6 +228,7 @@ pjtype codegenExpr(unsigned int prod, list *l, symtable *st, bool isRead)
     expr_code_func genFunc = genFuncs[prod];
     if (genFunc != NULL)
         if (genFunc == codePushArray && isRead)
+            //TODO remove this hack
             return codeArray(l, st);
         else
             return genFunc(l, st);

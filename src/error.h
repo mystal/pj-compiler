@@ -35,6 +35,12 @@ typedef enum __error_kind
  **/
 void errorParse(error_kind, token *, token_kind);
 
+/**
+ * Prints errors related to the symbols and the symbol table. 
+ **/
 void errorST(error_kind, string *);
 
+/**
+ * Prints type errors, usually related to type checking.
+ **/
 void errorType(error_kind);

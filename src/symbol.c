@@ -6,6 +6,8 @@
 #include "pjlang.h"
 #include "str.h"
 
+/* symbol data structures */
+
 typedef struct __sym_var
 {
     pjtype type;

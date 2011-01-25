@@ -18,6 +18,7 @@
 #include "tokenbst.h"
 #include "typecheck.h"
 
+/* If there is an unexpected token,reports an error and goes to label */
 #define EXPECT_GOTO(tok, label) \
     if (t->kind != tok) \
     { \
@@ -109,6 +110,7 @@ tokenbst *stopSet;
 
 void parse()
 {
+    //Initialize lexer, codegen, symtable, and error sets
     lexerInit();
     codegenInit();
     st = stCreate();
@@ -119,6 +121,7 @@ void parse()
     initStopSet();
     t = lexerGetToken();
     program();
+    //Clean up lexer, codegen, symtable, and error sets
     tokenbstDestroy(followSet);
     tokenbstDestroy(stopSet);
     stDestroy(st);
@@ -272,7 +275,7 @@ void block(symbol *procSym, unsigned int numArgs, bst *progFiles)
     if (varSpace > 0)
     {
         vv.ircab_val.intval = 0;
-        codegenInstruction(hop_push, vv, varSpace); //push varSpace
+        codegenInstruction(hop_push, vv, varSpace); //push space for vars
     }
     branchLoc = codegenGetNextLocation();
     codegenIncrementNextLocation();
@@ -607,7 +610,7 @@ void stmt(symbol *lcv)
 {
     dirTrace("stmt", tr_enter);
     tokenbstInsert(followSet, tok_semicolon);
-    if (t->kind == tok_id)
+    if (t->kind == tok_id) //id_stmt
     {
         unsigned int level;
         symbol *id = stLookup(st, t->lexeme, &level);
@@ -616,7 +619,7 @@ void stmt(symbol *lcv)
         t = lexerGetToken();
         id_stmt(id, level);
     }
-    else if (t->kind == tok_fileid)
+    else if (t->kind == tok_fileid) //fileptr_stmt
     {
         unsigned int level;
         stringDrop(t->lexeme, 1);
@@ -625,22 +628,22 @@ void stmt(symbol *lcv)
         t = lexerGetToken();
         fileptr_stmt(id);
     }
-    else if (t->kind == tok_kw_if)
+    else if (t->kind == tok_kw_if) //if_stmt
     {
         t = lexerGetToken();
         if_stmt();
     }
-    else if (t->kind == tok_kw_while)
+    else if (t->kind == tok_kw_while) //while_stmt
     {
         t = lexerGetToken();
         while_stmt();
     }
-    else if (t->kind == tok_kw_for)
+    else if (t->kind == tok_kw_for) //for_stmt
     {
         t = lexerGetToken();
         for_stmt();
     }
-    else if (t->kind == tok_kw_begin)
+    else if (t->kind == tok_kw_begin) //stmt_list
     {
         t = lexerGetToken();
         if (t->kind != tok_kw_end)
